@@ -73,7 +73,6 @@ android {
     }
     lintOptions {
         disable 'InvalidPackage', 'CommitPrefEdits', 'DefaultLocale', 'SameParameterValue'
-        lintConfig file("realm-lint.xml")
         abortOnError false
 
     }
@@ -104,13 +103,11 @@ android {
             minifyEnabled false
             proguardFile getDefaultProguardFile('proguard-android.txt')
             proguardFile 'proguard-release.txt'
-            proguardFile 'proguard-realm.txt'
         }
         minified {
             minifyEnabled true
             proguardFile getDefaultProguardFile('proguard-android.txt')
             proguardFile 'proguard-proguarded.txt'
-            proguardFile 'proguard-realm.txt'
         }
     }
 }
