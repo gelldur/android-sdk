@@ -12,7 +12,7 @@ If you have any specific questions, please reach out to us.
 
 #Integration
 
-For Integration instructions please visit our developer hub Android SDK page and [developer.sensorberg.com/android-sdk](https://developer.sensorberg.com/android-sdk)
+For Integration instructions please visit our developer hub Android SDK page and [developer.sensorberg.com/android](https://developer.sensorberg.com/android)
 
 #Build,Test,Deploy
 
