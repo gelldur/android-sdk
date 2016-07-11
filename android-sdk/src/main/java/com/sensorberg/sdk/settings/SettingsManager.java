@@ -23,7 +23,7 @@ public class SettingsManager {
     @Setter
     private MessageDelayWindowLengthListener messageDelayWindowLengthListener = MessageDelayWindowLengthListener.NONE;
 
-    private Settings settings;
+    protected Settings settings;
 
     public SettingsManager(Transport trans, SharedPreferences prefs) {
         transport = trans;
@@ -32,7 +32,7 @@ public class SettingsManager {
         updateSettings(new Settings(prefs));
     }
 
-    private void updateSettings(Settings stgs) {
+    protected void updateSettings(Settings stgs) {
         settings = stgs;
         messageDelayWindowLengthListener.setMessageDelayWindowLength(getMessageDelayWindowLength());
 
