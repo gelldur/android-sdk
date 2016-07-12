@@ -80,7 +80,7 @@ public class SensorbergService extends Service {
         super.onCreate();
         //we need to init this because SensorbergService can be started outside of SensorbergSdk constructor
         //(like for example when called from BroadcastReceiver)
-        SensorbergSdk.init(getApplicationContext());
+        SensorbergSdk.init(getBaseContext());
         SensorbergSdk.getComponent().inject(this);
 
         Logger.log.logServiceState("onCreate");
