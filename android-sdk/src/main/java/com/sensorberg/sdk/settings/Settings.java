@@ -188,4 +188,43 @@ public class Settings {
             editor.apply();
         }
     }
+
+    public static class Builder {
+
+        private Settings settings;
+
+        public Builder(Settings inputSettings) {
+            settings = inputSettings;
+        }
+
+        public Settings build() {
+            return settings;
+        }
+
+        public Builder withExitTimeoutMillis(long timeoutMillis) {
+            settings.exitTimeoutMillis = timeoutMillis;
+            return this;
+        }
+
+        public Builder withForegroundScanTime(long scanTime) {
+            settings.foreGroundScanTime = scanTime;
+            return this;
+        }
+
+        public Builder withForegroundWaitTime(long scanTime) {
+            settings.foreGroundWaitTime = scanTime;
+            return this;
+        }
+
+        public Builder withBackgroundScanTime(long scanTime) {
+            settings.backgroundScanTime = scanTime;
+            return this;
+        }
+
+        public Builder withBackgroundWaitTime(long scanTime) {
+            settings.backgroundWaitTime = scanTime;
+            return this;
+        }
+
+    }
 }

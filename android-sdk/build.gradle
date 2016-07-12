@@ -63,7 +63,7 @@ android {
     buildToolsVersion project.ext.buildToolsVersion
     compileSdkVersion project.ext.compileSdkVersion
     defaultConfig {
-        versionCode 8
+        versionCode 10
         versionName version
         minSdkVersion 9
         targetSdkVersion project.ext.targetSdkVersion
@@ -73,7 +73,6 @@ android {
     }
     lintOptions {
         disable 'InvalidPackage', 'CommitPrefEdits', 'DefaultLocale', 'SameParameterValue'
-        lintConfig file("realm-lint.xml")
         abortOnError false
 
     }
@@ -104,13 +103,11 @@ android {
             minifyEnabled false
             proguardFile getDefaultProguardFile('proguard-android.txt')
             proguardFile 'proguard-release.txt'
-            proguardFile 'proguard-realm.txt'
         }
         minified {
             minifyEnabled true
             proguardFile getDefaultProguardFile('proguard-android.txt')
             proguardFile 'proguard-proguarded.txt'
-            proguardFile 'proguard-realm.txt'
         }
     }
 }

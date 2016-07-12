@@ -146,7 +146,6 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
     }
 
     public void enableService(Context context, String apiKey) {
-        //TODO do we need this? It's not used anywhere
         ScannerBroadcastReceiver.setManifestReceiverEnabled(true, context);
         activateService(apiKey);
         hostApplicationInForeground();
