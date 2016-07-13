@@ -38,7 +38,7 @@ import lombok.Setter;
 
 public class SensorbergSdk implements Platform.ForegroundStateListener {
 
-    protected final Context context;
+    protected static Context context;
 
     @Getter
     protected boolean presentationDelegationEnabled;
@@ -47,7 +47,6 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
 
     protected static final Set<SensorbergSdkEventListener> listeners = new HashSet<>();
 
-    @Getter
     @Setter
     private static Component component;
 
@@ -74,18 +73,36 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
     /**
      * Constructor to be used for starting the SDK.
      *
-     * @param context {@code Context} Context used for starting the service.
+     * @param ctx {@code Context} Context used for starting the service.
      * @param apiKey {@code String} Your API key that you can get from your Sensorberg dashboard.
      */
-    public SensorbergSdk(Context context, String apiKey) {
-        this.context = context;
-        setComponent(buildComponentAndInject(context));
+    public SensorbergSdk(Context ctx, String apiKey) {
+        init(ctx);
         getComponent().inject(this);
-
-        SugarContext.init(context);
-        JodaTimeAndroid.init(context);
-
         activateService(apiKey);
+    }
+
+    public static void init(Context ctx){
+        context = ctx;
+        initLibraries(context);
+    }
+
+    public static Component getComponent() {
+        buildComponentAndInject(context);
+        return component;
+    }
+
+    private static void buildComponentAndInject(Context context) {
+        if (component == null && context != null) {
+            component = Component.Initializer.init((Application) context.getApplicationContext());
+        }
+    }
+
+    private static void initLibraries(Context ctx) {
+        if (ctx != null) {
+            SugarContext.init(ctx);
+            JodaTimeAndroid.init(ctx);
+        }
     }
 
     /**
@@ -189,10 +206,6 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
 
     public void setLogging(boolean enableLogging) {
         context.startService(SensorbergServiceIntents.getServiceLoggingIntent(context, enableLogging));
-    }
-
-    protected Component buildComponentAndInject(Context context) {
-        return Component.Initializer.init((Application) context.getApplicationContext());
     }
 
     public void sendLocationFlagToReceiver(int flagType) {

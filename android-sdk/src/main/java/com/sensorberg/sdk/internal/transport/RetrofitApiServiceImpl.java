@@ -60,7 +60,12 @@ public class RetrofitApiServiceImpl implements PlatformIdentifier.DeviceInstalla
         mContext = ctx;
         mGson = gson;
         mPlatformIdentifier = platformId;
-        mBaseUrl = baseUrl;
+
+        if (!baseUrl.endsWith("/")) {
+            mBaseUrl = baseUrl + "/";
+        } else {
+            mBaseUrl = baseUrl;
+        }
 
         platformId.addAdvertiserIdentifierChangeListener(this);
         platformId.addDeviceInstallationIdentifierChangeListener(this);

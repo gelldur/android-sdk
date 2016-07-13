@@ -16,8 +16,6 @@ import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolutionConfiguration;
 import com.sensorberg.sdk.resolver.ResolverConfiguration;
 
-import net.danlew.android.joda.JodaTimeAndroid;
-
 import android.annotation.TargetApi;
 import android.app.Service;
 import android.content.Context;
@@ -80,9 +78,12 @@ public class SensorbergService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        //we need to init this because SensorbergService can be started outside of SensorbergSdk constructor
+        //(like for example when called from BroadcastReceiver)
+        SensorbergSdk.init(getBaseContext());
         SensorbergSdk.getComponent().inject(this);
+
         Logger.log.logServiceState("onCreate");
-        JodaTimeAndroid.init(this);
     }
 
     protected void logError(String message) {
@@ -268,7 +269,7 @@ public class SensorbergService extends Service {
         try {
             SensorbergServiceConfiguration diskConf = SensorbergServiceConfiguration.loadFromDisk(fileManager);
 
-            //TODO is this a viable case, that we have resolver url but no api key? we're not creating a bootstrapper in first case
+            //first case is when the service gets started outside of bootstrapper. we're not creating a bootstrapper in that case
             if (diskConf != null && diskConf.resolverConfiguration.getResolverLayoutURL() != null) {
                 URLFactory.setLayoutURL(diskConf.resolverConfiguration.getResolverLayoutURL().toString());
             }
