@@ -2,11 +2,11 @@
 [![Join the chat at https://gitter.im/sensorberg-dev/android-sdk](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sensorberg-dev/android-sdk?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ##Warning:
-You are viewing the sources of version 1.2.0RC1 . The SDK is released. Feel free to explore it.
+You are viewing the sources of version 1.2.0. The SDK is released. Feel free to explore it.
 
 #Last stable release
 
-The last stable release was 1.0.0.  It is not recommended to use this as the 1.2.0RC1 is the latest. For now you can read the old [samples page](https://github.com/sensorberg-dev/android-sdk-samples) page for all neccesary information.
+The last stable release was 1.1.0RC4.  It is not recommended to use this as v1.2.0 is the latest. For now you can read the old [samples page](https://github.com/sensorberg-dev/android-sdk-samples) page for all neccesary information.
 Please be aware, we are not currently updating the samples. We are in process of updating the sdk and will release better and updated samples in the future. 
 If you have any specific questions, please reach out to us.
 
@@ -32,19 +32,6 @@ to see all the tasks.
 	./gradlew clean connectedAndroidTest
 ```
 will run all the unit tests.
-
-If you wish to run the tests with your own resolver:
-
-set the system variable **RESOLVER_URL**
-
-```
- 	export RESOLVER_URL=http://168.168.0.1:8080/layout
-```
-or pass **resolver_url** to the build script:
-
-```
-	./gradlew connectedAndroidTest -Presolver_url=http://168.168.0.1:8080/layout
-```
 
 #Release
 
