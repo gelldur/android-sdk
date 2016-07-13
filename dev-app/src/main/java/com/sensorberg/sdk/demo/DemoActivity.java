@@ -37,7 +37,7 @@ public class DemoActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (ContextCompat.checkSelfPermission(this,
+   /*     if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
@@ -68,7 +68,7 @@ public class DemoActivity extends Activity {
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSION_REQUEST_LOCATION_SERVICES);
             }
-        }
+        }*/
 
         textView = new TextView(this);
         StringBuilder infoText = new StringBuilder("This is an app that exposes some SDK APIs to the user").append('\n');

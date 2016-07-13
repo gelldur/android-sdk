@@ -1,12 +1,19 @@
 package com.sensorberg.utils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class ListUtils {
+
+
+    public static <A> ArrayList<A> distinct(Collection<A> map) {
+        return new ArrayList<>(new HashSet<>(map));
+    }
 
     public interface Filter<A> {
         boolean matches(A object);
@@ -29,7 +36,7 @@ public class ListUtils {
         KEY_TYPE map(OBJECT resolveAction);
     }
 
-    public static <INPUT, OUTPUT> List<OUTPUT> map(List<INPUT> inputs, Mapper<INPUT, OUTPUT> mapper){
+    public static <INPUT, OUTPUT> ArrayList<OUTPUT> map(List<INPUT> inputs, Mapper<INPUT, OUTPUT> mapper){
         ArrayList<OUTPUT> value = new ArrayList<>();
         for (INPUT object : inputs) {
             OUTPUT mappedObject  = mapper.map(object);

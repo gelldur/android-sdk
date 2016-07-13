@@ -46,6 +46,8 @@ public class SensorbergServiceMessage {
 
     public static final int MSG_LOCATION_SET = 107;
 
+    public static final int MSG_LIST_OF_BEACONS = 201;
+
     public static final String MSG_SET_API_TOKEN_TOKEN = "com.sensorberg.android.sdk.message.setApiToken.apiTokenString";
 
     public static final String MSG_SET_RESOLVER_ENDPOINT_ENDPOINT_URL = "com.sensorberg.android.sdk.intent.recolverEndpoint";
@@ -54,6 +56,12 @@ public class SensorbergServiceMessage {
 
     public static final String MSG_SET_API_ADVERTISING_IDENTIFIER_ADVERTISING_IDENTIFIER
             = "com.sensorberg.android.sdk.message.setAdvertisingIdentifier.advertisingIdentifier";
+
+    public static final String MSG_LIST_OF_BEACONS_BEACON_IDS  = "com.sensorberg.android.sdk.message.list_of_beacons.beacon_ids";
+
+    public static final String MSG_LIST_OF_BEACONS_MILLIS  = "com.sensorberg.android.sdk.message.list_of_beacons.time";
+
+    public static final String MSG_LIST_OF_BEACONS_MESSENGER = "com.sensorberg.android.sdk.message.list_of_beacons.messenger";
 
     public static final String SERVICE_CONFIGURATION = "serviceConfiguration";
 
@@ -120,6 +128,8 @@ public class SensorbergServiceMessage {
                 return "MSG_SET_API_ADVERTISING_IDENTIFIER";
             case MSG_LOCATION_SERVICES_IS_SET:
                 return "MSG_LOCATION_SERVICES_IS_SET";
+            case MSG_LIST_OF_BEACONS:
+                return "MSG_LIST_OF_BEACONS";
             default:
                 return "unknown message" + what;
         }

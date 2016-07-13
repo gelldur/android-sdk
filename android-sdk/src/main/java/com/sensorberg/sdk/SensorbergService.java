@@ -75,6 +75,10 @@ public class SensorbergService extends Service {
 
     protected InternalApplicationBootstrapper bootstrapper;
 
+    private static final boolean SHUTDOWN_SERVICE = true;
+
+    private static final boolean CONTINUE_SERVICE = false;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -259,11 +263,11 @@ public class SensorbergService extends Service {
                     minimalBootstrapper.stopScanning();
                     minimalBootstrapper.stopAllScheduledOperations();
                     bootstrapper = null;
-                    return true;
+                    return SHUTDOWN_SERVICE;
                 }
             }
         }
-        return false;
+        return SHUTDOWN_SERVICE;
     }
 
     protected InternalApplicationBootstrapper createBootstrapperFromDiskConfiguration() {
