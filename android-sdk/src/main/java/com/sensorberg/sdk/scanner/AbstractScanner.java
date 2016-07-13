@@ -24,6 +24,7 @@ import android.util.Pair;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.TimerTask;
 
 import lombok.Getter;
@@ -286,6 +287,10 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
     public void stop() {
         Log.i("Scan: ", "Scanner stopped");
         runLoop.sendMessage(ScannerEvent.SCAN_STOP_REQUESTED);
+    }
+
+    public Set<BeaconId> getCurrentBeacons() {
+        return enteredBeacons.getCurrentNearbyBeacons();
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
