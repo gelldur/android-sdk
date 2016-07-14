@@ -69,7 +69,7 @@ public class DemoActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-   /*     if (ContextCompat.checkSelfPermission(this,
+        if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
@@ -100,7 +100,7 @@ public class DemoActivity extends Activity {
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSION_REQUEST_LOCATION_SERVICES);
             }
-        }*/
+        }
 
         BeaconEvent beaconEvent = new BeaconEvent.Builder()
                 .withAction(new InAppAction(uuid, null, null, null, null, 0))
@@ -121,9 +121,9 @@ public class DemoActivity extends Activity {
         };
 
 
+
         //app = (SugarApp)getApplication();
         tested = SugarAction.from(beaconEvent, clock);
-        //tested.save();
 
         ScanEvent scanevent = new ScanEvent.Builder()
                 .withEventMask(ScanEventType.ENTRY.getMask())
@@ -161,7 +161,7 @@ public class DemoActivity extends Activity {
                     protected Object doInBackground(Object[] params) {
                         {
                             long before = System.currentTimeMillis();
-                       /*     Collection<BeaconId> beacons = LatestBeacons.getLatestBeacons(getApplicationContext(),
+                            Collection<BeaconId> beacons = LatestBeacons.getLatestBeacons(getApplicationContext(),
                                     5, TimeUnit.MINUTES);
                             StringBuilder beaconIds = new StringBuilder("got these from the other process: ");
                             for (BeaconId beacon : beacons) {
@@ -169,12 +169,11 @@ public class DemoActivity extends Activity {
                             }
                             beaconIds.append(" beacons");
                             beaconIds.append("took ").append(System.currentTimeMillis() - before).append("ms");
-                            Logger.log.verbose(beaconIds.toString());*/
+                            Logger.log.verbose(beaconIds.toString());
                         }
                         {
                             long before = System.currentTimeMillis();
-                            Collection<BeaconId> beacons = getLatestBeaconsInMyProcess(getApplicationContext(),
-                                    5, TimeUnit.MINUTES);
+                            Collection<BeaconId> beacons = getLatestBeaconsInMyProcess(5, TimeUnit.MINUTES);
                             StringBuilder beaconIds = new StringBuilder("got these in my process: ");
                             for (BeaconId beacon : beacons) {
                                 beaconIds.append(beacon.getBid()).append(",");
@@ -190,21 +189,9 @@ public class DemoActivity extends Activity {
             }
         });
 
-        LinearLayout linearLayout = new LinearLayout(this);
-        linearLayout.setHorizontalGravity(LinearLayout.VERTICAL);
-        linearLayout.addView(textView);
-
-
-
-
-
-        setContentView(button);
+       setContentView(button);
         ((DemoApplication) getApplication()).setActivityContext(this);
         processIntent(getIntent());
-
-
-
-
     }
 
     @Override
@@ -258,7 +245,7 @@ public class DemoActivity extends Activity {
     /**
      * this method is only here for a speed reference.
      */
-    public static Collection<BeaconId> getLatestBeaconsInMyProcess(Context context, long duration, TimeUnit unit){
+    public static Collection<BeaconId> getLatestBeaconsInMyProcess(long duration, TimeUnit unit){
         long now = System.currentTimeMillis() - unit.toMillis(duration);
         return  distinct(map(
                 SugarScan.latestEnterEvents(now),
