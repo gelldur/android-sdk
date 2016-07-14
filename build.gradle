@@ -24,7 +24,7 @@ allprojects {
         maven { url "https://jitpack.io" }
     }
     project.ext.SDK_VERSION = "2.0.0"
-    project.ext.RC_VERSION = "RC4"
+    project.ext.RC_VERSION = "RC5"
     project.ext.buildToolsVersion = "23.0.3"
     project.ext.compileSdkVersion = 23
     project.ext.targetSdkVersion = 23
