@@ -3,9 +3,19 @@ package com.sensorberg.sdk.demo;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 
 import com.sensorberg.sdk.Logger;
+import com.sensorberg.sdk.SensorbergService;
 import com.sensorberg.sdk.SensorbergServiceMessage;
 import com.sensorberg.sdk.action.Action;
+import com.sensorberg.sdk.action.InAppAction;
+import com.sensorberg.sdk.internal.interfaces.Clock;
+import com.sensorberg.sdk.model.BeaconId;
+import com.sensorberg.sdk.model.sugarorm.SugarAction;
+import com.sensorberg.sdk.model.sugarorm.SugarScan;
+import com.sensorberg.sdk.resolver.BeaconEvent;
+import com.sensorberg.sdk.scanner.ScanEvent;
+import com.sensorberg.sdk.scanner.ScanEventType;
 import com.sensorberg.sdk.testApp.BuildConfig;
+import com.sensorberg.utils.LatestBeacons;
 
 import android.Manifest;
 import android.app.Activity;
@@ -21,14 +31,36 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.util.Pair;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import static com.sensorberg.utils.ListUtils.distinct;
+import static com.sensorberg.utils.ListUtils.map;
 
 @SuppressWarnings("javadoc")
 public class DemoActivity extends Activity {
 
     private static final String EXTRA_ACTION = "com.sensorberg.demoActivity.extras.ACTION";
 
+    public static final UUID BEACON_PROXIMITY_ID = UUID.fromString("192E463C-9B8E-4590-A23F-D32007299EF5");
+
     private static final int MY_PERMISSION_REQUEST_LOCATION_SERVICES = 1;
+
+    private SugarAction tested;
+
+    private Clock clock;
+
+    private UUID uuid = UUID.fromString("6133172D-935F-437F-B932-A901265C24B0");
+
+    private SugarScan testScan;
 
     private TextView textView;
 
@@ -70,8 +102,44 @@ public class DemoActivity extends Activity {
             }
         }*/
 
+        BeaconEvent beaconEvent = new BeaconEvent.Builder()
+                .withAction(new InAppAction(uuid, null, null, null, null, 0))
+                .withPresentationTime(1337)
+                .withTrigger(ScanEventType.ENTRY.getMask())
+                .build();
+        beaconEvent.setBeaconId(new BeaconId(BEACON_PROXIMITY_ID, 1337, 1337));
+        clock = new Clock() {
+            @Override
+            public long now() {
+                return 0;
+            }
+
+            @Override
+            public long elapsedRealtime() {
+                return 0;
+            }
+        };
+
+
+        //app = (SugarApp)getApplication();
+        tested = SugarAction.from(beaconEvent, clock);
+        //tested.save();
+
+        ScanEvent scanevent = new ScanEvent.Builder()
+                .withEventMask(ScanEventType.ENTRY.getMask())
+                .withBeaconId(new BeaconId(BEACON_PROXIMITY_ID, 1337, 1337))
+                .withEventTime(100)
+                .build();
+        testScan = SugarScan.from(scanevent, 0);
+        testScan.save();
+
+        List<SugarScan> scans = SugarScan.listAll(SugarScan.class);
+        //List<SugarAction> list = SugarAction.listAll(SugarAction.class);
+        List<SugarScan> list2 = SugarScan.notSentScans();
+
         textView = new TextView(this);
         StringBuilder infoText = new StringBuilder("This is an app that exposes some SDK APIs to the user").append('\n');
+        infoText.append('\n').append("sentToServerTimestamp2: ").append(list2.get(0).getSentToServerTimestamp2());
 
         if (Build.VERSION.SDK_INT < 18){
             infoText.append('\n').append("BLE NOT SUPPORTED, NO BEACONS WILL BE SCANNED").append('\n');
@@ -81,35 +149,62 @@ public class DemoActivity extends Activity {
         infoText.append('\n').append("SDK Version: ").append(com.sensorberg.sdk.BuildConfig.VERSION_NAME);
         infoText.append('\n').append("Demo Version: ").append(BuildConfig.VERSION_NAME);
         textView.setText(infoText.toString());
-        setContentView(textView);
+
+
+        Button button = new Button(this);
+        button.setText("click me");
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AsyncTask task = new AsyncTask() {
+                    @Override
+                    protected Object doInBackground(Object[] params) {
+                        {
+                            long before = System.currentTimeMillis();
+                       /*     Collection<BeaconId> beacons = LatestBeacons.getLatestBeacons(getApplicationContext(),
+                                    5, TimeUnit.MINUTES);
+                            StringBuilder beaconIds = new StringBuilder("got these from the other process: ");
+                            for (BeaconId beacon : beacons) {
+                                beaconIds.append(beacon.getBid()).append(",");
+                            }
+                            beaconIds.append(" beacons");
+                            beaconIds.append("took ").append(System.currentTimeMillis() - before).append("ms");
+                            Logger.log.verbose(beaconIds.toString());*/
+                        }
+                        {
+                            long before = System.currentTimeMillis();
+                            Collection<BeaconId> beacons = getLatestBeaconsInMyProcess(getApplicationContext(),
+                                    5, TimeUnit.MINUTES);
+                            StringBuilder beaconIds = new StringBuilder("got these in my process: ");
+                            for (BeaconId beacon : beacons) {
+                                beaconIds.append(beacon.getBid()).append(",");
+                            }
+                            beaconIds.append(" beacons");
+                            beaconIds.append("took ").append(System.currentTimeMillis() - before).append("ms");
+                            Logger.log.verbose(beaconIds.toString());
+                        }
+                        return null;
+                    }
+                };
+                task.execute();
+            }
+        });
+
+        LinearLayout linearLayout = new LinearLayout(this);
+        linearLayout.setHorizontalGravity(LinearLayout.VERTICAL);
+        linearLayout.addView(textView);
+
+
+
+
+
+        setContentView(button);
         ((DemoApplication) getApplication()).setActivityContext(this);
         processIntent(getIntent());
 
-        AsyncTask<String, Integer, Pair<String, Long>> task = new AsyncTask<String, Integer, Pair<String, Long>>() {
-            @Override
-            protected Pair<String, Long> doInBackground(String... params) {
-                long timeBefore = System.currentTimeMillis();
-                String advertiserIdentifier = "not-found";
 
-                try {
-                    advertiserIdentifier = "google:" + AdvertisingIdClient.getAdvertisingIdInfo(DemoActivity.this).getId();
-                } catch (Exception e) {
-                    //not logging anything because it's already logged in the Application
-                }
 
-                long timeItTook = System.currentTimeMillis() - timeBefore;
-                Logger.log.verbose("foreground fetching the advertising identifier took " + timeItTook + " millis");
-                return Pair.create(advertiserIdentifier, timeItTook);
-            }
 
-            @Override
-            protected void onPostExecute(Pair<String, Long> o) {
-                textView.append("\nGoogle Advertising ID: " + o.first);
-                textView.append("\nGoogle ID took: " + o.second + " milliseconds");
-            }
-        };
-
-        task.execute();
     }
 
     @Override
@@ -158,5 +253,15 @@ public class DemoActivity extends Activity {
                 }
             }
         }
+    }
+
+    /**
+     * this method is only here for a speed reference.
+     */
+    public static Collection<BeaconId> getLatestBeaconsInMyProcess(Context context, long duration, TimeUnit unit){
+        long now = System.currentTimeMillis() - unit.toMillis(duration);
+        return  distinct(map(
+                SugarScan.latestEnterEvents(now),
+                BeaconId.FROM_SUGAR_SCAN));
     }
 }

@@ -10,6 +10,8 @@ import com.sensorberg.sdk.internal.interfaces.Platform;
 import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
+import com.sensorberg.sdk.model.BeaconId;
+import com.sensorberg.sdk.model.sugarorm.SugarScan;
 import com.sensorberg.sdk.receivers.GenericBroadcastReceiver;
 import com.sensorberg.sdk.receivers.ScannerBroadcastReceiver;
 import com.sensorberg.sdk.resolver.BeaconEvent;
@@ -32,11 +34,15 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import static com.sensorberg.utils.ListUtils.distinct;
+import static com.sensorberg.utils.ListUtils.map;
 
 @SuppressWarnings({"WeakerAccess", "pmd:TooManyMethods", "squid:S1200"})
 public class SensorbergService extends Service {
@@ -82,7 +88,7 @@ public class SensorbergService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        //we need to init this because SensorbergService can be started outside of SensorbergSdk constructor
+        //we need to init this because SensorbergServiceMessenges can be started outside of SensorbergSdk constructor
         //(like for example when called from BroadcastReceiver)
         SensorbergSdk.init(getBaseContext());
         SensorbergSdk.getComponent().inject(this);
@@ -265,9 +271,37 @@ public class SensorbergService extends Service {
                     bootstrapper = null;
                     return SHUTDOWN_SERVICE;
                 }
+                case SensorbergServiceMessage.MSG_LIST_OF_BEACONS: {
+                    final Messenger messenger = intent.getParcelableExtra(SensorbergServiceMessage.MSG_LIST_OF_BEACONS_MESSENGER);
+                    final long milliseconds = intent.getLongExtra(SensorbergServiceMessage.MSG_LIST_OF_BEACONS_MILLIS, -1);
+
+                    //TODO get beacons with sugar.
+                    ArrayList<BeaconId> beaconIds = map(SugarScan.latestEnterEvents(clock.now() - milliseconds), BeaconId.FROM_SUGAR_SCAN);
+                    if (bootstrapper != null) {
+                        beaconIds.addAll(bootstrapper.scanner.getCurrentBeacons());
+                    }
+
+                    //Messenger
+                    Message message = Message.obtain();
+                    message.what = SensorbergServiceMessage.MSG_LIST_OF_BEACONS;
+
+                    Bundle bundle = new Bundle();
+                    bundle.putParcelableArrayList(SensorbergServiceMessage.MSG_LIST_OF_BEACONS_BEACON_IDS, distinct(beaconIds));
+                    message.setData(bundle);
+
+                    try {
+                        messenger.send(message);
+
+                    } catch (RemoteException ex) {
+                        ex.printStackTrace();
+                        Logger.log.logError("Could not answer with the list of beacons", ex);
+
+                    }
+                    return CONTINUE_SERVICE;
+                }
             }
         }
-        return SHUTDOWN_SERVICE;
+        return CONTINUE_SERVICE;
     }
 
     protected InternalApplicationBootstrapper createBootstrapperFromDiskConfiguration() {
