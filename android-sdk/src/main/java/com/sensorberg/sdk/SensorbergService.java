@@ -109,6 +109,9 @@ public class SensorbergService extends Service {
             return stopSensorbergService();
         }
 
+        //since we want to start or restart, it's a good idea to try and init the libraries again
+        SensorbergSdk.init(getBaseContext());
+
         if (intent == null) {
             return restartSensorbergService();
         } else {

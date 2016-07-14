@@ -15,6 +15,7 @@ import com.sensorberg.sdk.settings.SettingsManager;
 import android.content.Context;
 import android.os.Message;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Setter;
@@ -92,12 +93,21 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     }
 
     private void publishHistorySynchronously() {
-        List<SugarScan> scans = SugarScan.notSentScans();
-        List<SugarAction> actions = SugarAction.notSentScans();
+        List<SugarScan> scans = new ArrayList<>();
+        List<SugarAction> actions = new ArrayList<>();
+
+        try {
+            scans = SugarScan.notSentScans();
+            actions = SugarAction.notSentScans();
+        } catch (Exception e) {
+            Logger.log.logError("error fetching scans that were not sent from database", e);
+        }
+
         if (scans.isEmpty() && actions.isEmpty()) {
             Logger.log.verbose("nothing to report");
             return;
         }
+
         transport.publishHistory(scans, actions, new TransportHistoryCallback() {
 
             @Override
