@@ -152,7 +152,7 @@ public class ProvidersModule {
             BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
             return bluetoothManager.getAdapter();
         } else {
-            return null;
+            return BluetoothAdapter.getDefaultAdapter();
         }
     }
 
