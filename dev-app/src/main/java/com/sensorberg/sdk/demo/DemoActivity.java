@@ -168,7 +168,7 @@ public class DemoActivity extends Activity {
                                 beaconIds.append(beacon.getBid()).append(",");
                             }
                             beaconIds.append(" beacons");
-                            beaconIds.append("took ").append(System.currentTimeMillis() - before).append("ms");
+                            beaconIds.append(" took ").append(System.currentTimeMillis() - before).append("ms");
                             Logger.log.verbose(beaconIds.toString());
                         }
                         {
@@ -179,7 +179,7 @@ public class DemoActivity extends Activity {
                                 beaconIds.append(beacon.getBid()).append(",");
                             }
                             beaconIds.append(" beacons");
-                            beaconIds.append("took ").append(System.currentTimeMillis() - before).append("ms");
+                            beaconIds.append(" took ").append(System.currentTimeMillis() - before).append("ms");
                             Logger.log.verbose(beaconIds.toString());
                         }
                         return null;
