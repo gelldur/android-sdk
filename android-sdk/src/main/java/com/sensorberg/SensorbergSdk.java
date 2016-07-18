@@ -8,7 +8,6 @@ import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
 import com.sensorberg.sdk.internal.interfaces.Platform;
 import com.sensorberg.sdk.receivers.ScannerBroadcastReceiver;
 import com.sensorberg.sdk.resolver.BeaconEvent;
-import com.sensorbergorm.SugarContext;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -98,9 +97,8 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
         }
     }
 
-    private static void initLibraries(Context ctx) {
+    synchronized private static void initLibraries(Context ctx) {
         if (ctx != null) {
-            SugarContext.init(ctx);
             JodaTimeAndroid.init(ctx);
         }
     }
