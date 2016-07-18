@@ -5,7 +5,6 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 
 import com.sensorberg.sdk.Logger;
-import com.sensorberg.sdk.SensorbergService;
 import com.sensorberg.sdk.SensorbergServiceMessage;
 import com.sensorberg.sdk.action.Action;
 import com.sensorberg.sdk.action.InAppAction;
@@ -14,7 +13,6 @@ import com.sensorberg.sdk.model.BeaconId;
 import com.sensorberg.sdk.model.sugarorm.SugarAction;
 import com.sensorberg.sdk.model.sugarorm.SugarScan;
 import com.sensorberg.sdk.resolver.BeaconEvent;
-import com.sensorberg.sdk.scanner.ScanEvent;
 import com.sensorberg.sdk.scanner.ScanEventType;
 import com.sensorberg.sdk.testApp.BuildConfig;
 
@@ -34,7 +32,6 @@ import android.util.Pair;
 import android.widget.TextView;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 
 @SuppressWarnings("javadoc")
@@ -108,26 +105,8 @@ public class DemoActivity extends Activity {
             }
         };
 
-
-        //app = (SugarApp)getApplication();
-        tested = SugarAction.from(beaconEvent, clock);
-        //tested.save();
-
-        ScanEvent scanevent = new ScanEvent.Builder()
-                .withEventMask(ScanEventType.ENTRY.getMask())
-                .withBeaconId(new BeaconId(BEACON_PROXIMITY_ID, 1337, 1337))
-                .withEventTime(100)
-                .build();
-        testScan = SugarScan.from(scanevent, 0);
-        testScan.save();
-
-        List<SugarScan> scans = SugarScan.listAll(SugarScan.class);
-        //List<SugarAction> list = SugarAction.listAll(SugarAction.class);
-        List<SugarScan> list2 = SugarScan.notSentScans();
-
         textView = new TextView(this);
         StringBuilder infoText = new StringBuilder("This is an app that exposes some SDK APIs to the user").append('\n');
-        infoText.append('\n').append("sentToServerTimestamp2: ").append(list2.get(0).getSentToServerTimestamp2());
         infoText.append('\n').append("API Key: ").append(DemoApplication.API_KEY);
         infoText.append('\n').append("SDK Version: ").append(com.sensorberg.sdk.BuildConfig.VERSION_NAME);
         infoText.append('\n').append("Demo Version: ").append(BuildConfig.VERSION_NAME);
