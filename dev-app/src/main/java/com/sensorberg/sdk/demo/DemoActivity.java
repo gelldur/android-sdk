@@ -7,13 +7,6 @@ import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.SensorbergServiceMessage;
 import com.sensorberg.sdk.action.Action;
-import com.sensorberg.sdk.action.InAppAction;
-import com.sensorberg.sdk.internal.interfaces.Clock;
-import com.sensorberg.sdk.model.BeaconId;
-import com.sensorberg.sdk.model.sugarorm.SugarAction;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
-import com.sensorberg.sdk.resolver.BeaconEvent;
-import com.sensorberg.sdk.scanner.ScanEventType;
 import com.sensorberg.sdk.testApp.BuildConfig;
 
 import android.Manifest;
@@ -32,24 +25,13 @@ import android.util.Pair;
 import android.widget.TextView;
 
 import java.io.IOException;
-import java.util.UUID;
 
 @SuppressWarnings("javadoc")
 public class DemoActivity extends Activity {
 
     private static final String EXTRA_ACTION = "com.sensorberg.demoActivity.extras.ACTION";
 
-    public static final UUID BEACON_PROXIMITY_ID = UUID.fromString("192E463C-9B8E-4590-A23F-D32007299EF5");
-
     private static final int MY_PERMISSION_REQUEST_LOCATION_SERVICES = 1;
-
-    private SugarAction tested;
-
-    private Clock clock;
-
-    private UUID uuid = UUID.fromString("6133172D-935F-437F-B932-A901265C24B0");
-
-    private SugarScan testScan;
 
     private TextView textView;
 
@@ -86,24 +68,6 @@ public class DemoActivity extends Activity {
                         MY_PERMISSION_REQUEST_LOCATION_SERVICES);
             }
         }
-
-        BeaconEvent beaconEvent = new BeaconEvent.Builder()
-                .withAction(new InAppAction(uuid, null, null, null, null, 0))
-                .withPresentationTime(1337)
-                .withTrigger(ScanEventType.ENTRY.getMask())
-                .build();
-        beaconEvent.setBeaconId(new BeaconId(BEACON_PROXIMITY_ID, 1337, 1337));
-        clock = new Clock() {
-            @Override
-            public long now() {
-                return 0;
-            }
-
-            @Override
-            public long elapsedRealtime() {
-                return 0;
-            }
-        };
 
         textView = new TextView(this);
         StringBuilder infoText = new StringBuilder("This is an app that exposes some SDK APIs to the user").append('\n');
@@ -155,15 +119,14 @@ public class DemoActivity extends Activity {
 
     @Override
     protected void onPause() {
-        ((DemoApplication) getApplication()).setActivityContext(null);
         super.onPause();
+        ((DemoApplication) getApplication()).setActivityContext(null);
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
-        processIntent(intent);
-
         super.onNewIntent(intent);
+        processIntent(intent);
     }
 
     private void processIntent(Intent intent) {
@@ -183,8 +146,7 @@ public class DemoActivity extends Activity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSION_REQUEST_LOCATION_SERVICES: {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -193,7 +155,6 @@ public class DemoActivity extends Activity {
                 } else {
                     ((DemoApplication) getApplication()).setLocationPermissionGranted(SensorbergServiceMessage.MSG_LOCATION_NOT_SET_WHEN_NEEDED);
                 }
-                return;
             }
         }
     }
