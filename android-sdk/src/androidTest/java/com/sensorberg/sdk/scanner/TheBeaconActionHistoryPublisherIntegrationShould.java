@@ -1,5 +1,7 @@
 package com.sensorberg.sdk.scanner;
 
+import com.google.gson.Gson;
+
 import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.internal.interfaces.Clock;
@@ -16,6 +18,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
+import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -44,6 +47,12 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
     @Named("dummyTransportSettingsManager")
     SettingsManager testSettingsManager;
 
+    @Inject
+    SharedPreferences sharedPreferences;
+
+    @Inject
+    Gson gson;
+
     RetrofitApiServiceImpl mockRetrofitApiService = mock(RetrofitApiServiceImpl.class);
 
     private ScanEvent SCAN_EVENT = new ScanEvent.Builder()
@@ -60,7 +69,7 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
 
         Transport testTransportWithMockService = new RetrofitApiTransport(mockRetrofitApiService, clock);
         tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), testTransportWithMockService, testSettingsManager, clock,
-                testHandlerManager);
+                testHandlerManager, sharedPreferences, gson);
     }
 
     @Test

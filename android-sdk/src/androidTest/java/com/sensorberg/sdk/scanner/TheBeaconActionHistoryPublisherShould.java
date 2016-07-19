@@ -1,5 +1,7 @@
 package com.sensorberg.sdk.scanner;
 
+import com.google.gson.Gson;
+
 import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.action.VisitWebsiteAction;
 import com.sensorberg.sdk.di.TestComponent;
@@ -16,6 +18,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
+import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -43,6 +46,12 @@ public class TheBeaconActionHistoryPublisherShould {
     @Named("dummyTransportSettingsManager")
     SettingsManager testSettingsManager;
 
+    @Inject
+    SharedPreferences sharedPreferences;
+
+    @Inject
+    Gson gson;
+
     private BeaconActionHistoryPublisher tested;
 
     private Transport transport = mock(Transport.class);
@@ -63,10 +72,9 @@ public class TheBeaconActionHistoryPublisherShould {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         testHandlerManager.getCustomClock().setNowInMillis(System.currentTimeMillis());
-        BeaconAction.deleteAll(BeaconAction.class);
-        BeaconScan.deleteAll(BeaconScan.class);
         tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), transport, testSettingsManager,
-                testHandlerManager.getCustomClock(), testHandlerManager);
+                testHandlerManager.getCustomClock(), testHandlerManager, sharedPreferences, gson);
+        tested.deleteAllData();
         tested = Mockito.spy(tested);
 
         tested.onScanEventDetected(SCAN_EVENT);
@@ -75,13 +83,13 @@ public class TheBeaconActionHistoryPublisherShould {
 
     @Test
     public void test_should_persist_scans_that_need_queing() throws Exception {
-        List<BeaconScan> notSentObjects = BeaconScan.notSentScans();
+        List<BeaconScan> notSentObjects = tested.notSentBeaconScans();
         assertThat(notSentObjects).hasSize(1);
     }
 
     @Test
     public void test_should_persist_actions_that_need_queing() throws Exception {
-        List<BeaconAction> notSentObjects = BeaconAction.notSentScans();
+        List<BeaconAction> notSentObjects = tested.notSentBeaconActions();
         assertThat(notSentObjects).hasSize(1);
     }
 

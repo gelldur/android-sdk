@@ -1,9 +1,10 @@
 package com.sensorberg.sdk.scanner;
 
+import com.google.gson.Gson;
+
 import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.action.VisitWebsiteAction;
 import com.sensorberg.sdk.di.TestComponent;
-import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.settings.SettingsManager;
 import com.sensorberg.sdk.testUtils.DumbSucessTransport;
@@ -13,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -35,6 +37,12 @@ public class TheBeconHistorySynchronousIntegrationTest {
     @Named("dummyTransportSettingsManager")
     SettingsManager testSettingsManager;
 
+    @Inject
+    SharedPreferences mSharedPreferences;
+
+    @Inject
+    Gson mGson;
+
     private BeaconActionHistoryPublisher tested;
 
     @Before
@@ -42,8 +50,8 @@ public class TheBeconHistorySynchronousIntegrationTest {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         testHandlerManager.getCustomClock().setNowInMillis(System.currentTimeMillis());
-        tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), new DumbSucessTransport(), testSettingsManager, testHandlerManager.getCustomClock(),
-                testHandlerManager);
+        tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), new DumbSucessTransport(), testSettingsManager,
+                testHandlerManager.getCustomClock(), testHandlerManager, mSharedPreferences, mGson);
 
         tested.onScanEventDetected(new ScanEvent.Builder()
                 .withEventMask(ScanEventType.ENTRY.getMask())
@@ -60,6 +68,6 @@ public class TheBeconHistorySynchronousIntegrationTest {
     @Test
     public void test_should_mark_sent_objects_as_sent() throws Exception {
         tested.publishHistory();
-        assertThat(BeaconScan.notSentScans()).hasSize(0);
+        assertThat(tested.notSentBeaconScans()).hasSize(0);
     }
 }

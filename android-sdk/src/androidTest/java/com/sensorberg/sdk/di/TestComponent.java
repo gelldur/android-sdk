@@ -13,6 +13,8 @@ import com.sensorberg.sdk.internal.TheIntentSchedulingShould;
 import com.sensorberg.sdk.internal.http.ApiServiceShould;
 import com.sensorberg.sdk.internal.http.HttpStackShouldCacheTheSettings;
 import com.sensorberg.sdk.internal.http.TransportShould;
+import com.sensorberg.sdk.model.persistence.TheBeaconActionShould;
+import com.sensorberg.sdk.model.persistence.TheBeaconScanShould;
 import com.sensorberg.sdk.model.server.ResolveActionTest;
 import com.sensorberg.sdk.model.server.TheResolveResponse;
 import com.sensorberg.sdk.resolver.TheResolveResponseShould;
@@ -104,6 +106,10 @@ public interface TestComponent extends Component {
     void inject(SensorbergServiceIntentMessageHandlingTests sensorbergServiceIntentMessageHandlingTests);
 
     void inject(SensorbergServiceMessengerListTests sensorbergServiceMessengerListTests);
+
+    void inject(TheBeaconActionShould theBeaconActionShould);
+
+    void inject(TheBeaconScanShould theBeaconrScanShould);
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     final class Initializer {
