@@ -77,7 +77,7 @@ public class ActionFactory {
 
         String subject = message.get(SUBJECT) == null ? null : message.get(SUBJECT).getAsString();
         String body = message.get(BODY) == null ? null : message.get(BODY).getAsString();
-        String url = validateUris(message.get(URL).getAsString());
+        String url = validateUri(message.get(URL).getAsString());
 
         switch (actionType) {
             case ServerType.URL_MESSAGE: {
@@ -131,15 +131,22 @@ public class ActionFactory {
         return gson;
     }
 
-    private static String validateUris(String uriToParse) {
+    /**
+     * Checks the URI string received.
+     *
+     * @param uriToParse - The URI string to parse.
+     * @return - Returns the verified URI string. If not valid or empty will return and empty string.
+     *
+     */
+    private static String validateUri(String uriToParse) {
         String toReturnUri;
 
-        toReturnUri = uriToParse == null || uriToParse.equals("") ? null : uriToParse;
+        toReturnUri = uriToParse == null ? "" : uriToParse;
 
-        if(toReturnUri != null) {
+        if(toReturnUri.equals("")) {
             if (!URLUtil.isValidUrl(toReturnUri)) {
                 Logger.log.logError("URL is invalid, please change in the campaign settings.");
-                toReturnUri = null;
+                toReturnUri = "";
             }
         }
 

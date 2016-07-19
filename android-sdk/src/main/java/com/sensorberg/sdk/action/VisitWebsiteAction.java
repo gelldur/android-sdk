@@ -40,7 +40,7 @@ public class VisitWebsiteAction extends Action implements android.os.Parcelable 
      * @return the http or https uri
      */
     public Uri getUri() {
-        return uri;//TODO here.
+        return uri;
     }
 
     @Override
