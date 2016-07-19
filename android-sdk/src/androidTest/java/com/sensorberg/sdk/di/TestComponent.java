@@ -15,9 +15,6 @@ import com.sensorberg.sdk.internal.http.HttpStackShouldCacheTheSettings;
 import com.sensorberg.sdk.internal.http.TransportShould;
 import com.sensorberg.sdk.model.server.ResolveActionTest;
 import com.sensorberg.sdk.model.server.TheResolveResponse;
-import com.sensorberg.sdk.model.sugar.TheSugarActionObjectShould;
-import com.sensorberg.sdk.model.sugar.TheSugarHistoryBodyShould;
-import com.sensorberg.sdk.model.sugar.TheSugarScanobjectShould;
 import com.sensorberg.sdk.resolver.TheResolveResponseShould;
 import com.sensorberg.sdk.resolver.TheResolverShould;
 import com.sensorberg.sdk.scanner.ScannerWithLongScanTime;
@@ -95,12 +92,6 @@ public interface TestComponent extends Component {
     void inject(ResolveActionTest resolveActionTest);
 
     void inject(TheResolveResponse theResolveResponse);
-
-    void inject(TheSugarActionObjectShould theSugarActionObjectShould);
-
-    void inject(TheSugarHistoryBodyShould theSugarHistoryBodyShould);
-
-    void inject(TheSugarScanobjectShould theSugarScanobjectShould);
 
     void inject(TheResolveResponseShould theResolveResponseShould);
 
