@@ -135,7 +135,7 @@ public class ActionFactory {
      * Checks the URI string received.
      *
      * @param uriToParse - The URI string to parse.
-     * @return - Returns the verified URI string. If not valid or empty will return and empty string.
+     * @return - Returns the verified URI string. If not valid or empty will return an empty string.
      *
      */
     private static String validateUri(String uriToParse) {
@@ -143,7 +143,7 @@ public class ActionFactory {
 
         toReturnUri = uriToParse == null ? "" : uriToParse;
 
-        if(toReturnUri.equals("")) {
+        if(!toReturnUri.equals("")) {
             if (!URLUtil.isValidUrl(toReturnUri)) {
                 Logger.log.logError("URL is invalid, please change in the campaign settings.");
                 toReturnUri = "";
