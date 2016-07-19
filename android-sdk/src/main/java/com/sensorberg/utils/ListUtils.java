@@ -53,13 +53,23 @@ public class ListUtils {
         return value;
     }
 
-
-
     public static <K> List<K> filter(List<K> list, Filter<K> filter){
         ArrayList<K> value = new ArrayList<>();
         for(K object : list){
             if (filter.matches(object)){
                 value.add(object);
+            }
+        }
+        return value;
+    }
+
+    public static <K> List<K> filter(Set<K> set, Filter<K> filter){
+        ArrayList<K> value = new ArrayList<>();
+        synchronized (set) {
+            for (K object : set) {
+                if (filter.matches(object)) {
+                    value.add(object);
+                }
             }
         }
         return value;
