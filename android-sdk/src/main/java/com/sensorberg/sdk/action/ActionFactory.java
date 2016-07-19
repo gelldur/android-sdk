@@ -7,8 +7,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import com.sensorberg.sdk.model.ISO8601TypeAdapter;
-import com.sensorberg.sdk.model.sugarorm.SugarAction;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
+import com.sensorberg.sdk.model.persistence.BeaconAction;
+import com.sensorberg.sdk.model.persistence.BeaconScan;
 
 import org.json.JSONException;
 
@@ -117,8 +117,8 @@ public class ActionFactory {
             gson = new GsonBuilder()
                     .excludeFieldsWithoutExposeAnnotation()
                     .registerTypeAdapter(Date.class, ISO8601TypeAdapter.DATE_ADAPTER)
-                    .registerTypeAdapter(SugarScan.class, new SugarScan.SugarScanObjectTypeAdapter())
-                    .registerTypeAdapter(SugarAction.class, new SugarAction.SugarActionTypeAdapter())
+                    .registerTypeAdapter(BeaconScan.class, new BeaconScan.BeaconScanObjectTypeAdapter())
+                    .registerTypeAdapter(BeaconAction.class, new BeaconAction.BeaconActionTypeAdapter())
                     .setLenient()
                     .create();
         }

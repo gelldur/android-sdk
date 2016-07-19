@@ -5,8 +5,8 @@ import com.sensorberg.sdk.action.VisitWebsiteAction;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback;
-import com.sensorberg.sdk.model.sugarorm.SugarAction;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
+import com.sensorberg.sdk.model.persistence.BeaconAction;
+import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.settings.SettingsManager;
 import com.sensorberg.sdk.testUtils.TestHandlerManager;
@@ -63,8 +63,8 @@ public class TheBeaconActionHistoryPublisherShould {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         testHandlerManager.getCustomClock().setNowInMillis(System.currentTimeMillis());
-        SugarAction.deleteAll(SugarAction.class);
-        SugarScan.deleteAll(SugarScan.class);
+        BeaconAction.deleteAll(BeaconAction.class);
+        BeaconScan.deleteAll(BeaconScan.class);
         tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), transport, testSettingsManager,
                 testHandlerManager.getCustomClock(), testHandlerManager);
         tested = Mockito.spy(tested);
@@ -75,13 +75,13 @@ public class TheBeaconActionHistoryPublisherShould {
 
     @Test
     public void test_should_persist_scans_that_need_queing() throws Exception {
-        List<SugarScan> notSentObjects = SugarScan.notSentScans();
+        List<BeaconScan> notSentObjects = BeaconScan.notSentScans();
         assertThat(notSentObjects).hasSize(1);
     }
 
     @Test
     public void test_should_persist_actions_that_need_queing() throws Exception {
-        List<SugarAction> notSentObjects = SugarAction.notSentScans();
+        List<BeaconAction> notSentObjects = BeaconAction.notSentScans();
         assertThat(notSentObjects).hasSize(1);
     }
 

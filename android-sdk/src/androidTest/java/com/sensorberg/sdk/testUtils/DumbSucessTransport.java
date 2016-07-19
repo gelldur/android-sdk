@@ -5,8 +5,8 @@ import com.sensorberg.sdk.internal.interfaces.BeaconResponseHandler;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback;
 import com.sensorberg.sdk.internal.transport.interfaces.TransportSettingsCallback;
-import com.sensorberg.sdk.model.sugarorm.SugarAction;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
+import com.sensorberg.sdk.model.persistence.BeaconAction;
+import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.resolver.ResolutionConfiguration;
 
 import java.util.List;
@@ -54,7 +54,7 @@ public class DumbSucessTransport implements Transport {
     }
 
     @Override
-    public void publishHistory(List<SugarScan> scans, List<SugarAction> actions, TransportHistoryCallback callback) {
+    public void publishHistory(List<BeaconScan> scans, List<BeaconAction> actions, TransportHistoryCallback callback) {
         callback.onSuccess(scans,actions);
     }
 }

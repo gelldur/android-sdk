@@ -6,7 +6,7 @@ import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.action.InAppAction;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.internal.interfaces.Clock;
-import com.sensorberg.sdk.model.sugarorm.SugarAction;
+import com.sensorberg.sdk.model.persistence.BeaconAction;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.scanner.ScanEventType;
 import com.sensorberg.sdk.testUtils.NoClock;
@@ -36,7 +36,7 @@ public class TheSugarActionObjectShould {
     @Inject
     Gson gson;
 
-    private SugarAction tested;
+    private BeaconAction tested;
     private UUID uuid = UUID.fromString("6133172D-935F-437F-B932-A901265C24B0");
     private Clock clock;
 
@@ -46,7 +46,7 @@ public class TheSugarActionObjectShould {
         testDatabaseHelper.getWritableDatabase();
         SugarContext.init(InstrumentationRegistry.getTargetContext());
 
-        SugarAction.deleteAll(SugarAction.class);
+        BeaconAction.deleteAll(BeaconAction.class);
         BeaconEvent beaconEvent = new BeaconEvent.Builder()
                 .withAction(new InAppAction(uuid, null, null, null, null, 0))
                 .withPresentationTime(1337)
@@ -57,7 +57,7 @@ public class TheSugarActionObjectShould {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         clock = NoClock.CLOCK;
-        tested = SugarAction.from(beaconEvent, clock);
+        tested = BeaconAction.from(beaconEvent, clock);
     }
 
     @Test
@@ -78,14 +78,14 @@ public class TheSugarActionObjectShould {
     public void test_should_serialize_a_list_of_objects() throws Exception {
         tested.save();
 
-        List<SugarAction> objects = SugarRecord.find(SugarAction.class, "");
-        Select.from(SugarAction.class).list();
+        List<BeaconAction> objects = SugarRecord.find(BeaconAction.class, "");
+        Select.from(BeaconAction.class).list();
 
         String objectsAsJson = gson.toJson(objects);
 
         Assertions.assertThat(objectsAsJson)
                 .isNotEmpty()
                 .isEqualToIgnoringCase("[{\"eid\":\"6133172d-935f-437f-b932-a901265c24b0\",\"trigger\":1,\"pid\":\"192e463c9b8e4590a23fd32007299ef50133701337\",\"dt\":\"1970-01-01T01:00:01.337+01:00\"}]");
-        SugarAction.deleteAll(SugarAction.class);
+        BeaconAction.deleteAll(BeaconAction.class);
     }
 }

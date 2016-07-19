@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 
 import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.di.TestComponent;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
+import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.scanner.ScanEvent;
 import com.sensorberg.sdk.scanner.ScanEventType;
 import com.sensorbergorm.SugarRecord;
@@ -29,19 +29,19 @@ public class TheSugarScanobjectShould {
     @Inject
     Gson gson;
 
-    private SugarScan tested;
+    private BeaconScan tested;
 
     @Before
     public void setUp() throws Exception {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
-        SugarScan.deleteAll(SugarScan.class);
+        BeaconScan.deleteAll(BeaconScan.class);
         ScanEvent scanevent = new ScanEvent.Builder()
                 .withEventMask(ScanEventType.ENTRY.getMask())
                 .withBeaconId(TestConstants.ANY_BEACON_ID)
                 .withEventTime(100)
                 .build();
-        tested = SugarScan.from(scanevent, 0);
+        tested = BeaconScan.from(scanevent, 0);
     }
 
     @Test
@@ -62,8 +62,8 @@ public class TheSugarScanobjectShould {
     @Test
     public void test_should_serialize_a_list_of_objects() throws Exception {
         tested.save();
-        List<SugarScan> objects = SugarRecord.find(SugarScan.class, "");
-        Select.from(SugarScan.class).list();
+        List<BeaconScan> objects = SugarRecord.find(BeaconScan.class, "");
+        Select.from(BeaconScan.class).list();
         String objectsAsJson = gson.toJson(objects);
 
         Assertions.assertThat(objectsAsJson)

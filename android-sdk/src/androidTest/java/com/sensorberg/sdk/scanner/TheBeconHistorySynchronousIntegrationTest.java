@@ -3,7 +3,7 @@ package com.sensorberg.sdk.scanner;
 import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.action.VisitWebsiteAction;
 import com.sensorberg.sdk.di.TestComponent;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
+import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.settings.SettingsManager;
 import com.sensorberg.sdk.testUtils.DumbSucessTransport;
@@ -60,6 +60,6 @@ public class TheBeconHistorySynchronousIntegrationTest {
     @Test
     public void test_should_mark_sent_objects_as_sent() throws Exception {
         tested.publishHistory();
-        assertThat(SugarScan.notSentScans()).hasSize(0);
+        assertThat(BeaconScan.notSentScans()).hasSize(0);
     }
 }

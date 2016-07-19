@@ -1,4 +1,4 @@
-package com.sensorberg.sdk.model.sugarorm;
+package com.sensorberg.sdk.model.persistence;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.Expose;
@@ -19,9 +19,11 @@ import lombok.Setter;
  * @author skraynick
  * @version 16-03-14
  */
-public class SugarScan {
+public class BeaconScan {
 
     public static final String SHARED_PREFS_TAG = "BeaconScans";
+
+    public static final long NO_DATE = Long.MIN_VALUE;
 
     @Expose
     @Getter
@@ -61,7 +63,7 @@ public class SugarScan {
     /**
      * Default constructor as required by SugarORM.
      */
-    public SugarScan() { //TODO do we need it?
+    public BeaconScan() { //TODO do we need it?
     }
 
     public int getTrigger() {
@@ -81,14 +83,14 @@ public class SugarScan {
      * @param timeNow   -  the time now.
      * @return - Returns a sugar scan object.
      */
-    public static SugarScan from(ScanEvent scanEvent, long timeNow) {
-        SugarScan value = new SugarScan();
+    public static BeaconScan from(ScanEvent scanEvent, long timeNow) {
+        BeaconScan value = new BeaconScan();
         value.setEventTime(scanEvent.getEventTime());
         value.setEntry(scanEvent.getEventMask() == ScanEventType.ENTRY.getMask());
         value.setProximityUUID(scanEvent.getBeaconId().getUuid().toString());
         value.setProximityMajor(scanEvent.getBeaconId().getMajorId());
         value.setProximityMinor(scanEvent.getBeaconId().getMinorId());
-        value.setSentToServerTimestamp2(SugarFields.Scan.NO_DATE);
+        value.setSentToServerTimestamp2(NO_DATE);
         value.setCreatedAt(timeNow);
         return value;
     }
@@ -96,10 +98,10 @@ public class SugarScan {
     /**
      * Sugar scan object type adapter.
      */
-    public static class SugarScanObjectTypeAdapter extends TypeAdapter<SugarScan> {
+    public static class BeaconScanObjectTypeAdapter extends TypeAdapter<BeaconScan> {
 
         @Override
-        public void write(JsonWriter out, SugarScan value) throws IOException {
+        public void write(JsonWriter out, BeaconScan value) throws IOException {
             out.beginObject();
             out.name("pid").value(value.getPid());
             out.name("trigger").value(value.getTrigger());
@@ -109,7 +111,7 @@ public class SugarScan {
         }
 
         @Override
-        public SugarScan read(JsonReader in) throws IOException {
+        public BeaconScan read(JsonReader in) throws IOException {
             throw new IllegalArgumentException("You must not use this to read a SugarScanObject");
         }
     }

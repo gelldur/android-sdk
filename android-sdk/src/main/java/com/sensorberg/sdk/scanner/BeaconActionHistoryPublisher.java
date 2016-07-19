@@ -9,9 +9,8 @@ import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.interfaces.RunLoop;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback;
-import com.sensorberg.sdk.model.sugarorm.SugarAction;
-import com.sensorberg.sdk.model.sugarorm.SugarFields;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
+import com.sensorberg.sdk.model.persistence.BeaconAction;
+import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolverListener;
 import com.sensorberg.sdk.settings.SettingsManager;
@@ -59,9 +58,9 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
 
     private final Gson gson;
 
-    private List<SugarScan> beaconScans = new ArrayList<>();
+    private List<BeaconScan> beaconScans = new ArrayList<>();
 
-    private List<SugarAction> beaconActions = new ArrayList<>();
+    private List<BeaconAction> beaconActions = new ArrayList<>();
 
     private final Integer beaconScansLock = 5;
 
@@ -90,24 +89,24 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
         long now = clock.now();
         switch (queueEvent.what) {
             case MSG_SCAN_EVENT:
-                SugarScan scan = SugarScan.from((ScanEvent) queueEvent.obj, clock.now());
+                BeaconScan scan = BeaconScan.from((ScanEvent) queueEvent.obj, clock.now());
                 saveData(scan);
                 break;
             case MSG_MARK_SCANS_AS_SENT:
                 //noinspection unchecked -> see useage of MSG_MARK_SCANS_AS_SENT
-                List<SugarScan> scans = (List<SugarScan>) queueEvent.obj;
+                List<BeaconScan> scans = (List<BeaconScan>) queueEvent.obj;
                 markBeaconScansAsSent(scans, now, settingsManager.getCacheTtl());
                 break;
             case MSG_MARK_ACTIONS_AS_SENT:
-                List<SugarAction> actions = (List<SugarAction>) queueEvent.obj;
+                List<BeaconAction> actions = (List<BeaconAction>) queueEvent.obj;
                 markBeaconActionsAsSent(actions, now, settingsManager.getCacheTtl());
                 break;
             case MSG_PUBLISH_HISTORY:
                 publishHistorySynchronously();
                 break;
             case MSG_ACTION:
-                SugarAction sugarAction = SugarAction.from((BeaconEvent) queueEvent.obj, clock);
-                saveData(sugarAction);
+                BeaconAction beaconAction = BeaconAction.from((BeaconEvent) queueEvent.obj, clock);
+                saveData(beaconAction);
                 break;
             case MSG_DELETE_ALL_DATA:
                 deleteAllData();
@@ -116,8 +115,8 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     }
 
     private void publishHistorySynchronously() {
-        List<SugarScan> scans = new ArrayList<>();
-        List<SugarAction> actions = new ArrayList<>();
+        List<BeaconScan> scans = new ArrayList<>();
+        List<BeaconAction> actions = new ArrayList<>();
 
         try {
             scans = notSentBeaconScans();
@@ -134,7 +133,7 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
         transport.publishHistory(scans, actions, new TransportHistoryCallback() {
 
             @Override
-            public void onSuccess(List<SugarScan> scanObjectList, List<SugarAction> actionList) {
+            public void onSuccess(List<BeaconScan> scanObjectList, List<BeaconAction> actionList) {
                 runloop.sendMessage(MSG_MARK_SCANS_AS_SENT, scanObjectList);
                 runloop.sendMessage(MSG_MARK_ACTIONS_AS_SENT, actionList);
             }
@@ -165,22 +164,23 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
 
     //local persistence
 
-    synchronized private void saveData(SugarScan beaconScan) {
+    synchronized private void saveData(BeaconScan beaconScan) {
         if (!beaconScans.contains(beaconScan)) {
             beaconScans.add(beaconScan);
+            Logger.log.verbose("saving scan = " + beaconScan.getProximityUUID() + ", total saved = " + beaconScans.size());
         }
     }
 
-    synchronized private List<SugarScan> notSentBeaconScans() {
-        return ListUtils.filter(beaconScans, new ListUtils.Filter<SugarScan>() {
+    synchronized private List<BeaconScan> notSentBeaconScans() {
+        return ListUtils.filter(beaconScans, new ListUtils.Filter<BeaconScan>() {
             @Override
-            public boolean matches(SugarScan beaconEvent) {
-                return beaconEvent.getSentToServerTimestamp2() == SugarFields.Scan.NO_DATE;
+            public boolean matches(BeaconScan beaconEvent) {
+                return beaconEvent.getSentToServerTimestamp2() == BeaconScan.NO_DATE;
             }
         });
     }
 
-    synchronized private void markBeaconScansAsSent(List<SugarScan> scans, long timeNow, long cacheTtl) {
+    synchronized private void markBeaconScansAsSent(List<BeaconScan> scans, long timeNow, long cacheTtl) {
         if (scans.size() > 0) {
             synchronized (beaconScansLock) {
                 for (int i = scans.size() - 1; i >= 0; i--) {
@@ -188,7 +188,7 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
                         beaconScans.remove(scans.get(i));
                     }
                     scans.get(i).setSentToServerTimestamp2(timeNow);
-                    beaconScans.add(scans.get(i));
+                    saveData(scans.get(i));
                 }
             }
         }
@@ -196,11 +196,11 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     }
 
     synchronized private void removeBeaconScansOlderThan(final long timeNow, final long cacheTtl) {
-        List<SugarScan> actionsToDelete = ListUtils.filter(beaconScans, new ListUtils.Filter<SugarScan>() {
+        List<BeaconScan> actionsToDelete = ListUtils.filter(beaconScans, new ListUtils.Filter<BeaconScan>() {
             @Override
-            public boolean matches(SugarScan beaconEvent) {
+            public boolean matches(BeaconScan beaconEvent) {
                 return beaconEvent.getCreatedAt() < (timeNow - cacheTtl)
-                        && beaconEvent.getSentToServerTimestamp2() != SugarFields.Scan.NO_DATE;
+                        && beaconEvent.getSentToServerTimestamp2() != BeaconScan.NO_DATE;
             }
         });
 
@@ -213,22 +213,23 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
         }
     }
 
-    synchronized private void saveData(SugarAction beaconAction) {
+    synchronized private void saveData(BeaconAction beaconAction) {
         if (!beaconActions.contains(beaconAction)) {
             beaconActions.add(beaconAction);
+            Logger.log.verbose("saving action = " + beaconAction.getActionId() + ", total saved = " + beaconActions.size());
         }
     }
 
-    synchronized private List<SugarAction> notSentBeaconActions() {
-        return ListUtils.filter(beaconActions, new ListUtils.Filter<SugarAction>() {
+    synchronized private List<BeaconAction> notSentBeaconActions() {
+        return ListUtils.filter(beaconActions, new ListUtils.Filter<BeaconAction>() {
             @Override
-            public boolean matches(SugarAction beaconAction) {
-                return beaconAction.getSentToServerTimestamp2() == SugarFields.Scan.NO_DATE;
+            public boolean matches(BeaconAction beaconAction) {
+                return beaconAction.getSentToServerTimestamp2() == BeaconAction.NO_DATE;
             }
         });
     }
 
-    synchronized private void markBeaconActionsAsSent(List<SugarAction> scans, long timeNow, long cacheTtl) {
+    synchronized private void markBeaconActionsAsSent(List<BeaconAction> scans, long timeNow, long cacheTtl) {
         if (scans.size() > 0) {
             synchronized (beaconActionsLock) {
                 for (int i = scans.size() - 1; i >= 0; i--) {
@@ -236,7 +237,7 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
                         beaconActions.remove(scans.get(i));
                     }
                     scans.get(i).setSentToServerTimestamp2(timeNow);
-                    beaconActions.add(scans.get(i));
+                    saveData(scans.get(i));
                 }
             }
         }
@@ -244,11 +245,11 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     }
 
     synchronized private void removeBeaconActionsOlderThan(final long timeNow, final long cacheTtl) {
-        List<SugarAction> actionsToDelete = ListUtils.filter(beaconActions, new ListUtils.Filter<SugarAction>() {
+        List<BeaconAction> actionsToDelete = ListUtils.filter(beaconActions, new ListUtils.Filter<BeaconAction>() {
             @Override
-            public boolean matches(SugarAction beaconEvent) {
+            public boolean matches(BeaconAction beaconEvent) {
                 return beaconEvent.getCreatedAt() < (timeNow - cacheTtl)
-                        && beaconEvent.getSentToServerTimestamp2() != SugarFields.Scan.NO_DATE;
+                        && beaconEvent.getSentToServerTimestamp2() != BeaconAction.NO_DATE;
             }
         });
 
@@ -268,9 +269,9 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
      */
 
     synchronized public boolean getCountForSuppressionTime(final long lastAllowedPresentationTime, final UUID actionUUID) {
-        List<SugarAction> actionsToKeep = ListUtils.filter(beaconActions, new ListUtils.Filter<SugarAction>() {
+        List<BeaconAction> actionsToKeep = ListUtils.filter(beaconActions, new ListUtils.Filter<BeaconAction>() {
             @Override
-            public boolean matches(SugarAction beaconEvent) {
+            public boolean matches(BeaconAction beaconEvent) {
                 return beaconEvent.getTimeOfPresentation() >= lastAllowedPresentationTime
                         && beaconEvent.getActionId().equalsIgnoreCase(actionUUID.toString());
             }
@@ -283,17 +284,17 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     /**
      * Keep forever ie. save!
      *
-     * @param sugarActionSelect - The select statement you would like to save.
+     * @param beaconActionSelect - The select statement you would like to save.
      */
-    private void keepForever(List<SugarAction> sugarActionSelect) {
-        if (sugarActionSelect.size() > 0) {
+    private void keepForever(List<BeaconAction> beaconActionSelect) {
+        if (beaconActionSelect.size() > 0) {
             synchronized (beaconActionsLock) {
-                for (int i = 0; i < sugarActionSelect.size(); i++) {
-                    if (beaconActions.contains(sugarActionSelect.get(i))) {
-                        beaconActions.remove(sugarActionSelect.get(i));
+                for (int i = 0; i < beaconActionSelect.size(); i++) {
+                    if (beaconActions.contains(beaconActionSelect.get(i))) {
+                        beaconActions.remove(beaconActionSelect.get(i));
                     }
-                    sugarActionSelect.get(i).setKeepForever(true);
-                    beaconActions.add(sugarActionSelect.get(i));
+                    beaconActionSelect.get(i).setKeepForever(true);
+                    saveData(beaconActionSelect.get(i));
                 }
             }
         }
@@ -306,9 +307,9 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
      * @return - Select class object.
      */
     public boolean getCountForShowOnlyOnceSuppression(final UUID actionUUID) {
-        List<SugarAction> actionsToKeep = ListUtils.filter(beaconActions, new ListUtils.Filter<SugarAction>() {
+        List<BeaconAction> actionsToKeep = ListUtils.filter(beaconActions, new ListUtils.Filter<BeaconAction>() {
             @Override
-            public boolean matches(SugarAction beaconEvent) {
+            public boolean matches(BeaconAction beaconEvent) {
                 return beaconEvent.getActionId().equalsIgnoreCase(actionUUID.toString());
             }
         });
@@ -318,45 +319,44 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     }
 
     synchronized private void loadAllData() {
-        String actionJson = sharedPreferences.getString(SugarAction.SHARED_PREFS_TAG, "");
+        String actionJson = sharedPreferences.getString(BeaconAction.SHARED_PREFS_TAG, "");
         if (!actionJson.isEmpty()) {
-            Type listType = new TypeToken<List<SugarAction>>(){}.getType();
+            Type listType = new TypeToken<List<BeaconAction>>(){}.getType();
             beaconActions = gson.fromJson(actionJson, listType);
         }
 
-        String scanJson = sharedPreferences.getString(SugarScan.SHARED_PREFS_TAG, "");
+        String scanJson = sharedPreferences.getString(BeaconScan.SHARED_PREFS_TAG, "");
         if (!scanJson.isEmpty()) {
-            Type listType = new TypeToken<List<SugarScan>>(){}.getType();
+            Type listType = new TypeToken<List<BeaconScan>>(){}.getType();
             beaconScans = gson.fromJson(actionJson, listType);
         }
     }
 
-    //TODO should be called from Service, when closing
     synchronized public void saveAllData() {
         if (beaconActions.size() > 0) {
             deleteSavedBeaconActions();
             String actionsJson = gson.toJson(beaconActions);
-            sharedPreferences.edit().putString(SugarAction.SHARED_PREFS_TAG, actionsJson).apply();
+            sharedPreferences.edit().putString(BeaconAction.SHARED_PREFS_TAG, actionsJson).apply();
             beaconActions = new ArrayList<>();
         }
 
         if (beaconScans.size() > 0) {
             deleteSavedBeaconScans();
             String actionsJson = gson.toJson(beaconScans);
-            sharedPreferences.edit().putString(SugarScan.SHARED_PREFS_TAG, actionsJson).apply();
+            sharedPreferences.edit().putString(BeaconScan.SHARED_PREFS_TAG, actionsJson).apply();
             beaconScans = new ArrayList<>();
         }
     }
 
     private void deleteSavedBeaconScans() {
-        if (sharedPreferences.contains(SugarScan.SHARED_PREFS_TAG)) {
-            sharedPreferences.edit().remove(SugarScan.SHARED_PREFS_TAG).apply();
+        if (sharedPreferences.contains(BeaconScan.SHARED_PREFS_TAG)) {
+            sharedPreferences.edit().remove(BeaconScan.SHARED_PREFS_TAG).apply();
         }
     }
 
     private void deleteSavedBeaconActions() {
-        if (sharedPreferences.contains(SugarAction.SHARED_PREFS_TAG)) {
-            sharedPreferences.edit().remove(SugarAction.SHARED_PREFS_TAG).apply();
+        if (sharedPreferences.contains(BeaconAction.SHARED_PREFS_TAG)) {
+            sharedPreferences.edit().remove(BeaconAction.SHARED_PREFS_TAG).apply();
         }
     }
 

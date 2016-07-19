@@ -3,8 +3,8 @@ package com.sensorberg.sdk;
 import com.sensorberg.sdk.action.InAppAction;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
-import com.sensorberg.sdk.model.sugarorm.SugarAction;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
+import com.sensorberg.sdk.model.persistence.BeaconAction;
+import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.testUtils.DumbSucessTransport;
 import com.sensorberg.sdk.testUtils.TestHandlerManager;
@@ -58,8 +58,8 @@ public class TheInternalApplicationBootstrapperShould {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         try {
-            SugarScan.deleteAll(SugarScan.class);
-            SugarAction.deleteAll(SugarAction.class);
+            BeaconScan.deleteAll(BeaconScan.class);
+            BeaconAction.deleteAll(BeaconAction.class);
         } catch (Exception e) {
             //do nothing, it will throw an exception if there's no databasase or table to delete data from
         }

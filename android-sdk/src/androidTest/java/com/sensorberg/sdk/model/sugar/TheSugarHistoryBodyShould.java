@@ -6,7 +6,7 @@ import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.internal.interfaces.Clock;
 import com.sensorberg.sdk.internal.transport.model.HistoryBody;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
+import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.scanner.ScanEvent;
 import com.sensorberg.sdk.scanner.ScanEventType;
 import com.sensorbergorm.query.Select;
@@ -29,7 +29,7 @@ public class TheSugarHistoryBodyShould {
     Gson gson;
 
     private HistoryBody tested;
-    private SugarScan scans;
+    private BeaconScan scans;
 
     @Before
     public void setUp() throws Exception {
@@ -52,8 +52,8 @@ public class TheSugarHistoryBodyShould {
             }
         };
 
-        scans = SugarScan.from(scanevent, clock.now());
-        tested = new HistoryBody(Select.from(SugarScan.class).list(), null, clock);
+        scans = BeaconScan.from(scanevent, clock.now());
+        tested = new HistoryBody(Select.from(BeaconScan.class).list(), null, clock);
     }
 
     @Test

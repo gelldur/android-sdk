@@ -1,4 +1,4 @@
-package com.sensorberg.sdk.model.sugarorm;
+package com.sensorberg.sdk.model.persistence;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.Expose;
@@ -18,9 +18,11 @@ import lombok.Setter;
 /**
  * Created by skraynick on 16-03-14.
  */
-public class SugarAction {
+public class BeaconAction {
 
     public static final String SHARED_PREFS_TAG = "BeaconActions";
+
+    public static final long NO_DATE = Long.MIN_VALUE;
 
     @Expose
     @Getter
@@ -60,7 +62,7 @@ public class SugarAction {
     /**
      * Default constructor as required by SugarORM.
      */
-    public SugarAction() {
+    public BeaconAction() {
     }
 
     /**
@@ -70,11 +72,11 @@ public class SugarAction {
      * @param clock       - Clock class object.
      * @return - Returns a SugarAction class object.
      */
-    public static SugarAction from(BeaconEvent beaconEvent, Clock clock) {
-        SugarAction value = new SugarAction();
+    public static BeaconAction from(BeaconEvent beaconEvent, Clock clock) {
+        BeaconAction value = new BeaconAction();
         value.setActionId(beaconEvent.getAction().getUuid().toString());
         value.setTimeOfPresentation(beaconEvent.getPresentationTime());
-        value.setSentToServerTimestamp2(SugarFields.Action.NO_DATE);
+        value.setSentToServerTimestamp2(NO_DATE);
         value.setCreatedAt(clock.now());
         value.setTrigger(beaconEvent.trigger);
 
@@ -88,10 +90,10 @@ public class SugarAction {
         return value;
     }
 
-    public static class SugarActionTypeAdapter extends TypeAdapter<SugarAction> {
+    public static class BeaconActionTypeAdapter extends TypeAdapter<BeaconAction> {
 
         @Override
-        public void write(JsonWriter out, SugarAction value) throws IOException {
+        public void write(JsonWriter out, BeaconAction value) throws IOException {
             out.beginObject();
             out.name("eid").value(value.getActionId());
             out.name("trigger").value(value.getTrigger());
@@ -102,7 +104,7 @@ public class SugarAction {
         }
 
         @Override
-        public SugarAction read(JsonReader in) throws IOException {
+        public BeaconAction read(JsonReader in) throws IOException {
             throw new IllegalArgumentException("You must not use this to read a RealmAction");
         }
     }
