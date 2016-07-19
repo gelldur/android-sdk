@@ -1,23 +1,18 @@
 package com.sensorberg.sdk.model.persistence;
 
-import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.Expose;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 
 import com.sensorberg.sdk.internal.interfaces.Clock;
-import com.sensorberg.sdk.model.ISO8601TypeAdapter;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 
-import java.io.IOException;
-import java.util.Date;
-
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 /**
  * Created by skraynick on 16-03-14.
  */
+@EqualsAndHashCode
 public class BeaconAction {
 
     public static final String SHARED_PREFS_TAG = "BeaconActions";
@@ -88,24 +83,5 @@ public class BeaconAction {
         }
 
         return value;
-    }
-
-    public static class BeaconActionTypeAdapter extends TypeAdapter<BeaconAction> {
-
-        @Override
-        public void write(JsonWriter out, BeaconAction value) throws IOException {
-            out.beginObject();
-            out.name("eid").value(value.getActionId());
-            out.name("trigger").value(value.getTrigger());
-            out.name("pid").value(value.getPid());
-            out.name("dt");
-            ISO8601TypeAdapter.DATE_ADAPTER.write(out, new Date(value.getTimeOfPresentation()));
-            out.endObject();
-        }
-
-        @Override
-        public BeaconAction read(JsonReader in) throws IOException {
-            throw new IllegalArgumentException("You must not use this to read a RealmAction");
-        }
     }
 }

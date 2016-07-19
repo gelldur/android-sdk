@@ -21,12 +21,10 @@ import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.interfaces.Platform;
 import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
-import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
 import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
+import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.model.ISO8601TypeAdapter;
-import com.sensorberg.sdk.model.persistence.BeaconAction;
-import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 import com.sensorberg.sdk.settings.DefaultSettings;
 import com.sensorberg.sdk.settings.SettingsManager;
@@ -170,8 +168,6 @@ public class ProvidersModule {
         return new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
                 .registerTypeAdapter(Date.class, ISO8601TypeAdapter.DATE_ADAPTER)
-                .registerTypeAdapter(BeaconScan.class, new BeaconScan.BeaconScanObjectTypeAdapter())
-                .registerTypeAdapter(BeaconAction.class, new BeaconAction.BeaconActionTypeAdapter())
                 .setLenient()
                 .create();
     }

@@ -1,17 +1,11 @@
 package com.sensorberg.sdk.model.persistence;
 
-import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.Expose;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 
-import com.sensorberg.sdk.model.ISO8601TypeAdapter;
 import com.sensorberg.sdk.scanner.ScanEvent;
 import com.sensorberg.sdk.scanner.ScanEventType;
 
-import java.io.IOException;
-import java.util.Date;
-
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,6 +13,7 @@ import lombok.Setter;
  * @author skraynick
  * @version 16-03-14
  */
+@EqualsAndHashCode
 public class BeaconScan {
 
     public static final String SHARED_PREFS_TAG = "BeaconScans";
@@ -74,10 +69,9 @@ public class BeaconScan {
         return this.getProximityUUID().replace("-", "") + String.format("%1$05d%2$05d", this.getProximityMajor(), this.getProximityMinor());
     }
 
-    //Functionality.
-
     /**
      * Creates a SugarScan Object.
+
      *
      * @param scanEvent - Sugar Event object.
      * @param timeNow   -  the time now.
@@ -94,26 +88,4 @@ public class BeaconScan {
         value.setCreatedAt(timeNow);
         return value;
     }
-
-    /**
-     * Sugar scan object type adapter.
-     */
-    public static class BeaconScanObjectTypeAdapter extends TypeAdapter<BeaconScan> {
-
-        @Override
-        public void write(JsonWriter out, BeaconScan value) throws IOException {
-            out.beginObject();
-            out.name("pid").value(value.getPid());
-            out.name("trigger").value(value.getTrigger());
-            out.name("dt");
-            ISO8601TypeAdapter.DATE_ADAPTER.write(out, new Date(value.getEventTime()));
-            out.endObject();
-        }
-
-        @Override
-        public BeaconScan read(JsonReader in) throws IOException {
-            throw new IllegalArgumentException("You must not use this to read a SugarScanObject");
-        }
-    }
-
 }
