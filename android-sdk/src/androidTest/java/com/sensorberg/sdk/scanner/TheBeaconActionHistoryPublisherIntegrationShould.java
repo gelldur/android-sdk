@@ -55,11 +55,6 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
 
     RetrofitApiServiceImpl mockRetrofitApiService = mock(RetrofitApiServiceImpl.class);
 
-    private ScanEvent SCAN_EVENT = new ScanEvent.Builder()
-            .withEventMask(ScanEventType.ENTRY.getMask())
-            .withBeaconId(TestConstants.ANY_BEACON_ID)
-            .withEventTime(100)
-            .build();
 
     private BeaconActionHistoryPublisher tested;
 
@@ -77,7 +72,7 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
         Mockito.when(mockRetrofitApiService.publishHistory(Mockito.anyString(), Mockito.any(HistoryBody.class)))
                 .thenReturn(Calls.response(new ResolveResponse.Builder().build()));
 
-        tested.onScanEventDetected(SCAN_EVENT);
+        tested.onScanEventDetected(TestConstants.REGULAR_BEACON_SCAN_EVENT(100));
         tested.publishHistory();
 
         verify(mockRetrofitApiService, times(1)).publishHistory(Mockito.anyString(), Mockito.any(HistoryBody.class));
