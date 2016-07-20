@@ -331,7 +331,7 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
             }.getType();
 
             synchronized (beaconScansLock) {
-                beaconScans = Collections.synchronizedSet((Set<BeaconScan>) gson.fromJson(actionJson, listType));
+                beaconScans = Collections.synchronizedSet((Set<BeaconScan>) gson.fromJson(scanJson, listType));
             }
         }
     }
@@ -346,8 +346,8 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
 
         if (beaconScans.size() > 0) {
             deleteSavedBeaconScans();
-            String actionsJson = gson.toJson(beaconScans);
-            sharedPreferences.edit().putString(BeaconScan.SHARED_PREFS_TAG, actionsJson).apply();
+            String scansJson = gson.toJson(beaconScans);
+            sharedPreferences.edit().putString(BeaconScan.SHARED_PREFS_TAG, scansJson).apply();
             beaconScans = Collections.synchronizedSet(new HashSet<BeaconScan>());
         }
     }
