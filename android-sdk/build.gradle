@@ -99,12 +99,7 @@ android {
             buildConfigField "String", "RESOLVER_URL", resolverURL ? wrapInQuotes(resolverURL) : "null"
         }
         release {
-            minifyEnabled false
-        }
-        minified {
-            minifyEnabled true
-            proguardFile getDefaultProguardFile('proguard-android.txt')
-            proguardFile 'proguard-proguarded.txt'
+            testCoverageEnabled false
         }
     }
 }
