@@ -6,7 +6,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath 'com.android.tools.build:gradle:2.0.0'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
@@ -24,7 +24,7 @@ allprojects {
         maven { url "https://jitpack.io" }
     }
     project.ext.SDK_VERSION = "2.0.0"
-    project.ext.RC_VERSION = "RC5"
+    project.ext.RC_VERSION = "RC6"
     project.ext.buildToolsVersion = "23.0.3"
     project.ext.compileSdkVersion = 23
     project.ext.targetSdkVersion = 23
