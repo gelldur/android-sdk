@@ -41,6 +41,7 @@ android {
         debug {
             applicationIdSuffix ".debug"
             versionNameSuffix "ø"
+            minifyEnabled true
             manifestPlaceholders = [
                     applicationLabelAddition :  " Debug ø"
             ]
@@ -48,6 +49,9 @@ android {
 
         release {
             applicationIdSuffix null
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'),
+                    'proguard-rules-app.pro'
             if (isReleaseAble) {
                 signingConfig signingConfigs.release
             }
@@ -79,5 +83,4 @@ dependencies {
     compile ('com.android.support:multidex:1.0.1')
     compile 'com.google.android.gms:play-services-ads:8.1.0'
     compile 'com.android.support:support-v4:23.0.0'
-
 }
