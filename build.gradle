@@ -18,7 +18,7 @@ allprojects {
         jcenter()
     }
     project.ext.SDK_VERSION = "1.2.1"
-    project.ext.RC_VERSION = "RC1"
+    project.ext.RC_VERSION = ""
     project.ext.buildToolsVersion = "22.0.1"
     project.ext.compileSdkVersion = 22
     project.ext.targetSdkVersion = 21
