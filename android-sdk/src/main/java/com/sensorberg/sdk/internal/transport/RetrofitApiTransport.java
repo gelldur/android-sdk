@@ -11,8 +11,8 @@ import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
 import com.sensorberg.sdk.model.server.BaseResolveResponse;
 import com.sensorberg.sdk.model.server.ResolveAction;
 import com.sensorberg.sdk.model.server.ResolveResponse;
-import com.sensorberg.sdk.model.sugarorm.SugarAction;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
+import com.sensorberg.sdk.model.persistence.BeaconAction;
+import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.receivers.NetworkInfoBroadcastReceiver;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolutionConfiguration;
@@ -161,7 +161,7 @@ public class RetrofitApiTransport implements Transport {
     }
 
     @Override
-    public void publishHistory(final List<SugarScan> scans, final List<SugarAction> actions, final TransportHistoryCallback callback) {
+    public void publishHistory(final List<BeaconScan> scans, final List<BeaconAction> actions, final TransportHistoryCallback callback) {
 
         HistoryBody body = new HistoryBody(scans, actions, mClock);
         Call<ResolveResponse> call = getApiService().publishHistory(getResolveURLString(), body);

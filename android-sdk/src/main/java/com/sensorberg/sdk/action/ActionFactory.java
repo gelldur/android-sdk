@@ -6,13 +6,15 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.model.ISO8601TypeAdapter;
-import com.sensorberg.sdk.model.sugarorm.SugarAction;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
 
 import org.json.JSONException;
 
+import android.Manifest;
 import android.net.Uri;
+import android.util.Log;
+import android.webkit.URLUtil;
 
 import java.util.Date;
 import java.util.UUID;
@@ -73,6 +75,7 @@ public class ActionFactory {
 
         String subject = message.get(SUBJECT) == null ? null : message.get(SUBJECT).getAsString();
         String body = message.get(BODY) == null ? null : message.get(BODY).getAsString();
+        String url = message.get(URL) == null ? "" : validateUri(message.get(URL).getAsString());
 
         switch (actionType) {
             case ServerType.URL_MESSAGE: {
@@ -80,7 +83,7 @@ public class ActionFactory {
                         actionUUID,
                         subject,
                         body,
-                        message.get(URL).getAsString(),
+                        url,
                         payload,
                         delay
                 );
@@ -91,7 +94,7 @@ public class ActionFactory {
                         actionUUID,
                         subject,
                         body,
-                        Uri.parse(message.get(URL).getAsString()),
+                        Uri.parse(url),
                         payload,
                         delay
                 );
@@ -103,7 +106,7 @@ public class ActionFactory {
                         subject,
                         body,
                         payload,
-                        Uri.parse(message.get(URL).getAsString()),
+                        Uri.parse(url),
                         delay
                 );
             }
@@ -117,12 +120,30 @@ public class ActionFactory {
             gson = new GsonBuilder()
                     .excludeFieldsWithoutExposeAnnotation()
                     .registerTypeAdapter(Date.class, ISO8601TypeAdapter.DATE_ADAPTER)
-                    .registerTypeAdapter(SugarScan.class, new SugarScan.SugarScanObjectTypeAdapter())
-                    .registerTypeAdapter(SugarAction.class, new SugarAction.SugarActionTypeAdapter())
                     .setLenient()
                     .create();
         }
 
         return gson;
+    }
+
+    /**
+     * Checks the URI string received.
+     *
+     * @param uriToParse - The URI string to parse.
+     * @return - Returns the verified URI string. If not valid or empty will return an empty string.
+     *
+     */
+    private static String validateUri(String uriToParse) {
+        String toReturnUri;
+
+            if (!URLUtil.isValidUrl(uriToParse)) {
+                Logger.log.logError("URL is invalid, please change in the campaign settings.");
+                toReturnUri = "";
+            } else {
+                toReturnUri = uriToParse;
+            }
+
+        return toReturnUri;
     }
 }

@@ -10,7 +10,6 @@ import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.interfaces.MessageDelayWindowLengthListener;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
-import com.sensorberg.sdk.model.sugarorm.SugarAction;
 import com.sensorberg.sdk.presenter.LocalBroadcastManager;
 import com.sensorberg.sdk.presenter.ManifestParser;
 import com.sensorberg.sdk.receivers.GenericBroadcastReceiver;
@@ -34,7 +33,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SyncStatusObserver;
-import android.os.Build;
 import android.util.Log;
 
 import java.util.HashSet;
@@ -213,6 +211,10 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper
         scanner.stop();
     }
 
+    public void saveAllData() {
+        beaconActionHistoryPublisher.saveAllData();
+    }
+
     public void hostApplicationInForeground() {
         scanner.hostApplicationInForeground();
         updateSettings();
@@ -290,14 +292,14 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper
         public boolean matches(BeaconEvent beaconEvent) {
             if (beaconEvent.getSuppressionTimeMillis() > 0) {
                 long lastAllowedPresentationTime = clock.now() - beaconEvent.getSuppressionTimeMillis();
-                if (SugarAction.getCountForSuppressionTime(lastAllowedPresentationTime, beaconEvent.getAction().getUuid())) {
+                if (beaconActionHistoryPublisher.getCountForSuppressionTime(lastAllowedPresentationTime, beaconEvent.getAction().getUuid())) {
                     return false;
                 }
             }
             if (beaconEvent.sendOnlyOnce) {
                 Log.i("this", "sendOnlyOnce");
                 System.out.print("sendOnlyOnce");
-                if (SugarAction.getCountForShowOnlyOnceSuppression(beaconEvent.getAction().getUuid())) {
+                if (beaconActionHistoryPublisher.getCountForShowOnlyOnceSuppression(beaconEvent.getAction().getUuid())) {
                     return false;
                 }
             }

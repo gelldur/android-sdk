@@ -14,11 +14,10 @@ import com.sensorberg.sdk.internal.transport.model.HistoryBody;
 import com.sensorberg.sdk.model.server.BaseResolveResponse;
 import com.sensorberg.sdk.model.server.ResolveAction;
 import com.sensorberg.sdk.model.server.ResolveResponse;
-import com.sensorberg.sdk.model.sugarorm.SugarAction;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
 import com.sensorberg.sdk.presenter.LocalBroadcastManager;
 import com.sensorberg.sdk.presenter.ManifestParser;
 import com.sensorberg.sdk.resolver.ResolutionConfiguration;
+import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 import com.sensorberg.sdk.scanner.ScanEvent;
 import com.sensorberg.sdk.scanner.ScanEventType;
 import com.sensorberg.sdk.test.TestGenericBroadcastReceiver;
@@ -66,6 +65,10 @@ public class TheInternalBootstrapperIntegration {
 
     @Inject
     Gson gson;
+
+    @Inject
+    @Named("realBeaconActionHistoryPublisher")
+    BeaconActionHistoryPublisher beaconActionHistoryPublisher;
 
     InternalApplicationBootstrapper spiedInternalApplicationBootstrapper;
 
@@ -122,8 +125,7 @@ public class TheInternalBootstrapperIntegration {
     @Before
     public void setUp() throws Exception {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
-        SugarAction.deleteAll(SugarAction.class);
-        SugarScan.deleteAll(SugarScan.class);
+        beaconActionHistoryPublisher.deleteAllData();
 
         spiedTransportWithMockService = Mockito.spy(new RetrofitApiTransport(mockRetrofitApiService, testHandlerManager.getCustomClock()));
         spiedInternalApplicationBootstrapper = Mockito.spy(new InternalApplicationBootstrapper(spiedTransportWithMockService, testServiceScheduler,

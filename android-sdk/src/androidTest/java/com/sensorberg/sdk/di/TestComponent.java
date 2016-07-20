@@ -13,11 +13,10 @@ import com.sensorberg.sdk.internal.TheIntentSchedulingShould;
 import com.sensorberg.sdk.internal.http.ApiServiceShould;
 import com.sensorberg.sdk.internal.http.HttpStackShouldCacheTheSettings;
 import com.sensorberg.sdk.internal.http.TransportShould;
+import com.sensorberg.sdk.model.persistence.TheBeaconActionShould;
+import com.sensorberg.sdk.model.persistence.TheBeaconScanShould;
 import com.sensorberg.sdk.model.server.ResolveActionTest;
 import com.sensorberg.sdk.model.server.TheResolveResponse;
-import com.sensorberg.sdk.model.sugar.TheSugarActionObjectShould;
-import com.sensorberg.sdk.model.sugar.TheSugarHistoryBodyShould;
-import com.sensorberg.sdk.model.sugar.TheSugarScanobjectShould;
 import com.sensorberg.sdk.resolver.TheResolveResponseShould;
 import com.sensorberg.sdk.resolver.TheResolverShould;
 import com.sensorberg.sdk.scanner.ScannerWithLongScanTime;
@@ -96,12 +95,6 @@ public interface TestComponent extends Component {
 
     void inject(TheResolveResponse theResolveResponse);
 
-    void inject(TheSugarActionObjectShould theSugarActionObjectShould);
-
-    void inject(TheSugarHistoryBodyShould theSugarHistoryBodyShould);
-
-    void inject(TheSugarScanobjectShould theSugarScanobjectShould);
-
     void inject(TheResolveResponseShould theResolveResponseShould);
 
     void inject(ApiServiceShould apiServiceShould);
@@ -113,6 +106,10 @@ public interface TestComponent extends Component {
     void inject(SensorbergServiceIntentMessageHandlingTests sensorbergServiceIntentMessageHandlingTests);
 
     void inject(SensorbergServiceMessengerListTests sensorbergServiceMessengerListTests);
+
+    void inject(TheBeaconActionShould theBeaconActionShould);
+
+    void inject(TheBeaconScanShould theBeaconrScanShould);
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     final class Initializer {

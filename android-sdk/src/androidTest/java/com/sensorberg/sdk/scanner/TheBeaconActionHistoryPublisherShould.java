@@ -1,13 +1,13 @@
 package com.sensorberg.sdk.scanner;
 
+import com.google.gson.Gson;
+
 import com.sensorberg.sdk.SensorbergTestApplication;
-import com.sensorberg.sdk.action.VisitWebsiteAction;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback;
-import com.sensorberg.sdk.model.sugarorm.SugarAction;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
-import com.sensorberg.sdk.resolver.BeaconEvent;
+import com.sensorberg.sdk.model.persistence.BeaconAction;
+import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.settings.SettingsManager;
 import com.sensorberg.sdk.testUtils.TestHandlerManager;
 
@@ -16,11 +16,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
+import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import java.util.List;
-import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -43,45 +43,39 @@ public class TheBeaconActionHistoryPublisherShould {
     @Named("dummyTransportSettingsManager")
     SettingsManager testSettingsManager;
 
+    @Inject
+    SharedPreferences sharedPreferences;
+
+    @Inject
+    Gson gson;
+
     private BeaconActionHistoryPublisher tested;
 
     private Transport transport = mock(Transport.class);
-
-    private ScanEvent SCAN_EVENT = new ScanEvent.Builder()
-            .withEventMask(ScanEventType.ENTRY.getMask())
-            .withBeaconId(TestConstants.ANY_BEACON_ID)
-            .withEventTime(100)
-            .build();
-
-    private BeaconEvent BEACON_EVENT_IN_FUTURE = new BeaconEvent.Builder()
-            .withAction(new VisitWebsiteAction(UUID.randomUUID(), "foo", "bar", null, null, 0))
-            .withPresentationTime(1337)
-            .build();
 
     @Before
     public void setUp() throws Exception {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         testHandlerManager.getCustomClock().setNowInMillis(System.currentTimeMillis());
-        SugarAction.deleteAll(SugarAction.class);
-        SugarScan.deleteAll(SugarScan.class);
         tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), transport, testSettingsManager,
-                testHandlerManager.getCustomClock(), testHandlerManager);
+                testHandlerManager.getCustomClock(), testHandlerManager, sharedPreferences, gson);
+        tested.deleteAllData();
         tested = Mockito.spy(tested);
 
-        tested.onScanEventDetected(SCAN_EVENT);
-        tested.onActionPresented(BEACON_EVENT_IN_FUTURE);
+        tested.onScanEventDetected(TestConstants.REGULAR_BEACON_SCAN_EVENT(100));
+        tested.onActionPresented(TestConstants.BEACON_EVENT_IN_FUTURE);
     }
 
     @Test
     public void test_should_persist_scans_that_need_queing() throws Exception {
-        List<SugarScan> notSentObjects = SugarScan.notSentScans();
+        List<BeaconScan> notSentObjects = tested.notSentBeaconScans();
         assertThat(notSentObjects).hasSize(1);
     }
 
     @Test
     public void test_should_persist_actions_that_need_queing() throws Exception {
-        List<SugarAction> notSentObjects = SugarAction.notSentScans();
+        List<BeaconAction> notSentObjects = tested.notSentBeaconActions();
         assertThat(notSentObjects).hasSize(1);
     }
 

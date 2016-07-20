@@ -21,12 +21,10 @@ import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.interfaces.Platform;
 import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
-import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
 import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
+import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.model.ISO8601TypeAdapter;
-import com.sensorberg.sdk.model.sugarorm.SugarAction;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
 import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 import com.sensorberg.sdk.settings.DefaultSettings;
 import com.sensorberg.sdk.settings.SettingsManager;
@@ -152,14 +150,15 @@ public class ProvidersModule {
             BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
             return bluetoothManager.getAdapter();
         } else {
-            return null;
+            return BluetoothAdapter.getDefaultAdapter();
         }
     }
 
     @Provides
     @Named("realTransport")
     @Singleton
-    public Transport provideRealTransport(@Named("realRetrofitApiService") RetrofitApiServiceImpl retrofitApiService, @Named("realClock") Clock clock) {
+    public Transport provideRealTransport(@Named("realRetrofitApiService") RetrofitApiServiceImpl retrofitApiService,
+            @Named("realClock") Clock clock) {
         return new RetrofitApiTransport(retrofitApiService, clock);
     }
 
@@ -169,8 +168,6 @@ public class ProvidersModule {
         return new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
                 .registerTypeAdapter(Date.class, ISO8601TypeAdapter.DATE_ADAPTER)
-                .registerTypeAdapter(SugarScan.class, new SugarScan.SugarScanObjectTypeAdapter())
-                .registerTypeAdapter(SugarAction.class, new SugarAction.SugarActionTypeAdapter())
                 .setLenient()
                 .create();
     }
@@ -180,8 +177,9 @@ public class ProvidersModule {
     @Singleton
     public BeaconActionHistoryPublisher provideBeaconActionHistoryPublisher(Context context, @Named("realTransport") Transport transport,
             @Named("realSettingsManager") SettingsManager settingsManager, @Named("realClock") Clock clock,
-            @Named("realHandlerManager") HandlerManager handlerManager) {
-        return new BeaconActionHistoryPublisher(context, transport, settingsManager, clock, handlerManager);
+            @Named("realHandlerManager") HandlerManager handlerManager,
+            SharedPreferences sharedPreferences, Gson gson) {
+        return new BeaconActionHistoryPublisher(context, transport, settingsManager, clock, handlerManager, sharedPreferences, gson);
     }
 
     @Provides
@@ -194,7 +192,8 @@ public class ProvidersModule {
     @Provides
     @Named("realRetrofitApiService")
     @Singleton
-    public RetrofitApiServiceImpl provideRealRetrofitApiService(Context context, Gson gson, @Named("androidPlatformIdentifier") PlatformIdentifier platformIdentifier) {
+    public RetrofitApiServiceImpl provideRealRetrofitApiService(Context context, Gson gson,
+            @Named("androidPlatformIdentifier") PlatformIdentifier platformIdentifier) {
         return new RetrofitApiServiceImpl(context, gson, platformIdentifier, URLFactory.getResolveURLString());
     }
 

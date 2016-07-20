@@ -7,10 +7,9 @@ import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
-
-import javax.inject.Inject;
 
 public class AndroidBluetoothPlatform implements BluetoothPlatform {
 
@@ -18,15 +17,18 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
 
     private final BluetoothAdapter bluetoothAdapter;
 
+    private final Context context;
+
     private boolean leScanRunning = false;
 
     private PermissionChecker permissionChecker;
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    public AndroidBluetoothPlatform(BluetoothAdapter adapter, CrashCallBackWrapper wrapper, Context context) {
+    public AndroidBluetoothPlatform(BluetoothAdapter adapter, CrashCallBackWrapper wrapper, Context ctx) {
+        context = ctx;
         crashCallBackWrapper = wrapper;
         bluetoothAdapter = adapter;
-        permissionChecker = new PermissionChecker(context);
+        permissionChecker = new PermissionChecker(ctx);
     }
 
     /**
@@ -47,7 +49,9 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
      */
     @Override
     public boolean isBluetoothLowEnergySupported() {
-        return bluetoothAdapter != null;
+        return bluetoothAdapter != null
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
+                && context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
