@@ -17,7 +17,7 @@ allprojects {
         mavenCentral()
         jcenter()
     }
-    project.ext.SDK_VERSION = "1.2.0"
+    project.ext.SDK_VERSION = "1.2.1"
     project.ext.RC_VERSION = ""
     project.ext.buildToolsVersion = "22.0.1"
     project.ext.compileSdkVersion = 22
