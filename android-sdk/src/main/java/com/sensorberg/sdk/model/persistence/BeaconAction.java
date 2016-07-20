@@ -58,11 +58,11 @@ public class BeaconAction {
     }
 
     /**
-     * Gets SugarAction object.
+     * Gets BeaconAction object.
      *
      * @param beaconEvent - The beacon object.
      * @param clock       - Clock class object.
-     * @return - Returns a SugarAction class object.
+     * @return - Returns a BeaconAction class object.
      */
     public static BeaconAction from(BeaconEvent beaconEvent, Clock clock) {
         BeaconAction value = new BeaconAction();

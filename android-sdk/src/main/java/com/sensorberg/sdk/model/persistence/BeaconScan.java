@@ -67,11 +67,11 @@ public class BeaconScan {
     }
 
     /**
-     * Creates a SugarScan Object.
+     * Creates a BeaconScan Object.
      *
-     * @param scanEvent - Sugar Event object.
+     * @param scanEvent - ScanEvent object.
      * @param timeNow   -  the time now.
-     * @return - Returns a sugar scan object.
+     * @return - Returns a BeaconScan object.
      */
     public static BeaconScan from(ScanEvent scanEvent, long timeNow) {
         BeaconScan value = new BeaconScan();
