@@ -54,9 +54,6 @@ public class BeaconAction {
     @Setter
     private boolean keepForever;
 
-    /**
-     * Default constructor as required by SugarORM.
-     */
     public BeaconAction() {
     }
 

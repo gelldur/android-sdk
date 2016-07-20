@@ -55,10 +55,7 @@ public class BeaconScan {
     @Setter
     private long createdAt;
 
-    /**
-     * Default constructor as required by SugarORM.
-     */
-    public BeaconScan() { //TODO do we need it?
+    public BeaconScan() {
     }
 
     public int getTrigger() {
@@ -71,7 +68,6 @@ public class BeaconScan {
 
     /**
      * Creates a SugarScan Object.
-
      *
      * @param scanEvent - Sugar Event object.
      * @param timeNow   -  the time now.
