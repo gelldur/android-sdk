@@ -151,7 +151,7 @@ public class ActionFactoryTest {
     }
 
     @Test
-    public void should_parse_action_type_inapp_action_null_content() {
+    public void should_parse_action_type_inapp_action_null_url() {
         try {
             JsonObject URI_JSON_OBJECT = Utils.getRawResourceAsJSON(com.sensorberg.sdk.test.R.raw.action_factory_null_url,
                     InstrumentationRegistry.getContext());
@@ -159,7 +159,7 @@ public class ActionFactoryTest {
 
             Assertions.assertThat(result).isNotNull();
             Assertions.assertThat(result).isInstanceOf(InAppAction.class);
-            Assertions.assertThat(((InAppAction) result).getSubject()).isNull();
+            Assertions.assertThat(((InAppAction) result).getSubject()).isNotNull();
             Assertions.assertThat(((InAppAction) result).getBody()).isNull();
             Assertions.assertThat(((InAppAction) result).getUri().toString()).isEqualTo("");
 
