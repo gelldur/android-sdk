@@ -464,6 +464,7 @@ public class SensorbergService extends Service {
         Logger.log.logServiceState("onDestroy");
         if (bootstrapper != null) {
             bootstrapper.stopScanning();
+            bootstrapper.saveAllData();
         }
         super.onDestroy();
     }

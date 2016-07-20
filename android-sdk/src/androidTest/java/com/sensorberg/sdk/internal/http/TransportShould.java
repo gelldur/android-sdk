@@ -16,8 +16,8 @@ import com.sensorberg.sdk.internal.transport.model.HistoryBody;
 import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
 import com.sensorberg.sdk.model.BeaconId;
 import com.sensorberg.sdk.model.server.ResolveResponse;
-import com.sensorberg.sdk.model.sugarorm.SugarAction;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
+import com.sensorberg.sdk.model.persistence.BeaconAction;
+import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolutionConfiguration;
 import com.sensorberg.sdk.scanner.ScanEvent;
@@ -181,12 +181,12 @@ public class TransportShould {
 
     @Test
     public void test_publish_data_to_the_server() throws Exception {
-        List<SugarScan> scans = new ArrayList<>();
-        List<SugarAction> actions = new ArrayList<>();
+        List<BeaconScan> scans = new ArrayList<>();
+        List<BeaconAction> actions = new ArrayList<>();
 
-        SugarScan scan1 = new SugarScan();
+        BeaconScan scan1 = new BeaconScan();
         scan1.setCreatedAt(System.currentTimeMillis() - TimeConstants.ONE_HOUR);
-        scan1.setIsEntry(true);
+        scan1.setEntry(true);
         scan1.setProximityUUID(TestConstants.ANY_BEACON_ID.getUuid().toString());
         scan1.setProximityMajor(TestConstants.ANY_BEACON_ID.getMajorId());
         scan1.setProximityMinor(TestConstants.ANY_BEACON_ID.getMinorId());
@@ -209,7 +209,7 @@ public class TransportShould {
             }
 
             @Override
-            public void onSuccess(List<SugarScan> scans, List<SugarAction> actions) {
+            public void onSuccess(List<BeaconScan> scans, List<BeaconAction> actions) {
                 Assertions.assertThat(scans).isNotNull();
                 Assertions.assertThat(scans.size()).isEqualTo(1);
             }

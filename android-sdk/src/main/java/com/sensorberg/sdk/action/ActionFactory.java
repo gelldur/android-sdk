@@ -8,8 +8,6 @@ import com.google.gson.JsonParser;
 
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.model.ISO8601TypeAdapter;
-import com.sensorberg.sdk.model.sugarorm.SugarAction;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
 
 import org.json.JSONException;
 
@@ -122,8 +120,6 @@ public class ActionFactory {
             gson = new GsonBuilder()
                     .excludeFieldsWithoutExposeAnnotation()
                     .registerTypeAdapter(Date.class, ISO8601TypeAdapter.DATE_ADAPTER)
-                    .registerTypeAdapter(SugarScan.class, new SugarScan.SugarScanObjectTypeAdapter())
-                    .registerTypeAdapter(SugarAction.class, new SugarAction.SugarActionTypeAdapter())
                     .setLenient()
                     .create();
         }

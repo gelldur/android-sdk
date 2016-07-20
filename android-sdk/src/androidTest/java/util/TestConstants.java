@@ -78,6 +78,11 @@ public class TestConstants {
                 .build();
     }
 
+    public static BeaconEvent BEACON_EVENT_IN_FUTURE = new BeaconEvent.Builder()
+            .withAction(new VisitWebsiteAction(UUID.randomUUID(), "foo", "bar", null, null, 0))
+            .withPresentationTime(1337)
+            .build();
+
     public static final String ACTION_MESSAGE = "message";
 
     public static final String ACTION_TITLE = "title";

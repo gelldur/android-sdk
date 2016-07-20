@@ -3,9 +3,8 @@ package com.sensorberg.sdk;
 import com.sensorberg.sdk.action.InAppAction;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
-import com.sensorberg.sdk.model.sugarorm.SugarAction;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
 import com.sensorberg.sdk.resolver.BeaconEvent;
+import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 import com.sensorberg.sdk.testUtils.DumbSucessTransport;
 import com.sensorberg.sdk.testUtils.TestHandlerManager;
 import com.sensorberg.sdk.testUtils.TestServiceScheduler;
@@ -47,6 +46,10 @@ public class TheInternalApplicationBootstrapperShould {
     @Inject
     SharedPreferences sharedPreferences;
 
+    @Inject
+    @Named("realBeaconActionHistoryPublisher")
+    BeaconActionHistoryPublisher beaconActionHistoryPublisher;
+
     InternalApplicationBootstrapper tested;
 
     private BeaconEvent beaconEventSupressionTime;
@@ -56,13 +59,7 @@ public class TheInternalApplicationBootstrapperShould {
     @Before
     public void setUp() throws Exception {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
-
-        try {
-            SugarScan.deleteAll(SugarScan.class);
-            SugarAction.deleteAll(SugarAction.class);
-        } catch (Exception e) {
-            //do nothing, it will throw an exception if there's no databasase or table to delete data from
-        }
+        beaconActionHistoryPublisher.deleteAllData();
 
         tested = spy(new InternalApplicationBootstrapper(new DumbSucessTransport(), testServiceScheduler, testHandlerManager,
                 testHandlerManager.getCustomClock(), bluetoothPlatform));

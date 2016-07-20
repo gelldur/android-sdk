@@ -9,8 +9,3 @@
 -keep,includedescriptorclasses class com.sensorberg.sdk.resolver.BeaconEvent { *; }
 -keep class com.sensorberg.sdk.internal.interfaces.Clock { *; }
 -keep class * implements android.content.BroadcastReceiver
-
-# Sensorberg's Sugar ORM implementation
-
--keep class com.sensorbergorm.query.** { *; }
--keep class com.sensorbergorm.SugarRecord { java.lang.Long id; }

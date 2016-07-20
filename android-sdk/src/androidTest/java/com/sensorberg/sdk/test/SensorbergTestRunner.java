@@ -2,7 +2,6 @@ package com.sensorberg.sdk.test;
 
 import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.internal.URLFactory;
-import com.sensorbergorm.SugarContext;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -14,8 +13,6 @@ import android.os.Bundle;
 import android.support.multidex.MultiDex;
 
 import java.util.TimeZone;
-
-import util.TestDatabaseHelper;
 
 public class SensorbergTestRunner extends android.support.test.runner.AndroidJUnitRunner {
 
@@ -41,10 +38,6 @@ public class SensorbergTestRunner extends android.support.test.runner.AndroidJUn
             URLFactory.setLayoutURL(com.sensorberg.sdk.BuildConfig.RESOLVER_URL);
         }
         JodaTimeAndroid.init(getContext());
-
-        TestDatabaseHelper testDatabaseHelper = new TestDatabaseHelper(getContext(), "sensorbergORM.db");
-        testDatabaseHelper.getWritableDatabase();
-        SugarContext.init(getContext());
 
         DateTimeZone e = DateTimeZone.forTimeZone(TimeZone.getTimeZone("GMT+01:00"));
         DateTimeZone.setDefault(e);
