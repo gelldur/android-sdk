@@ -77,7 +77,7 @@ public class ActionFactory {
 
         String subject = message.get(SUBJECT) == null ? null : message.get(SUBJECT).getAsString();
         String body = message.get(BODY) == null ? null : message.get(BODY).getAsString();
-        String url = validateUri(message.get(URL).getAsString());
+        String url = message.get(URL) == null ? null : validateUri(message.get(URL).getAsString());
 
         switch (actionType) {
             case ServerType.URL_MESSAGE: {

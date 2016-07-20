@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
+import android.util.Log;
 
 import java.io.IOException;
 
@@ -38,7 +39,7 @@ public class ActionFactoryTest {
             Assertions.assertThat(result).isNotNull();
             Assertions.assertThat(result.getContent()).isEqualTo("This is a message");
             Assertions.assertThat(result.getTitle()).isEqualTo("this is a subject");
-            Assertions.assertThat(result.getUri()).isEqualTo("something://");
+            Assertions.assertThat(result.getUri()).isEqualTo("");
         } catch (Exception e) {
             Assertions.fail(e.getMessage());
         }
@@ -70,7 +71,7 @@ public class ActionFactoryTest {
             Assertions.assertThat(result).isInstanceOf(UriMessageAction.class);
             Assertions.assertThat(((UriMessageAction) result).getContent()).isNotEmpty();
             Assertions.assertThat(((UriMessageAction) result).getTitle()).isNotEmpty();
-            Assertions.assertThat(((UriMessageAction) result).getUri()).isNotEmpty();
+            Assertions.assertThat(((UriMessageAction) result).getUri()).isEmpty();
 
         } catch (Exception e) {
             Assertions.fail(e.getMessage());
@@ -143,6 +144,42 @@ public class ActionFactoryTest {
             Assertions.assertThat(((InAppAction) result).getSubject()).isNull();
             Assertions.assertThat(((InAppAction) result).getBody()).isNull();
             Assertions.assertThat(((InAppAction) result).getUri().toString()).isEqualTo("http://www.google.com");
+
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void should_parse_action_type_inapp_action_null_content() {
+        try {
+            JsonObject URI_JSON_OBJECT = Utils.getRawResourceAsJSON(com.sensorberg.sdk.test.R.raw.action_factory_null_url,
+                    InstrumentationRegistry.getContext());
+            Action result = ActionFactory.actionFromJSONObject(URI_JSON_OBJECT);
+
+            Assertions.assertThat(result).isNotNull();
+            Assertions.assertThat(result).isInstanceOf(InAppAction.class);
+            Assertions.assertThat(((InAppAction) result).getSubject()).isNull();
+            Assertions.assertThat(((InAppAction) result).getBody()).isNull();
+            Assertions.assertThat(((InAppAction) result).getUri().toString()).isEqualTo("");
+
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void should_parse_action_type_inapp_action_empty_url() {
+        try {
+            JsonObject URI_JSON_OBJECT = Utils.getRawResourceAsJSON(com.sensorberg.sdk.test.R.raw.action_factory_empty_url,
+                    InstrumentationRegistry.getContext());
+            Action result = ActionFactory.actionFromJSONObject(URI_JSON_OBJECT);
+
+            Assertions.assertThat(result).isNotNull();
+            Assertions.assertThat(result).isInstanceOf(InAppAction.class);
+            Assertions.assertThat(((InAppAction) result).getSubject()).isNotEmpty();
+            Assertions.assertThat(((InAppAction) result).getBody()).isNotEmpty();
+            Assertions.assertThat(((InAppAction) result).getUri().toString()).isEqualTo("");
 
         } catch (Exception e) {
             Assertions.fail(e.getMessage());
