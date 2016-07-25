@@ -5,10 +5,15 @@ import android.os.Parcel;
 
 import java.util.UUID;
 
+import lombok.ToString;
+
+@ToString
 public class InAppAction extends Action implements android.os.Parcelable {
 
     private final String subject;
+
     private final String body;
+
     private final Uri uri;
 
     public InAppAction(UUID uuid, String subject, String body, String payload, Uri uri, long delayTime) {
@@ -20,6 +25,7 @@ public class InAppAction extends Action implements android.os.Parcelable {
 
     /**
      * the subject of this action as entered on the web interface. This field is optional!
+     *
      * @return the subject or null
      */
     public String getSubject() {
@@ -28,6 +34,7 @@ public class InAppAction extends Action implements android.os.Parcelable {
 
     /**
      * the body of the action as entered in the web interface. This field is optional!
+     *
      * @return the body as a string or null
      */
     public String getBody() {
@@ -36,6 +43,7 @@ public class InAppAction extends Action implements android.os.Parcelable {
 
     /**
      * the URL of the website as entered in the web interface. This field is mandatory.
+     *
      * @return the url
      */
     public Uri getUri() {
