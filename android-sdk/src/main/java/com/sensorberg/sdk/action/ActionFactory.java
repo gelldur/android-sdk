@@ -11,9 +11,7 @@ import com.sensorberg.sdk.model.ISO8601TypeAdapter;
 
 import org.json.JSONException;
 
-import android.Manifest;
 import android.net.Uri;
-import android.util.Log;
 import android.webkit.URLUtil;
 
 import java.util.Date;
@@ -75,7 +73,7 @@ public class ActionFactory {
 
         String subject = message.get(SUBJECT) == null ? null : message.get(SUBJECT).getAsString();
         String body = message.get(BODY) == null ? null : message.get(BODY).getAsString();
-        String url = message.get(URL) == null ? "" : validateUri(message.get(URL).getAsString());
+        String url = getUriFromJson(message.get(URL), actionType);
 
         switch (actionType) {
             case ServerType.URL_MESSAGE: {
@@ -128,22 +126,40 @@ public class ActionFactory {
     }
 
     /**
-     * Checks the URI string received.
+     * Gets URL parameter from JSON and validates it.
      *
-     * @param uriToParse - The URI string to parse.
+     * @param jsonElement - JsonElement that contains the url string.
+     * @param messageType - Message type.
      * @return - Returns the verified URI string. If not valid or empty will return an empty string.
-     *
      */
-    private static String validateUri(String uriToParse) {
-        String toReturnUri;
+    public static String getUriFromJson(JsonElement jsonElement, int messageType) {
+        String urlToCheck = jsonElement == null ? "" : jsonElement.getAsString();
+        String returnUrl = "";
 
-            if (!URLUtil.isValidUrl(uriToParse)) {
-                Logger.log.logError("URL is invalid, please change in the campaign settings.");
-                toReturnUri = "";
-            } else {
-                toReturnUri = uriToParse;
-            }
+        //we allow deep links for in app actions; otherwise we want a valid Url
+        if ((messageType == ServerType.IN_APP && validatedUrl(urlToCheck))
+                || URLUtil.isValidUrl(urlToCheck)) {
+            returnUrl = urlToCheck;
+        }
 
-        return toReturnUri;
+        if (returnUrl.isEmpty()) {
+            Logger.log.logError("URL is invalid, please change in the campaign settings.");
+        }
+
+        return returnUrl;
     }
+
+    //this allows for deep links, we just check for URL syntax conformity
+    public static boolean validatedUrl(String urlToCheck) {
+        Uri uri;
+
+        try {
+            uri = Uri.parse(urlToCheck);
+        } catch (Exception e) {
+            uri = Uri.parse("");
+        }
+
+        return uri.getScheme() != null || uri.getPath() != null;
+    }
+
 }
