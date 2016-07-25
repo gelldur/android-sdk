@@ -61,7 +61,7 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
 
     private final Gson gson;
 
-    private Set<BeaconScan> beaconScans = Collections.synchronizedSet(new HashSet<BeaconScan>());
+    private static Set<BeaconScan> beaconScans = Collections.synchronizedSet(new HashSet<BeaconScan>());
 
     private Set<BeaconAction> beaconActions = Collections.synchronizedSet(new HashSet<BeaconAction>());
 
@@ -259,6 +259,16 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
                 }
             }
         }
+    }
+
+    public static List<BeaconScan> latestEnterEvents(final long timeNow) {
+        return ListUtils.filter(beaconScans, new ListUtils.Filter<BeaconScan>() {
+            @Override
+            public boolean matches(BeaconScan beaconEvent) {
+                return beaconEvent.getCreatedAt() < (timeNow)
+                        && beaconEvent.isEntry();
+            }
+        });
     }
 
     /**

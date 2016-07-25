@@ -11,12 +11,12 @@ import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.model.BeaconId;
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
 import com.sensorberg.sdk.receivers.GenericBroadcastReceiver;
 import com.sensorberg.sdk.receivers.ScannerBroadcastReceiver;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolutionConfiguration;
 import com.sensorberg.sdk.resolver.ResolverConfiguration;
+import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 
 import android.annotation.TargetApi;
 import android.app.Service;
@@ -41,7 +41,6 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import static com.sensorberg.utils.ListUtils.distinct;
 import static com.sensorberg.utils.ListUtils.map;
 
 @SuppressWarnings({"WeakerAccess", "pmd:TooManyMethods", "squid:S1200"})
@@ -276,7 +275,7 @@ public class SensorbergService extends Service {
                     final long milliseconds = intent.getLongExtra(SensorbergServiceMessage.MSG_LIST_OF_BEACONS_MILLIS, -1);
 
                     //TODO get beacons with sugar.
-                    ArrayList<BeaconId> beaconIds = map(SugarScan.latestEnterEvents(clock.now() - milliseconds), BeaconId.FROM_SUGAR_SCAN);
+                    ArrayList<BeaconId> beaconIds = map(BeaconActionHistoryPublisher.latestEnterEvents(clock.now() - milliseconds), BeaconId.FROM_BEACON_SCAN);
                     if (bootstrapper != null) {
                         beaconIds.addAll(bootstrapper.scanner.getCurrentBeacons());
                     }
@@ -286,7 +285,7 @@ public class SensorbergService extends Service {
                     message.what = SensorbergServiceMessage.MSG_LIST_OF_BEACONS;
 
                     Bundle bundle = new Bundle();
-                    bundle.putParcelableArrayList(SensorbergServiceMessage.MSG_LIST_OF_BEACONS_BEACON_IDS, distinct(beaconIds));
+                   // bundle.putParcelableArrayList(SensorbergServiceMessage.MSG_LIST_OF_BEACONS_BEACON_IDS, distinct(beaconIds));
                     message.setData(bundle);
 
                     try {

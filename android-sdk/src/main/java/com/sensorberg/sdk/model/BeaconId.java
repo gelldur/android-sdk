@@ -5,7 +5,7 @@ import com.sensorberg.utils.UUIDUtils;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.sensorberg.sdk.model.sugarorm.SugarScan;
+import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.utils.ListUtils;
 import com.sensorberg.utils.UUIDUtils;
 
@@ -25,10 +25,11 @@ public class BeaconId implements Parcelable, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public static final ListUtils.Mapper<SugarScan, BeaconId> FROM_SUGAR_SCAN = new ListUtils.Mapper<SugarScan, BeaconId>() {
+    //TODO here.
+    public static final ListUtils.Mapper<BeaconScan, BeaconId> FROM_BEACON_SCAN = new ListUtils.Mapper<BeaconScan, BeaconId>() {
         @Override
-        public BeaconId map(SugarScan sugarScan) {
-            return new BeaconId(UUID.fromString(sugarScan.getProximityUUID()), sugarScan.getProximityMajor(), sugarScan.getProximityMinor());
+        public BeaconId map(BeaconScan beaconScan) {
+            return new BeaconId(UUID.fromString(beaconScan.getProximityUUID()), beaconScan.getProximityMajor(), beaconScan.getProximityMinor());
         }
     };
 
