@@ -34,8 +34,7 @@ import retrofit2.http.Url;
 import static com.sensorberg.sdk.internal.URLFactory.getSettingsURLString;
 
 @Accessors(prefix = "m")
-public class RetrofitApiServiceImpl implements PlatformIdentifier.DeviceInstallationIdentifierChangeListener,
-        PlatformIdentifier.AdvertiserIdentifierChangeListener {
+public class RetrofitApiServiceImpl {
 
     private static final int CONNECTION_TIMEOUT = 30; //seconds
 
@@ -66,9 +65,6 @@ public class RetrofitApiServiceImpl implements PlatformIdentifier.DeviceInstalla
         } else {
             mBaseUrl = baseUrl;
         }
-
-        platformId.addAdvertiserIdentifierChangeListener(this);
-        platformId.addDeviceInstallationIdentifierChangeListener(this);
     }
 
     private RetrofitApiService getApiService() {
@@ -169,13 +165,4 @@ public class RetrofitApiServiceImpl implements PlatformIdentifier.DeviceInstalla
         return getApiService().getSettings(url);
     }
 
-    @Override
-    public void advertiserIdentifierChanged(String advertiserIdentifier) {
-        //we don't care, it's always dynamic now
-    }
-
-    @Override
-    public void deviceInstallationIdentifierChanged(String deviceInstallationIdentifier) {
-        //we don't care, it's always dynamic now
-    }
 }
