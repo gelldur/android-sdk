@@ -28,6 +28,7 @@ public class BeaconAction {
 
     @Getter
     @Setter
+    @SerializedName("dt")
     private long timeOfPresentation;
 
     @Getter
@@ -37,7 +38,6 @@ public class BeaconAction {
     @Expose
     @Getter
     @Setter
-    @SerializedName("dt")
     private long createdAt;
 
     @Expose
