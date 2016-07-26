@@ -1,15 +1,19 @@
 package com.sensorberg.sdk.action;
 
-import android.os.Parcel;
-
 import com.sensorberg.utils.Objects;
 
+import android.os.Parcel;
+
 import java.util.UUID;
+
+import lombok.ToString;
 
 /**
  * Class {@link UriMessageAction} extends {@link Action} for holding title, content, and a URI.
  */
+@ToString
 public class UriMessageAction extends Action {
+
     /**
      * {@link android.os.Parcelable.Creator} for the {@link android.os.Parcelable} interface
      */
@@ -23,16 +27,20 @@ public class UriMessageAction extends Action {
             return (new UriMessageAction[size]);
         }
     };
+
     private final String title;
+
     private final String content;
+
     private final String uri;
 
     /**
      * Creates and initializes a new {@link UriMessageAction}.
-     * @param title   the title of the {@link com.sensorberg.sdk.action.UriMessageAction}
-     * @param content the message of the {@link com.sensorberg.sdk.action.UriMessageAction}
-     * @param uri     the URI of the {@link com.sensorberg.sdk.action.UriMessageAction}
-     * @param payload payload from the server
+     *
+     * @param title     the title of the {@link com.sensorberg.sdk.action.UriMessageAction}
+     * @param content   the message of the {@link com.sensorberg.sdk.action.UriMessageAction}
+     * @param uri       the URI of the {@link com.sensorberg.sdk.action.UriMessageAction}
+     * @param payload   payload from the server
      * @param delayTime delay in millis
      */
     public UriMessageAction(UUID actionUUID, String title, String content, String uri, String payload, long delayTime) {
@@ -88,15 +96,18 @@ public class UriMessageAction extends Action {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || ((Object) this).getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || ((Object) this).getClass() != o.getClass()) {
+            return false;
+        }
 
         UriMessageAction that = (UriMessageAction) o;
 
-        return  Objects.equals(content, that.content) &&
+        return Objects.equals(content, that.content) &&
                 Objects.equals(title, that.title) &&
                 Objects.equals(uri, that.uri);
-
     }
 
     @Override

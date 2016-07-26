@@ -5,6 +5,7 @@ import com.sensorberg.sdk.action.InAppAction;
 import com.sensorberg.sdk.action.UriMessageAction;
 import com.sensorberg.sdk.action.VisitWebsiteAction;
 import com.sensorberg.sdk.demo.DemoActivity;
+import com.sensorberg.sdk.demo.DemoApplication;
 import com.sensorberg.sdk.testApp.R;
 
 import android.app.Notification;
@@ -14,13 +15,18 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
+
+import java.util.Locale;
 
 public class MyActionPresenter extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
         Action action = intent.getExtras().getParcelable(Action.INTENT_KEY);
-        String delayString = String.format("m delay : %d", action.getDelayTime());
+        Log.d(DemoApplication.TAG, "MyActionPresenter onReceive action = " + action.toString());
+        String delayString = String.format(Locale.getDefault(), "m delay : %d", action.getDelayTime());
+
         switch (action.getType()) {
             case MESSAGE_URI:
                 UriMessageAction uriMessageAction = (UriMessageAction) action;

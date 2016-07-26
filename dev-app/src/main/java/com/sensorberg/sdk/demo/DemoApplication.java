@@ -8,7 +8,6 @@ import com.sensorberg.BackgroundDetector;
 import com.sensorberg.SensorbergSdk;
 import com.sensorberg.SensorbergSdkEventListener;
 import com.sensorberg.sdk.Logger;
-import com.sensorberg.sdk.SensorbergService;
 import com.sensorberg.sdk.action.Action;
 import com.sensorberg.sdk.action.ActionType;
 import com.sensorberg.sdk.action.InAppAction;
@@ -31,7 +30,7 @@ import java.io.IOException;
 @SuppressWarnings("javadoc")
 public class DemoApplication extends MultiDexApplication {
 
-    private static final String TAG = "DemoApplication";
+    public static final String TAG = "DemoApplication";
 
     public static final String API_KEY = "e33f35cae664e7ae50250f6f62296762936eb84200a2aa4522f0b22599959cbe";
 
@@ -58,10 +57,8 @@ public class DemoApplication extends MultiDexApplication {
         boot.registerEventListener(new SensorbergSdkEventListener() {
             @Override
             public void presentBeaconEvent(BeaconEvent beaconEvent) {
+                Log.d(DemoApplication.TAG, "DemoApplication presentBeaconEvent = " + beaconEvent.toString());
                 showAlert(beaconEvent.getAction(), beaconEvent.trigger);
-                Log.i("beaconevent", beaconEvent.getBeaconId().toString());
-                Action action = beaconEvent.getAction();
-                showAlert(action, beaconEvent.trigger);
             }
         });
 
