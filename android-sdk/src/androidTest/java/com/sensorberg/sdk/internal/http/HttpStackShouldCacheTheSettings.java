@@ -25,6 +25,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import retrofit2.Call;
 import retrofit2.Response;
+import util.TestConstants;
 
 @RunWith(AndroidJUnit4.class)
 public class HttpStackShouldCacheTheSettings {
@@ -59,6 +60,7 @@ public class HttpStackShouldCacheTheSettings {
         server.enqueue(successfulCachedSettingsMockResponse);
 
         RetrofitApiServiceImpl realRetrofitApiService = new RetrofitApiServiceImpl(InstrumentationRegistry.getContext(), gson, platformIdentifier);
+        realRetrofitApiService.setApiToken(TestConstants.API_TOKEN);
         Call<SettingsResponse> call = realRetrofitApiService.getSettings();
 
         Response response1 = call.execute();

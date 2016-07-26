@@ -65,7 +65,6 @@ public class SuccessfulRetrofitApiService extends RetrofitApiServiceImpl {
 
     @Override
     public Call<BaseResolveResponse> updateBeaconLayout() {
-        //TODO
         ResolveResponse response = new ResolveResponse.Builder().build();
         return delegate.returningResponse(response).updateBeaconLayout();
     }
@@ -77,21 +76,18 @@ public class SuccessfulRetrofitApiService extends RetrofitApiServiceImpl {
 
     @Override
     public Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo) {
-        //TODO
         ResolveResponse response = new ResolveResponse.Builder().build();
         return delegate.returningResponse(response).getBeacon(beaconId, networkInfo);
     }
 
     @Override
     public Call<ResolveResponse> publishHistory(@Body HistoryBody body) {
-        //TODO
         ResolveResponse response = new ResolveResponse.Builder().build();
         return delegate.returningResponse(response).publishHistory(body);
     }
 
     @Override
     public Call<SettingsResponse> getSettings() {
-        //TODO
         SettingsResponse response = new SettingsResponse(0, new Settings());
         return delegate.returningResponse(response).getSettings(getApiToken());
     }

@@ -249,9 +249,14 @@ public class SensorbergServiceInternalTests {
 
         tested.updateDiskConfiguration(serviceUpdateResolverIntent);
 
+
         SensorbergServiceConfiguration diskConfNew = (SensorbergServiceConfiguration) fileManager.getContentsOfFileOrNull(
                 fileManager.getFile(SensorbergServiceMessage.SERVICE_CONFIGURATION));
         Assertions.assertThat(diskConfNew.resolverConfiguration.getResolverLayoutURL()).isEqualTo(resolverURL);
+
+        //TODO
+        Mockito.verify(tested.transport, Mockito.times(1)).setBaseUrl(resolverURL.toString());
+
         Assertions.assertThat(transport.getBaseUrl()).isEqualTo(resolverURL.toString());
     }
 
@@ -313,10 +318,14 @@ public class SensorbergServiceInternalTests {
     @Test
     public void setting_valid_resolver_endpoint_should_change_endpoint() throws Exception {
         String oldResolverUrl = transport.getBaseUrl();
+        String newResolverUrl = "http://newresolver.sensorberg.com";
         Intent serviceIntent = SensorbergServiceIntents.getResolverEndpointIntent(InstrumentationRegistry.getContext(),
-                new URL("http://newresolver.sensorberg.com"));
+                new URL(newResolverUrl));
 
         tested.setResolverEndpoint(serviceIntent);
+
+        //TODO
+        Mockito.verify(tested.transport, Mockito.times(1)).setBaseUrl(newResolverUrl);
 
         Assertions.assertThat(oldResolverUrl).isNotEqualTo(transport.getBaseUrl());
     }
