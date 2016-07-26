@@ -6,7 +6,7 @@ You are viewing the sources of version 2.0.0. The SDK is released. Feel free to 
 
 #Last stable release
 
-The last stable release was v1.2.0.  It is not recommended to use this as v2.0.0 is the latest. For now you can read the old [samples page](https://github.com/sensorberg-dev/android-sdk-samples) page for all neccesary information.
+The last stable release was v1.2.0.  It is not recommended to use this as v2.0.1 is the latest. For now you can read the old [samples page](https://github.com/sensorberg-dev/android-sdk-samples) page for all neccesary information.
 Please be aware, we are not currently updating the samples. We are in process of updating the sdk and will release better and updated samples in the future. 
 If you have any specific questions, please reach out to us.
 
