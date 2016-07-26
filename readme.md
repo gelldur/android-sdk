@@ -2,7 +2,7 @@
 [![Join the chat at https://gitter.im/sensorberg-dev/android-sdk](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sensorberg-dev/android-sdk?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ##Warning:
-You are viewing the sources of version 2.0.0. The SDK is released. Feel free to explore it.
+You are viewing the sources of version 2.0.1. The SDK is released. Feel free to explore it.
 
 #Last stable release
 
