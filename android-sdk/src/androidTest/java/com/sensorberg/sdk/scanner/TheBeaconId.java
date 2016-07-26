@@ -29,8 +29,8 @@ public class TheBeaconId{
 
     @Test
     public void test_bid_generation(){
-        Assertions.assertThat(BEACON_ID_1.getBid()).isEqualToIgnoringCase("7367672374000000ffff0000ffff00010000100001");
-        Assertions.assertThat(BEACON_ID_2.getBid()).isEqualToIgnoringCase("7367672374000000ffff0000ffff00010000100001");
+        Assertions.assertThat(BEACON_ID_1.getPid()).isEqualToIgnoringCase("7367672374000000ffff0000ffff00010000100001");
+        Assertions.assertThat(BEACON_ID_2.getPid()).isEqualToIgnoringCase("7367672374000000ffff0000ffff00010000100001");
     }
 
     @Test

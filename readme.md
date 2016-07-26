@@ -2,11 +2,11 @@
 [![Join the chat at https://gitter.im/sensorberg-dev/android-sdk](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sensorberg-dev/android-sdk?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ##Warning:
-You are viewing the sources of version 1.2.0. The SDK is released. Feel free to explore it.
+You are viewing the sources of version 2.0.1. The SDK is released. Feel free to explore it.
 
 #Last stable release
 
-The last stable release was 1.1.0RC4.  It is not recommended to use this as v1.2.0 is the latest. For now you can read the old [samples page](https://github.com/sensorberg-dev/android-sdk-samples) page for all neccesary information.
+The last stable release was v1.2.0.  It is not recommended to use this as v2.0.1 is the latest. For now you can read the old [samples page](https://github.com/sensorberg-dev/android-sdk-samples) page for all neccesary information.
 Please be aware, we are not currently updating the samples. We are in process of updating the sdk and will release better and updated samples in the future. 
 If you have any specific questions, please reach out to us.
 

@@ -10,9 +10,12 @@ import android.os.Parcelable;
 
 import java.util.Date;
 
+import lombok.ToString;
+
 /**
  * Class {@link BeaconEvent} represents a {@link ScanEvent} that has been resolved by the sensorberg backend.
  */
+@ToString
 public class BeaconEvent implements Parcelable {
 
     /**
@@ -154,7 +157,7 @@ public class BeaconEvent implements Parcelable {
         return beaconId;
     }
 
-
+    @ToString
     public static class Builder {
 
         private Action action;
@@ -203,20 +206,6 @@ public class BeaconEvent implements Parcelable {
 
         public BeaconEvent build() {
             return new BeaconEvent(action, resolvedTime, presentationTime, suppressionTime, sendOnlyOnce, deliverAt, trigger, beaconId);
-        }
-
-        @Override
-        public String toString() {
-            return "Builder{" +
-                    "action=" + action +
-                    ", resolvedTime=" + resolvedTime +
-                    ", presentationTime=" + presentationTime +
-                    ", suppressionTime=" + suppressionTime +
-                    ", sendOnlyOnce=" + sendOnlyOnce +
-                    ", deliverAt=" + deliverAt +
-                    ", trigger=" + trigger +
-                    ", beaconId=" + beaconId +
-                    '}';
         }
 
         public Builder withSendOnlyOnce(boolean sentOnlyOnce) {

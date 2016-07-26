@@ -10,7 +10,6 @@ import com.sensorberg.sdk.model.BeaconId;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolverConfiguration;
 import com.sensorberg.sdk.scanner.ScanEvent;
-import com.sensorberg.sdk.scanner.ScanEventType;
 
 import android.content.Context;
 import android.content.Intent;
@@ -73,7 +72,7 @@ public class TestConstants {
     public static ScanEvent REGULAR_BEACON_SCAN_EVENT(long now) {
         return new ScanEvent.Builder()
                 .withBeaconId(TestConstants.REGULAR_BEACON_ID)
-                .withEventMask(ScanEventType.ENTRY.getMask())
+                .withEntry(true)
                 .withEventTime(now)
                 .build();
     }

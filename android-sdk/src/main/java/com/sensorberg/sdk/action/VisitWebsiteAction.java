@@ -5,12 +5,16 @@ import android.os.Parcel;
 
 import java.util.UUID;
 
+import lombok.ToString;
+
+@ToString
 public class VisitWebsiteAction extends Action implements android.os.Parcelable {
 
     private final String subject;
-    private final String body;
-    private final Uri uri;
 
+    private final String body;
+
+    private final Uri uri;
 
     public VisitWebsiteAction(UUID actionUUID, String subject, String body, Uri uri, String payload, long delayTime) {
         super(ActionType.MESSAGE_WEBSITE, delayTime, actionUUID, payload);
@@ -21,6 +25,7 @@ public class VisitWebsiteAction extends Action implements android.os.Parcelable 
 
     /**
      * the subject of this action as entered on the web interface. This field is optional!
+     *
      * @return the subject or null
      */
     public String getSubject() {
@@ -29,6 +34,7 @@ public class VisitWebsiteAction extends Action implements android.os.Parcelable 
 
     /**
      * the body of the action as entered in the web interface. This field is optional!
+     *
      * @return the body as a string or null
      */
     public String getBody() {
@@ -37,6 +43,7 @@ public class VisitWebsiteAction extends Action implements android.os.Parcelable 
 
     /**
      * the URL of the website as entered in the web interface. This field is mandatory.
+     *
      * @return the http or https uri
      */
     public Uri getUri() {
@@ -64,7 +71,7 @@ public class VisitWebsiteAction extends Action implements android.os.Parcelable 
     }
 
     public static final Creator<VisitWebsiteAction> CREATOR = new Creator<VisitWebsiteAction>() {
-        public VisitWebsiteAction createFromParcel(Parcel source){
+        public VisitWebsiteAction createFromParcel(Parcel source) {
             return new VisitWebsiteAction(source);
         }
 
