@@ -6,7 +6,6 @@ import com.google.gson.reflect.TypeToken;
 import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.scanner.ScanEvent;
-import com.sensorberg.sdk.scanner.ScanEventType;
 
 import org.fest.assertions.api.Assertions;
 import org.junit.Before;
@@ -38,11 +37,11 @@ public class TheBeaconScanShould {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         ScanEvent scanevent = new ScanEvent.Builder()
-                .withEventMask(ScanEventType.ENTRY.getMask())
+                .withEntry(true)
                 .withBeaconId(TestConstants.ANY_BEACON_ID)
                 .withEventTime(100)
                 .build();
-        tested = BeaconScan.from(scanevent, 0);
+        tested = BeaconScan.from(scanevent);
     }
 
     @Test
