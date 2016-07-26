@@ -1,0 +1,263 @@
+{
+  "accountProximityUUIDs": [
+    "7367672374000000ffff0000ffff0004",
+    "7367672374000000ffff0000ffff0005",
+    "192e463c9b8e4590a23fd32007299ef5",
+    "7367672374000000ffff0000ffff0003",
+    "7367672374000000ffff0000ffff0007"
+  ],
+  "actions": [
+    {
+      "eid": "0c1e629599f64b76bfe68506a998708e",
+      "trigger": 1,
+      "beacons": [
+        "7367672374000000ffff0000ffff00044958934998"
+      ],
+      "supressionTime": 900,
+      "suppressionTime": 900,
+      "content": {
+        "subject": "",
+        "body": "",
+        "payload": null,
+        "url": "foo://bar"
+      },
+      "type": 3,
+      "timeframes": [
+        {
+          "start": "2015-04-08T08:00:03.812+0000"
+        }
+      ],
+      "sendOnlyOnce": false,
+      "typeString": "function"
+    },
+    {
+      "eid": "b8cbf7671b6d432c91c46b59235528c9",
+      "trigger": 1,
+      "beacons": [
+        "7367672374000000ffff0000ffff00035961626349"
+      ],
+      "supressionTime": 900,
+      "suppressionTime": 900,
+      "content": {
+        "subject": "",
+        "body": "",
+        "payload": null,
+        "url": "foo://bar"
+      },
+      "type": 2,
+      "timeframes": [
+        {
+          "start": "2015-04-08T07:53:42.025+0000"
+        }
+      ],
+      "sendOnlyOnce": false,
+      "typeString": "website"
+    },
+    {
+      "eid": "5c6e38f06c194494b59c766effeb47d1",
+      "trigger": 2,
+      "beacons": [
+        "192e463c9b8e4590a23fd32007299ef50133701337"
+      ],
+      "supressionTime": -1,
+      "suppressionTime": -1,
+      "content": {
+        "subject": "exit",
+        "body": "exit",
+        "url": "http://exit.com"
+      },
+      "type": 1,
+      "timeframes": [
+        {
+          "start": "2014-10-23T08:54:25.666+0000"
+        }
+      ],
+      "sendOnlyOnce": false,
+      "typeString": "notification"
+    },
+    {
+      "eid": "cc45177baf3c4b0a9d53613fd326000a",
+      "trigger": 1,
+      "beacons": [
+        "7367672374000000ffff0000ffff00074738749548"
+      ],
+      "supressionTime": 900,
+      "suppressionTime": 900,
+      "content": {
+        "subject": "",
+        "body": "",
+        "payload": null,
+        "url": "foo://bar"
+      },
+      "type": 3,
+      "timeframes": [
+        {
+          "start": "2015-04-08T07:54:54.250+0000"
+        }
+      ],
+      "sendOnlyOnce": false,
+      "typeString": "function"
+    },
+    {
+      "eid": "af3750d2a0a24d658cabc155b1d3aa38",
+      "trigger": 1,
+      "beacons": [
+        "7367672374000000ffff0000ffff00055936412297"
+      ],
+      "supressionTime": -1,
+      "suppressionTime": -1,
+      "content": {
+        "subject": "",
+        "body": "",
+        "url": "sensorberg://something"
+      },
+      "type": 3,
+      "timeframes": [
+        {
+          "start": "2014-12-10T09:43:10.128+0000"
+        }
+      ],
+      "sendOnlyOnce": false,
+      "typeString": "function"
+    },
+    {
+      "eid": "be4a852570a7458f91b5f100ccd5e640",
+      "trigger": 1,
+      "delay": 120,
+      "beacons": [
+        "7367672374000000ffff0000ffff00046420220003"
+      ],
+      "supressionTime": -1,
+      "suppressionTime": -1,
+      "content": {
+        "subject": "Hello with delay",
+        "body": "This message has a delay",
+        "url": "http://falkorichter.de"
+      },
+      "type": 1,
+      "timeframes": [
+        {
+          "start": "2015-03-11T13:22:21.911+0000"
+        }
+      ],
+      "sendOnlyOnce": false,
+      "typeString": "notification"
+    },
+    {
+      "eid": "f4ee42db3e1542fc8f7de7e3a9a7d8f0",
+      "trigger": 1,
+      "beacons": [
+        "7367672374000000ffff0000ffff00055770337517",
+        "7367672374000000ffff0000ffff00055936412297"
+      ],
+      "supressionTime": -1,
+      "suppressionTime": -1,
+      "content": {
+        "subject": "",
+        "body": "",
+        "url": "http://www.sensorberg.com"
+      },
+      "type": 2,
+      "timeframes": [
+        {
+          "start": "2014-12-10T09:42:38.275+0000"
+        }
+      ],
+      "sendOnlyOnce": false,
+      "typeString": "website"
+    },
+    {
+      "eid": "efd77b1abd53460dafdee9b7e618a1ce",
+      "trigger": 1,
+      "beacons": [
+        "192e463c9b8e4590a23fd32007299ef50133701337"
+      ],
+      "supressionTime": -1,
+      "suppressionTime": -1,
+      "content": {
+        "subject": "test integration test",
+        "body": "test",
+        "payload": null,
+        "url": "http://test.com"
+      },
+      "type": 1,
+      "timeframes": [
+        {
+          "start": "2016-04-28T17:03:54.534+0000"
+        }
+      ],
+      "sendOnlyOnce": false,
+      "typeString": "notification"
+    },
+    {
+      "eid": "2c76bae09c9e4008b55d88a040f7c760",
+      "trigger": 1,
+      "beacons": [
+        "7367672374000000ffff0000ffff00044827728990"
+      ],
+      "supressionTime": 900,
+      "suppressionTime": 900,
+      "content": {
+        "subject": "",
+        "body": "",
+        "payload": {},
+        "url": "foo://bar"
+      },
+      "type": 3,
+      "timeframes": [
+        {
+          "start": "2015-04-08T07:54:16.310+0000"
+        }
+      ],
+      "sendOnlyOnce": false,
+      "typeString": "function"
+    },
+    {
+      "eid": "2dddee41e48a48dc9208fd405cf25653",
+      "trigger": 1,
+      "beacons": [
+        "7367672374000000ffff0000ffff00053893439143"
+      ],
+      "supressionTime": 900,
+      "suppressionTime": 900,
+      "content": {
+        "subject": "",
+        "body": "",
+        "payload": null,
+        "url": "foo://bar"
+      },
+      "type": 3,
+      "timeframes": [
+        {
+          "start": "2015-04-08T08:05:50.279+0000"
+        }
+      ],
+      "sendOnlyOnce": false,
+      "typeString": "function"
+    },
+    {
+      "eid": "8a4dfe385c674f44bcd221592aef1be7",
+      "trigger": 1,
+      "delay": 60,
+      "beacons": [
+        "7367672374000000ffff0000ffff00055936412297"
+      ],
+      "supressionTime": -1,
+      "suppressionTime": -1,
+      "content": {
+        "subject": "",
+        "body": "",
+        "url": "http://www.sensorberg.com/somethingElse"
+      },
+      "type": 2,
+      "timeframes": [
+        {
+          "start": "2014-12-10T09:42:49.550+0000"
+        }
+      ],
+      "sendOnlyOnce": false,
+      "typeString": "website"
+    }
+  ],
+  "currentVersion": false
+}

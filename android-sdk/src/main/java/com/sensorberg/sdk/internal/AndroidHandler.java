@@ -4,8 +4,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
-import com.sensorberg.sdk.Constants;
 import com.sensorberg.sdk.Logger;
+import com.sensorberg.sdk.internal.interfaces.RunLoop;
+import com.sensorberg.sdk.settings.TimeConstants;
 
 import java.lang.ref.WeakReference;
 import java.util.Timer;
@@ -35,13 +36,13 @@ public class AndroidHandler implements RunLoop {
     @Override
     public void scheduleExecution(Runnable runnable, long wait_time) {
         if (wait_time > 0) {
-            if (wait_time > Constants.Time.ONE_HOUR * 24) {
-                wait_time = Constants.Time.ONE_HOUR * 24;
+            if (wait_time > TimeConstants.ONE_HOUR * 24) {
+                wait_time = TimeConstants.ONE_HOUR * 24;
             }
 
             boolean result = getHandler().postDelayed(runnable, wait_time);
             if (!result) {
-                Logger.log.logError("could not schedule the runable in " + wait_time + " millis");
+                Logger.log.logError("could not schedule the runnable in " + wait_time + " millis");
             }
         } else {
             runnable.run();

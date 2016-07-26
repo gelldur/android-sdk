@@ -1,12 +1,13 @@
 package com.sensorberg.bluetooth;
 
+import com.radiusnetworks.bluetooth.BluetoothCrashResolver;
+
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Build;
-
-import com.radiusnetworks.bluetooth.BluetoothCrashResolver;
 
 /**
  * convenience wrapper to abstract the {@link com.radiusnetworks.bluetooth.BluetoothCrashResolver} code
@@ -31,12 +32,12 @@ public class CrashCallBackWrapper implements BluetoothAdapter.LeScanCallback{
      * @param application parameter, required for the initialization of the {@link com.radiusnetworks.bluetooth.BluetoothCrashResolver}
      */
     public CrashCallBackWrapper(Context application){
-        bluetoothCrashResolver = new BluetoothCrashResolver(application);
-        bluetoothCrashResolver.start();
-    }
-
-    public CrashCallBackWrapper() {
-        bluetoothCrashResolver = null;
+        if (application.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            bluetoothCrashResolver = new BluetoothCrashResolver(application);
+            bluetoothCrashResolver.start();
+        } else {
+            bluetoothCrashResolver = null;
+        }
     }
 
     /**

@@ -1,0 +1,6 @@
+{
+  "revision": 1,
+  "settings": {
+    "scanner.backgroundWaitTime": 100000
+  }
+}

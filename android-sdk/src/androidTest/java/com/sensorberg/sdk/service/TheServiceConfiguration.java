@@ -1,39 +1,50 @@
 package com.sensorberg.sdk.service;
 
-import com.sensorberg.sdk.ServiceConfiguration;
-import com.sensorberg.sdk.internal.FileHelper;
+import com.sensorberg.sdk.SensorbergTestApplication;
+import com.sensorberg.sdk.SensorbergServiceConfiguration;
+import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.resolver.ResolverConfiguration;
+import com.sensorberg.sdk.testUtils.TestFileManager;
 
 import org.fest.assertions.api.Assertions;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-import android.test.AndroidTestCase;
+import android.support.test.runner.AndroidJUnit4;
 
 import java.io.File;
 
-public class TheServiceConfiguration extends AndroidTestCase{
+import javax.inject.Inject;
 
-    private static final long[] VIBRATION = new long[]{1, 2, 3, 5, 6, 7};
-    ServiceConfiguration tested;
-    private ResolverConfiguration resolverConf;
+@RunWith(AndroidJUnit4.class)
+public class TheServiceConfiguration {
+
+    @Inject
+    TestFileManager testFileManager;
+
+    SensorbergServiceConfiguration tested;
+
     private String API_TOKEN = "SOMETHING";
     private String ADVERTISING_ID = "SOMETHING_ADVERTISING_ID";
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
+        ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
-        resolverConf = new ResolverConfiguration();
+        ResolverConfiguration resolverConf = new ResolverConfiguration();
         resolverConf.setApiToken(API_TOKEN);
         resolverConf.setAdvertisingIdentifier(ADVERTISING_ID);
 
-        tested = new ServiceConfiguration(resolverConf);
+        tested = new SensorbergServiceConfiguration(resolverConf);
     }
 
-    public void test_shoul_be_serializeable() throws Exception {
-        File file = File.createTempFile("test" + System.currentTimeMillis(),"tmp");
-        FileHelper.write(tested, file);
+    @Test
+    public void service_configuration_should_be_serializable() throws Exception {
+        File file = File.createTempFile("test" + System.currentTimeMillis(), "tmp");
+        testFileManager.write(tested, file);
 
-        ServiceConfiguration deserialized = (ServiceConfiguration) FileHelper.getContentsOfFileOrNull(file);
+        SensorbergServiceConfiguration deserialized = (SensorbergServiceConfiguration) testFileManager.getContentsOfFileOrNull(file);
 
         Assertions.assertThat(deserialized).isNotNull();
         Assertions.assertThat(deserialized.resolverConfiguration.apiToken).isEqualTo(API_TOKEN);

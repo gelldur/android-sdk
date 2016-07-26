@@ -1,10 +1,16 @@
 package com.sensorberg.sdk.model.server;
 
+import com.google.gson.annotations.Expose;
+
 import java.util.Collections;
 import java.util.List;
 
-public class BaseResolveResponse  {
+import lombok.ToString;
 
+@ToString
+public class BaseResolveResponse {
+
+    @Expose
     private List<String> accountProximityUUIDs = Collections.emptyList();
 
     @SuppressWarnings("unchecked")

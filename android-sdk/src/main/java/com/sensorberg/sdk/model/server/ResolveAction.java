@@ -1,37 +1,44 @@
 package com.sensorberg.sdk.model.server;
 
-import com.sensorberg.sdk.Constants;
+import com.google.gson.JsonObject;
+import com.google.gson.annotations.Expose;
+
 import com.sensorberg.sdk.action.Action;
 import com.sensorberg.sdk.action.ActionFactory;
 import com.sensorberg.sdk.model.BeaconId;
 import com.sensorberg.sdk.resolver.BeaconEvent;
+import com.sensorberg.sdk.settings.TimeConstants;
 import com.sensorberg.utils.ListUtils;
 import com.sensorberg.utils.UUIDUtils;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-@SuppressWarnings("WeakerAccess")
-public class ResolveAction implements Serializable{
+import lombok.Getter;
+import lombok.ToString;
 
-    static final long serialVersionUID = 1L;
+@SuppressWarnings("WeakerAccess")
+@ToString
+public class ResolveAction implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public static final ListUtils.Mapper<ResolveAction, BeaconEvent> BEACON_EVENT_MAPPER = new ListUtils.Mapper<ResolveAction, BeaconEvent>() {
         public BeaconEvent map(ResolveAction resolveAction) {
             try {
-                Action action = ActionFactory.getAction(resolveAction.type, resolveAction.content, UUID.fromString(UUIDUtils.addUuidDashes(resolveAction.eid)), resolveAction.delay * Constants.Time.ONE_SECOND);
-                if (action == null){
+                Action action = ActionFactory
+                        .getAction(resolveAction.type, resolveAction.content, UUID.fromString(UUIDUtils.addUuidDashes(resolveAction.eid)),
+                                resolveAction.delay * TimeConstants.ONE_SECOND);
+                if (action == null) {
                     return null;
                 }
                 return new BeaconEvent.Builder()
                         .withAction(action)
-                        .withSuppressionTime(resolveAction.suppressionTime * Constants.Time.ONE_SECOND)
+                        .withSuppressionTime(resolveAction.suppressionTime * TimeConstants.ONE_SECOND)
                         .withSendOnlyOnce(resolveAction.sendOnlyOnce)
                         .withDeliverAtDate(resolveAction.deliverAt)
                         .withTrigger(resolveAction.trigger)
@@ -42,22 +49,47 @@ public class ResolveAction implements Serializable{
         }
     };
 
+    @Expose
+    private String eid;
 
-    public String eid;
-    public int trigger;
-    public int type;
-    public String name;
-    public List<String> beacons;
-    public long suppressionTime; //in seconds
-    public boolean sendOnlyOnce;
-    public long delay;
-    public boolean reportImmediately;
-    public JSONObject content;
-    public List<Timeframe> timeframes;
-    public Date deliverAt;
+    @Expose
+    private int trigger;
+
+    @Expose
+    private int type;
+
+    @Expose
+    private String name;
+
+    @Expose
+    private List<String> beacons;
+
+    @Expose
+    private long suppressionTime; //in seconds
+
+    @Expose
+    private boolean sendOnlyOnce;
+
+    @Expose
+    private long delay;
+
+    @Expose
+    @Getter
+    private boolean reportImmediately;
+
+    @Expose
+    @Getter
+    private JsonObject content;
+
+    @Expose
+    private List<Timeframe> timeframes;
+
+    @Expose
+    private Date deliverAt;
 
     @SuppressWarnings("WeakerAccess")
-    public ResolveAction(String uuid, int trigger, int type, String name, List<String> beacons, long suppressionTime, long delay, boolean reportImmediately, JSONObject content, Date deliverAt) {
+    public ResolveAction(String uuid, int trigger, int type, String name, List<String> beacons, long suppressionTime, long delay,
+            boolean reportImmediately, JsonObject content, Date deliverAt) {
         this.eid = uuid;
         this.trigger = trigger;
         this.type = type;
@@ -70,37 +102,8 @@ public class ResolveAction implements Serializable{
         this.deliverAt = deliverAt;
     }
 
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException{
-        out.writeObject(eid);
-        out.writeInt(trigger);
-        out.writeInt(type);
-        out.writeObject(name);
-        out.writeObject(beacons);
-        out.writeLong(suppressionTime);
-        out.writeLong(delay);
-        out.writeBoolean(reportImmediately);
-        out.writeObject(content.toString());
-        out.writeObject(deliverAt);
-    }
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException, JSONException {
-        eid = (String) in.readObject();
-        trigger = in.readInt();
-        type = in.readInt();
-        name = (String) in.readObject();
-        //noinspection unchecked -> see writeObject
-        beacons = (List<String>) in.readObject();
-        suppressionTime = in.readLong();
-        delay = in.readLong();
-        reportImmediately = in.readBoolean();
-        String jsonString = (String) in.readObject();
-        if (jsonString != null) {
-            content = new JSONObject(jsonString);
-        }
-        deliverAt = (Date) in.readObject();
-    }
-
     public boolean matchTrigger(int eventMask) {
-        return  (eventMask & trigger ) == eventMask;
+        return (eventMask & trigger) == eventMask;
     }
 
     public boolean containsBeacon(BeaconId beaconId) {
@@ -115,26 +118,38 @@ public class ResolveAction implements Serializable{
     }
 
     public boolean isValidNow(long now) {
-        if (timeframes == null || timeframes.isEmpty()){
+        if (timeframes == null || timeframes.isEmpty()) {
             return true;
         }
         for (Timeframe timeframe : timeframes) {
             boolean valid = timeframe.valid(now);
-            if (valid) return true;
+            if (valid) {
+                return true;
+            }
         }
         return false;
     }
 
     public static class Builder {
+
         public String uuid = UUID.randomUUID().toString();
+
         public int trigger;
+
         public int type;
+
         public String name;
+
         public List<String> beacons;
+
         public long suppressionTime;
+
         public long delay;
+
         public boolean reportImmediately;
-        public JSONObject content;
+
+        public JsonObject content;
+
         private Date deliverAt;
 
         public Builder() {
@@ -185,11 +200,10 @@ public class ResolveAction implements Serializable{
             return this;
         }
 
-        public Builder withContent(JSONObject content) {
+        public Builder withContent(JsonObject content) {
             this.content = content;
             return this;
         }
-
 
         public ResolveAction build() {
             return new ResolveAction(uuid, trigger, type, name, beacons, suppressionTime, delay, reportImmediately, content, deliverAt);

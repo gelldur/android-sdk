@@ -1,9 +1,9 @@
 package com.sensorberg.sdk.resolver;
 
+import com.sensorberg.sdk.scanner.ScanEvent;
+
 import android.os.Parcel;
 import android.os.Parcelable;
-
-import com.sensorberg.sdk.scanner.ScanEvent;
 
 /**
  * Class {@link ResolutionConfiguration} implements configuration functionality for a {@link Resolution}.
@@ -87,21 +87,4 @@ public final class ResolutionConfiguration implements Parcelable{
         return maxRetries >= retry;
     }
 
-    public static class Builder {
-        private ScanEvent scanEvent;
-
-        public Builder() {
-        }
-
-        public Builder withScanEvent(ScanEvent scanEvent) {
-            this.scanEvent = scanEvent;
-            return this;
-        }
-
-        public ResolutionConfiguration build() {
-            ResolutionConfiguration resolutionConfiguration = new ResolutionConfiguration();
-            resolutionConfiguration.setScanEvent(scanEvent);
-            return resolutionConfiguration;
-        }
-    }
 }

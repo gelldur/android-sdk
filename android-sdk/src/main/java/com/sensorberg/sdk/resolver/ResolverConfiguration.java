@@ -9,11 +9,12 @@ import java.net.URL;
  */
 public final class ResolverConfiguration implements Serializable {
 
-    static final long serialVersionUID = 3L;
+    private static final long serialVersionUID = 3L;
 
     public String apiToken;
 
     private URL resolverLayoutURL;
+
     private String advertisingIdentifier;
 
     /**

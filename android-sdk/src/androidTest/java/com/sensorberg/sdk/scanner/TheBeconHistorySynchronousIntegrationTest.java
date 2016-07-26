@@ -1,41 +1,57 @@
 package com.sensorberg.sdk.scanner;
 
-import com.sensorberg.sdk.SensorbergApplicationTest;
-import util.TestConstants;
+import com.google.gson.Gson;
+
+import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.action.VisitWebsiteAction;
-import com.sensorberg.sdk.internal.Transport;
-import com.sensorberg.sdk.model.realm.RealmScan;
+import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.resolver.BeaconEvent;
-import com.sensorberg.sdk.resolver.ResolverListener;
-import com.sensorberg.sdk.settings.Settings;
+import com.sensorberg.sdk.settings.SettingsManager;
 import com.sensorberg.sdk.testUtils.DumbSucessTransport;
-import com.sensorberg.sdk.testUtils.TestPlatform;
+import com.sensorberg.sdk.testUtils.TestHandlerManager;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import android.content.SharedPreferences;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
 
 import java.util.UUID;
 
-import static org.fest.assertions.api.Assertions.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
+import javax.inject.Inject;
+import javax.inject.Named;
 
-public class TheBeconHistorySynchronousIntegrationTest extends SensorbergApplicationTest {
+import util.TestConstants;
+
+import static org.fest.assertions.api.Assertions.assertThat;
+
+@RunWith(AndroidJUnit4.class)
+public class TheBeconHistorySynchronousIntegrationTest {
+
+    @Inject
+    TestHandlerManager testHandlerManager;
+
+    @Inject
+    @Named("dummyTransportSettingsManager")
+    SettingsManager testSettingsManager;
+
+    @Inject
+    SharedPreferences mSharedPreferences;
+
+    @Inject
+    Gson mGson;
+
     private BeaconActionHistoryPublisher tested;
 
-    private Transport transport;
-    private TestPlatform testPlattform;
-
-
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
+        ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
-        testPlattform = new TestPlatform().setContext(getContext());
-        testPlattform.clock.setNowInMillis(System.currentTimeMillis());
-        transport = spy(new DumbSucessTransport());
-        testPlattform.setTransport(transport);
-        Settings settings = mock(Settings.class);
-        tested = new BeaconActionHistoryPublisher(testPlattform, ResolverListener.NONE, settings);
+        testHandlerManager.getCustomClock().setNowInMillis(System.currentTimeMillis());
+        tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), new DumbSucessTransport(), testSettingsManager,
+                testHandlerManager.getCustomClock(), testHandlerManager, mSharedPreferences, mGson);
 
         tested.onScanEventDetected(new ScanEvent.Builder()
                 .withEventMask(ScanEventType.ENTRY.getMask())
@@ -49,8 +65,9 @@ public class TheBeconHistorySynchronousIntegrationTest extends SensorbergApplica
                 .build());
     }
 
+    @Test
     public void test_should_mark_sent_objects_as_sent() throws Exception {
         tested.publishHistory();
-        assertThat(RealmScan.notSentScans(getRealmInstance())).hasSize(0);
+        assertThat(tested.notSentBeaconScans()).hasSize(0);
     }
 }

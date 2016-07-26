@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         minSdkVersion 18
-        targetSdkVersion 21
+        targetSdkVersion project.ext.targetSdkVersion
         manifestPlaceholders = [
                 applicationLabelAddition :  ""
         ]
@@ -20,9 +20,11 @@ android {
 
     packagingOptions {
         exclude 'META-INF/services/javax.annotation.processing.Processor'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
         exclude 'LICENSE.txt'
+        exclude 'LICENSE'
     }
-
 
     signingConfigs {
         if (isReleaseAble) {
@@ -39,8 +41,7 @@ android {
         debug {
             applicationIdSuffix ".debug"
             versionNameSuffix "ø"
-            minifyEnabled false
-            proguardFile getDefaultProguardFile('proguard-android.txt')
+            minifyEnabled true
             manifestPlaceholders = [
                     applicationLabelAddition :  " Debug ø"
             ]
@@ -48,8 +49,9 @@ android {
 
         release {
             applicationIdSuffix null
-            minifyEnabled false
-            proguardFile getDefaultProguardFile('proguard-android.txt')
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'),
+                    'proguard-rules-app.pro'
             if (isReleaseAble) {
                 signingConfig signingConfigs.release
             }
@@ -57,8 +59,28 @@ android {
     }
 }
 
+sonarqube {
+    properties {
+        /* SonarQube needs to be informed about your libraries and the android.jar to understand that methods like
+         * onResume() is called by the Android framework. Without that information SonarQube will very likely create warnings
+         * that those methods are never used and they should be removed. Same applies for libraries where parent classes
+         * are required to understand how a class works and is used. */
+        def libraries = project.android.sdkDirectory.getPath() + "/platforms/android-22/android.jar," +
+                "build/intermediates/exploded-aar/**/classes.jar"
+				
+        property "sonar.sourceEncoding", "UTF-8"
+		
+        property "sonar.sources", "src/main/java" // first defines where the java files are, the second where the xml files are
+        property "sonar.binaries", "build/intermediates/classes/debug"
+        property "sonar.java.binaries", "build/intermediates/classes/debug"
+        property "sonar.libraries", libraries
+        property "sonar.java.libraries", libraries
+    }
+}
+
 dependencies {
-    compile "com.sensorberg.sdk:android-sdk-bootstrapper:2.1.0RC1"
     compile project(':android-sdk')
+    compile ('com.android.support:multidex:1.0.1')
     compile 'com.google.android.gms:play-services-ads:8.1.0'
+    compile 'com.android.support:support-v4:23.0.0'
 }

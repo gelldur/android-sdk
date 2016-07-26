@@ -1,11 +1,12 @@
 package com.sensorberg.sdk.testUtils;
 
-import com.sensorberg.sdk.internal.BeaconResponseHandler;
-import com.sensorberg.sdk.internal.Transport;
-import com.sensorberg.sdk.internal.transport.HistoryCallback;
-import com.sensorberg.sdk.internal.transport.SettingsCallback;
-import com.sensorberg.sdk.model.realm.RealmAction;
-import com.sensorberg.sdk.model.realm.RealmScan;
+import com.sensorberg.sdk.internal.interfaces.BeaconHistoryUploadIntervalListener;
+import com.sensorberg.sdk.internal.interfaces.BeaconResponseHandler;
+import com.sensorberg.sdk.internal.transport.interfaces.Transport;
+import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback;
+import com.sensorberg.sdk.internal.transport.interfaces.TransportSettingsCallback;
+import com.sensorberg.sdk.model.persistence.BeaconAction;
+import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.resolver.ResolutionConfiguration;
 
 import java.util.List;
@@ -14,6 +15,16 @@ public class DumbSucessTransport implements Transport {
 
     @Override
     public void updateBeaconLayout() {
+
+    }
+
+    @Override
+    public void setBeaconHistoryUploadIntervalListener(BeaconHistoryUploadIntervalListener listener) {
+
+    }
+
+    @Override
+    public void setLoggingEnabled(boolean enabled) {
 
     }
 
@@ -38,17 +49,12 @@ public class DumbSucessTransport implements Transport {
     }
 
     @Override
-    public void setAdvertisingIdentifier(String advertisingIdentifier) {
+    public void loadSettings(TransportSettingsCallback transportSettingsCallback) {
 
     }
 
     @Override
-    public void getSettings(SettingsCallback settingsCallback) {
-
-    }
-
-    @Override
-    public void publishHistory(List<RealmScan> scans, List<RealmAction> actions, HistoryCallback callback) {
+    public void publishHistory(List<BeaconScan> scans, List<BeaconAction> actions, TransportHistoryCallback callback) {
         callback.onSuccess(scans,actions);
     }
 }

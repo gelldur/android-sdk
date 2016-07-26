@@ -1,12 +1,12 @@
 package com.sensorberg.sdk.resolver;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import com.sensorberg.sdk.action.Action;
 import com.sensorberg.sdk.model.BeaconId;
 import com.sensorberg.sdk.scanner.ScanEvent;
 import com.sensorberg.utils.Objects;
+
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.util.Date;
 
@@ -30,18 +30,26 @@ public class BeaconEvent implements Parcelable {
     };
 
     private final Action action;
+
     private final long resolvedTime;
+
     /**
      * time when the action is beeing actually presented, not used neccesary to be added to the @{Parcel}
      */
     private long presentationTime;
+
     private final long suppressionTimeMillis;
+
     public final boolean sendOnlyOnce;
+
     public final Date deliverAt;
+
     public final int trigger;
+
     private BeaconId beaconId;
 
-    private BeaconEvent(Action action, long resolvedTime, long presentationTime, long suppressionTime, boolean sendOnlyOnce, Date deliverAt, int trigger) {
+    private BeaconEvent(Action action, long resolvedTime, long presentationTime, long suppressionTime, boolean sendOnlyOnce, Date deliverAt,
+            int trigger, BeaconId beaconId) {
         this.action = action;
         this.resolvedTime = resolvedTime;
         this.presentationTime = presentationTime;
@@ -49,6 +57,7 @@ public class BeaconEvent implements Parcelable {
         this.sendOnlyOnce = sendOnlyOnce;
         this.deliverAt = deliverAt;
         this.trigger = trigger;
+        this.beaconId = beaconId;
     }
 
     private BeaconEvent(Parcel source) {
@@ -77,7 +86,7 @@ public class BeaconEvent implements Parcelable {
         destination.writeLong(resolvedTime);
         destination.writeLong(suppressionTimeMillis);
         destination.writeInt(sendOnlyOnce ? 1 : 0);
-        if (deliverAt != null){
+        if (deliverAt != null) {
             destination.writeInt(1);
             destination.writeLong(deliverAt.getTime());
         } else {
@@ -119,8 +128,12 @@ public class BeaconEvent implements Parcelable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         BeaconEvent that = (BeaconEvent) o;
 
@@ -143,13 +156,22 @@ public class BeaconEvent implements Parcelable {
 
 
     public static class Builder {
+
         private Action action;
+
         private long resolvedTime;
+
         private long presentationTime;
+
         private long suppressionTime;
+
         private boolean sendOnlyOnce;
+
         private Date deliverAt;
+
         private int trigger;
+
+        private BeaconId beaconId;
 
         public Builder() {
         }
@@ -164,7 +186,7 @@ public class BeaconEvent implements Parcelable {
             return this;
         }
 
-        public Builder withSuppressionTime(long suppressionTime){
+        public Builder withSuppressionTime(long suppressionTime) {
             this.suppressionTime = suppressionTime;
             return this;
         }
@@ -174,8 +196,13 @@ public class BeaconEvent implements Parcelable {
             return this;
         }
 
+        public Builder withBeaconId(BeaconId beaconId) {
+            this.beaconId = beaconId;
+            return this;
+        }
+
         public BeaconEvent build() {
-            return new BeaconEvent(action, resolvedTime, presentationTime, suppressionTime, sendOnlyOnce, deliverAt, trigger);
+            return new BeaconEvent(action, resolvedTime, presentationTime, suppressionTime, sendOnlyOnce, deliverAt, trigger, beaconId);
         }
 
         @Override
@@ -188,6 +215,7 @@ public class BeaconEvent implements Parcelable {
                     ", sendOnlyOnce=" + sendOnlyOnce +
                     ", deliverAt=" + deliverAt +
                     ", trigger=" + trigger +
+                    ", beaconId=" + beaconId +
                     '}';
         }
 

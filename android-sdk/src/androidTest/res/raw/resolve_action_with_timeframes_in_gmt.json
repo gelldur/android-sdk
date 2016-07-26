@@ -1,0 +1,79 @@
+[
+    {
+      "eid": "6f31963b1fdf4bc49cb29e3732d4b464",
+      "trigger": 1,
+      "beacons": [
+        "7367672374000000ffff0000ffff00070733107331"
+      ],
+      "supressionTime": -1,
+      "suppressionTime": -1,
+      "content": {
+        "subject": "Karaoke crontab  time",
+        "body": "Sing Sing sing crontab Karaoke",
+        "payload": null,
+        "url": ""
+      },
+      "type": 1,
+      "timeframes": [
+        {
+          "start": "2016-05-12T09:15:00.000+0000",
+          "end": "2016-05-12T17:15:00.000+0000"
+        },
+        {
+          "start": "2016-05-10T09:15:00.000+0000",
+          "end": "2016-05-10T17:15:00.000+0000"
+        }
+      ],
+      "sendOnlyOnce": false,
+      "typeString": "notification"
+    },
+    {
+      "eid": "80e73093310a49d9b43e4af6b47c19eb",
+      "trigger": 1,
+      "beacons": [
+        "7367672374000000ffff0000ffff00010957200896",
+        "7367672374000000ffff0000ffff00070733107331"
+      ],
+      "supressionTime": -1,
+      "suppressionTime": -1,
+      "content": {
+        "subject": "Happy Again Repeater",
+        "body": "Happy Happy Joy Joy",
+        "payload": null,
+        "url": "http:\/\/quarlo.tumblr.com"
+      },
+      "type": 1,
+      "timeframes": [
+        {
+          "start": "2016-05-14T14:15:00.000+0000",
+          "end": "2016-05-14T18:15:00.000+0000"
+        },
+        {
+          "start": "2016-05-10T14:15:00.000+0000",
+          "end": "2016-05-10T18:15:00.000+0000"
+        },
+        {
+          "start": "2016-05-16T14:15:00.000+0000",
+          "end": "2016-05-16T18:15:00.000+0000"
+        },
+        {
+          "start": "2016-05-12T14:15:00.000+0000",
+          "end": "2016-05-12T18:15:00.000+0000"
+        },
+        {
+          "start": "2016-05-15T14:15:00.000+0000",
+          "end": "2016-05-15T18:15:00.000+0000"
+        },
+        {
+          "start": "2016-05-11T14:15:00.000+0000",
+          "end": "2016-05-11T18:15:00.000+0000"
+        },
+        {
+          "start": "2016-05-13T14:15:00.000+0000",
+          "end": "2016-05-13T18:15:00.000+0000"
+        }
+      ],
+      "sendOnlyOnce": false,
+      "typeString": "notification"
+    }
+  ]

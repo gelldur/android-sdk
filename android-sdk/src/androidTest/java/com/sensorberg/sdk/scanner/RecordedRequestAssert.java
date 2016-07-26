@@ -1,21 +1,23 @@
 package com.sensorberg.sdk.scanner;
 
-import android.content.Context;
-
-import util.Utils;
-import com.squareup.okhttp.mockwebserver.RecordedRequest;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import org.fest.assertions.api.AbstractAssert;
-
 import org.json.JSONException;
-import org.json.JSONObject;
+
+import android.content.Context;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
+import okhttp3.mockwebserver.RecordedRequest;
+import util.Utils;
 
 
 public class RecordedRequestAssert extends AbstractAssert<RecordedRequestAssert, RecordedRequest> {
@@ -24,28 +26,27 @@ public class RecordedRequestAssert extends AbstractAssert<RecordedRequestAssert,
         super(actual, AbstractAssert.class);
     }
 
-    public static RecordedRequestAssert assertThat(RecordedRequest request){
+    public static RecordedRequestAssert assertThat(RecordedRequest request) {
         return new RecordedRequestAssert(request);
     }
 
     public RecordedRequestAssert matchesRawResourceRequest(int rawResourceID, Context context) throws IOException, JSONException {
-        JSONObject expectedRequest = Utils.getRawResourceAsJSON(rawResourceID, context);
-        JSONObject body = new JSONObject(new String(actual.getBody()));
-
-        jsonObjsAreEqual(expectedRequest.getJSONObject("body"), body);
-
+        JsonParser parser = new JsonParser();
+        JsonObject expectedRequest = Utils.getRawResourceAsJSON(rawResourceID, context);
+        JsonObject body = parser.parse(actual.getBody().toString()).getAsJsonObject();
+        jsonObjsAreEqual(expectedRequest.get("body").getAsJsonObject(), body);
 
         return this;
     }
 
-    public static boolean jsonObjsAreEqual (JSONObject js1, JSONObject js2) throws JSONException {
+    public static boolean jsonObjsAreEqual(JsonObject js1, JsonObject js2) throws JSONException {
         if (js1 == null || js2 == null) {
             return (js1 == js2);
         }
 
-        List<String> l1 =  asList(js1.keys());
+        List<String> l1 = setKeysAsList(js1.entrySet().iterator());
         Collections.sort(l1);
-        List<String> l2 =  asList(js2.keys());
+        List<String> l2 = setKeysAsList(js1.entrySet().iterator());
         Collections.sort(l2);
         if (!l1.equals(l2)) {
             return false;
@@ -53,11 +54,11 @@ public class RecordedRequestAssert extends AbstractAssert<RecordedRequestAssert,
         for (String key : l1) {
             Object val1 = js1.get(key);
             Object val2 = js2.get(key);
-            if (val1 instanceof JSONObject) {
-                if (!(val2 instanceof JSONObject)) {
+            if (val1 instanceof JsonObject) {
+                if (!(val2 instanceof JsonObject)) {
                     return false;
                 }
-                if (!jsonObjsAreEqual((JSONObject)val1, (JSONObject)val2)) {
+                if (!jsonObjsAreEqual((JsonObject) val1, (JsonObject) val2)) {
                     return false;
                 }
             }
@@ -66,17 +67,17 @@ public class RecordedRequestAssert extends AbstractAssert<RecordedRequestAssert,
                 if (val2 != null) {
                     return false;
                 }
-            }  else if (!val1.equals(val2)) {
+            } else if (!val1.equals(val2)) {
                 return false;
             }
         }
         return true;
     }
 
-    private static<T> List<T> asList(Iterator<T> iterator) {
-        List<T> value = new ArrayList<T>();
-        while (iterator.hasNext()){
-            value.add(iterator.next());
+    private static List<java.lang.String> setKeysAsList(Iterator<Map.Entry<String, JsonElement>> iterator) {
+        List<String> value = new ArrayList<String>();
+        while (iterator.hasNext()) {
+            value.add(iterator.next().getKey());
         }
         return value;
     }

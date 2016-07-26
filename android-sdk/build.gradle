@@ -1,34 +1,51 @@
-apply plugin: 'android-sdk-manager'
 apply plugin: 'com.android.library'
 apply plugin: 'checkstyle'
 apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.neenbedankt.android-apt'
 
 dependencies {
-    androidTestCompile 'com.squareup:fest-android:1.0.8'
-    androidTestCompile 'org.mockito:mockito-core:1.9.5'
-    androidTestCompile 'com.google.dexmaker:dexmaker:1.0'
-    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.0'
-    androidTestCompile ('com.android.support.test.espresso:espresso-core:2.0'){
-        exclude group: 'com.squareup', module: 'javawriter'
+    androidTestCompile 'junit:junit:4.12'
+    androidTestCompile 'org.hamcrest:hamcrest-library:1.3'
+    androidTestCompile 'com.android.support.test:runner:0.5'
+    androidTestCompile 'com.android.support.test:rules:0.5'
+
+    androidTestCompile 'com.squareup:fest-android:1.0.8@aar'
+    androidTestCompile 'org.easytesting:fest-assert-core:2.0M10'
+    androidTestCompile 'org.mockito:mockito-core:1.10.19'
+    androidTestCompile 'com.crittercism.dexmaker:dexmaker:1.4'
+    androidTestCompile 'com.crittercism.dexmaker:dexmaker-dx:1.4'
+    androidTestCompile 'com.crittercism.dexmaker:dexmaker-mockito:1.4'
+
+    androidTestCompile('com.squareup.okhttp3:mockwebserver:3.2.0') {
+        exclude group: 'com.squareup.okhttp3'
+        exclude group: 'junit'
+    }
+    androidTestCompile('com.android.support:multidex:1.0.1')
+    androidTestCompile('com.android.support:multidex-instrumentation:1.0.1') {
+        exclude group: 'com.android.support', module: 'multidex'
+    }
+    androidTestApt 'com.google.dagger:dagger-compiler:2.4'
+    androidTestCompile('com.google.dagger:dagger:2.4') {
+        exclude group: 'javax.annotation'
     }
 
-    androidTestCompile 'com.android.support.test:testing-support-lib:0.1'
-    androidTestCompile 'org.apache.commons:commons-io:1.3.2'
-    androidTestCompile 'org.apache.commons:commons-io:1.3.2'
-    androidTestCompile('com.squareup.okhttp:mockwebserver:2.1.0') {
-        exclude group: 'com.squareup.okhttp'
-    }
-    androidTestCompile ('com.android.support:multidex:1.0.0')
+    androidTestCompile('com.squareup.retrofit2:retrofit-mock:2.0.2')
 
     compile 'net.danlew:android.joda:2.7.2'
 
-    compile project(':networkstate')
-    compile project(':okvolley')
-    compile project(':volley')
+    compile 'com.google.code.gson:gson:2.6.2'
+    compile 'com.squareup.retrofit2:retrofit:2.0.2'
+    compile 'com.squareup.retrofit2:converter-gson:2.0.2'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.2.0'
 
+    apt 'com.google.dagger:dagger-compiler:2.4'
+    compile('com.google.dagger:dagger:2.4') {
+        exclude group: 'javax.annotation'
+    }
+    provided 'javax.annotation:jsr250-api:1.0'
 
-
-    compile 'io.realm:realm-android:0.79.1'
+    apt "org.projectlombok:lombok:1.16.2"
+    provided "org.projectlombok:lombok:1.16.2"
 }
 
 group = "com.sensorberg.sdk"
@@ -45,7 +62,7 @@ android {
     buildToolsVersion project.ext.buildToolsVersion
     compileSdkVersion project.ext.compileSdkVersion
     defaultConfig {
-        versionCode 7
+        versionCode 10
         versionName version
         minSdkVersion 9
         targetSdkVersion project.ext.targetSdkVersion
@@ -55,13 +72,15 @@ android {
     }
     lintOptions {
         disable 'InvalidPackage', 'CommitPrefEdits', 'DefaultLocale', 'SameParameterValue'
-        lintConfig file("realm-lint.xml")
+        abortOnError false
 
     }
     packagingOptions {
         exclude 'LICENSE.txt'
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE.txt'
+        exclude 'LICENSE'
+        exclude 'META-INF/services/javax.annotation.processing.Processor'
     }
 
     compileOptions {
@@ -70,23 +89,17 @@ android {
         targetCompatibility JavaVersion.VERSION_1_7
     }
 
-    jacoco {
-        version = '0.6.2.201302030002'
+    dexOptions {
+        javaMaxHeapSize "4g"
     }
 
     buildTypes {
         debug {
-            multiDexEnabled true
-            testCoverageEnabled true;
+            testCoverageEnabled true
             buildConfigField "String", "RESOLVER_URL", resolverURL ? wrapInQuotes(resolverURL) : "null"
         }
         release {
-            minifyEnabled false
-            proguardFile 'proguard-release.txt'
-        }
-        minified {
-            minifyEnabled true
-            proguardFile 'proguard-proguarded.txt'
+            testCoverageEnabled false
         }
     }
 }
@@ -120,8 +133,37 @@ uploadArchives {
     }
 }
 
+
+sonarqube {
+    properties {
+        /* SonarQube needs to be informed about your libraries and the android.jar to understand that methods like
+         * onResume() is called by the Android framework. Without that information SonarQube will very likely create warnings
+         * that those methods are never used and they should be removed. Same applies for libraries where parent classes
+         * are required to understand how a class works and is used. */
+        def libraries = project.android.sdkDirectory.getPath() + "/platforms/android-22/android.jar," +
+                "build/intermediates/exploded-aar/**/classes.jar"
+				
+        property "sonar.sourceEncoding", "UTF-8"
+		
+        property "sonar.sources", "src/main/java" // first defines where the java files are, the second where the xml files are
+        property "sonar.binaries", "build/intermediates/classes/debug"
+        property "sonar.java.binaries", "build/intermediates/classes/debug"
+        property "sonar.libraries", libraries
+        property "sonar.java.libraries", libraries
+        property "sonar.jacoco.reportPath", "build/outputs/code-coverage/connected/coverage.ec"
+    }
+}
+
 def wrapInQuotes(String wrapMe){
     return "\"" + wrapMe + "\"";
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "file://temp")
+        }
+    }
 }
 
 

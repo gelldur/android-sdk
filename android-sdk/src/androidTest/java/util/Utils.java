@@ -1,24 +1,29 @@
 package util;
 
-import android.content.Context;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
-import com.android.sensorbergVolley.ServerError;
-import com.android.sensorbergVolley.VolleyError;
 import com.sensorberg.sdk.model.BeaconId;
 
-import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
-import org.json.JSONObject;
+
+import android.content.Context;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Random;
 
 import static java.lang.System.arraycopy;
-import static junit.framework.Assert.fail;
 
 public class Utils {
 
     static Random random = new Random();
+
+    private static final int DEFAULT_BUFFER_SIZE = 1024 * 4;
 
     public static final long ONE_ADVERTISEMENT_INTERVAL = 100;
     public static final long ONE_SECOND = 1000;
@@ -35,8 +40,6 @@ public class Utils {
     public static final long EXIT_TIME_HAS_PASSED = EXIT_TIME + 1;
     public static final long EXIT_TIME_NOT_YET = EXIT_TIME -1;
 
-
-
     public static byte[] hexStringToByteArray(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];
@@ -47,13 +50,14 @@ public class Utils {
         return data;
     }
 
-    public static JSONObject getRawResourceAsJSON(int resourceID, Context context) throws IOException, JSONException {
+    public static JsonObject getRawResourceAsJSON(int resourceID, Context context) throws IOException, JSONException {
         String theString = getRawResourceAsString(resourceID, context);
-        return new JSONObject(theString);
+        JsonParser parser = new JsonParser();
+        return parser.parse(theString).getAsJsonObject();
     }
 
     public static String getRawResourceAsString(int resourceID, Context context) throws IOException {
-        return IOUtils.toString(context.getResources().openRawResource(resourceID));
+        return toString(context.getResources().openRawResource(resourceID));
     }
 
     public static BeaconId getRandomBeaconId() {
@@ -62,22 +66,77 @@ public class Utils {
 
     public static byte[] wrapWithZeroBytes(byte[] bytesForFakeScan, int length) {
         byte[] value = new byte[length];
-        arraycopy(bytesForFakeScan, 0 , value, 0, bytesForFakeScan.length);
+        arraycopy(bytesForFakeScan, 0, value, 0, bytesForFakeScan.length);
         return value;
     }
 
-    public static void failWithVolleyError(VolleyError volleyError, String s){
-        Throwable error = volleyError;
-        while (error.getCause() != null){
-            error = error.getCause();
-            if (error instanceof ServerError){
-                ServerError serverError = (ServerError) error;
-                if (serverError.networkResponse != null) {
-                    fail(String.format("%1$s:\nStatus:%2$d\nData:%3$s",s , serverError.networkResponse.statusCode, new String(serverError.networkResponse.data)));
-                    return;
-                }
-            }
+    /**
+     * Get the contents of an <code>InputStream</code> as a String
+     * using the default character encoding of the platform.
+     * <p>
+     * This method buffers the input internally, so there is no need to use a
+     * <code>BufferedInputStream</code>.
+     *
+     * @param input the <code>InputStream</code> to read from
+     * @return the requested String
+     * @throws NullPointerException if the input is null
+     * @throws IOException          if an I/O error occurs
+     */
+    public static String toString(InputStream input) throws IOException {
+        StringWriter output = new StringWriter();
+        InputStreamReader in = new InputStreamReader(input);
+        copy(in, output);
+        return output.toString();
+    }
+
+    /**
+     * Copy chars from a <code>Reader</code> to a <code>Writer</code>.
+     * <p>
+     * This method buffers the input internally, so there is no need to use a
+     * <code>BufferedReader</code>.
+     * <p>
+     * Large streams (over 2GB) will return a chars copied value of
+     * <code>-1</code> after the copy has completed since the correct
+     * number of chars cannot be returned as an int. For large streams
+     * use the <code>copyLarge(Reader, Writer)</code> method.
+     *
+     * @param input  the <code>Reader</code> to read from
+     * @param output the <code>Writer</code> to write to
+     * @return the number of characters copied
+     * @throws NullPointerException if the input or output is null
+     * @throws IOException          if an I/O error occurs
+     * @throws ArithmeticException  if the character count is too large
+     * @since Commons IO 1.1
+     */
+    public static int copy(Reader input, Writer output) throws IOException {
+        long count = copyLarge(input, output);
+        if (count > Integer.MAX_VALUE) {
+            return -1;
         }
-        fail(volleyError.getMessage());
+        return (int) count;
+    }
+
+    /**
+     * Copy chars from a large (over 2GB) <code>Reader</code> to a <code>Writer</code>.
+     * <p>
+     * This method buffers the input internally, so there is no need to use a
+     * <code>BufferedReader</code>.
+     *
+     * @param input  the <code>Reader</code> to read from
+     * @param output the <code>Writer</code> to write to
+     * @return the number of characters copied
+     * @throws NullPointerException if the input or output is null
+     * @throws IOException          if an I/O error occurs
+     * @since Commons IO 1.3
+     */
+    public static long copyLarge(Reader input, Writer output) throws IOException {
+        char[] buffer = new char[DEFAULT_BUFFER_SIZE];
+        long count = 0;
+        int n = 0;
+        while (-1 != (n = input.read(buffer))) {
+            output.write(buffer, 0, n);
+            count += n;
+        }
+        return count;
     }
 }

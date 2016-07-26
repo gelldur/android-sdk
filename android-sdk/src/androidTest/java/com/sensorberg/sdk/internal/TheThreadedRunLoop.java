@@ -1,25 +1,27 @@
 package com.sensorberg.sdk.internal;
 
-import android.os.Looper;
-import android.os.Message;
-import android.test.AndroidTestCase;
-import android.util.Log;
-
 import org.fest.assertions.api.Assertions;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import android.os.Looper;
+import android.support.test.runner.AndroidJUnit4;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class TheThreadedRunLoop extends AndroidTestCase{
+@RunWith(AndroidJUnit4.class)
+public class TheThreadedRunLoop {
 
     private CountDownLatch latch;
     private MyRunnable myRunnable;
     private AndroidHandler tested;
     private static boolean prepared;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         latch = new CountDownLatch(1);
         myRunnable = new MyRunnable(latch);
 
@@ -31,6 +33,7 @@ public class TheThreadedRunLoop extends AndroidTestCase{
         tested = new AndroidHandler(AndroidHandler.MessageHandlerCallback.NONE);
     }
 
+    @Ignore
     public void should_run_a_scheduled_runnable() throws InterruptedException {
 
         //this cannot work, since the instanciated handler is running this thread, so we´e pausing this thread
@@ -43,11 +46,10 @@ public class TheThreadedRunLoop extends AndroidTestCase{
         long after = System.currentTimeMillis();
 
         Assertions.assertThat(after - before).isGreaterThan(300);
-
-
         Assertions.assertThat(countedDown).isTrue();
     }
 
+    @Test
     public void test_should_unschedule_a_runable() throws InterruptedException {
         tested.scheduleExecution(myRunnable, 100);
         tested.clearScheduledExecutions();

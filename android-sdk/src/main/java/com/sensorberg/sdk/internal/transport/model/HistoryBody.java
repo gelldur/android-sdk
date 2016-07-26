@@ -1,8 +1,10 @@
 package com.sensorberg.sdk.internal.transport.model;
 
-import com.sensorberg.sdk.internal.Clock;
-import com.sensorberg.sdk.model.realm.RealmAction;
-import com.sensorberg.sdk.model.realm.RealmScan;
+import com.google.gson.annotations.Expose;
+
+import com.sensorberg.sdk.internal.interfaces.Clock;
+import com.sensorberg.sdk.model.persistence.BeaconAction;
+import com.sensorberg.sdk.model.persistence.BeaconScan;
 
 import java.util.Date;
 import java.util.List;
@@ -11,11 +13,16 @@ import java.util.List;
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class HistoryBody {
 
-    public final List<RealmScan> events;
-    public final List<RealmAction> actions;
+    @Expose
+    public final List<BeaconScan> events;
+
+    @Expose
+    public final List<BeaconAction> actions;
+
+    @Expose
     public final Date deviceTimestamp;
 
-    public HistoryBody(List<RealmScan> scans, List<RealmAction> actions, Clock clock) {
+    public HistoryBody(List<BeaconScan> scans, List<BeaconAction> actions, Clock clock) {
         this.events = scans;
         this.deviceTimestamp = new Date(clock.now());
         this.actions = actions;

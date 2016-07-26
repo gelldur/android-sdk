@@ -1,5 +1,2 @@
 include ':android-sdk'
-include ':networkstate'
-include ':okvolley'
-include ':volley'
 include ':dev-app'

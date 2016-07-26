@@ -1,26 +1,20 @@
 package com.sensorberg.sdk.action;
 
-import android.os.Parcel;
-import android.test.AndroidTestCase;
-
 import org.fest.assertions.api.Assertions;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-import java.util.UUID;
+import android.os.Parcel;
+import android.support.test.runner.AndroidJUnit4;
 
+import util.TestConstants;
 
-public class TestTheUriMessageAction extends AndroidTestCase {
+@RunWith(AndroidJUnit4.class)
+public class TestTheUriMessageAction {
 
-    private static final String MESSAGE = "message";
-    private static final String TITLE = "title";
-    private static final String URL = "http://www.sensorberg.com";
-    UriMessageAction tested;
-
-    @Override
-    protected void setUp() throws Exception {
-        tested = new UriMessageAction(UUID.randomUUID(), MESSAGE, TITLE, URL, null, 0);
-    }
-
+    @Test
     public void test_parcelable(){
+        UriMessageAction tested = TestConstants.getUriMessageAction();
         Parcel output = Parcel.obtain();
 
         tested.writeToParcel(output, 0);

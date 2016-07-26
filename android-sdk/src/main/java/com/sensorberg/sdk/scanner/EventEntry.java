@@ -2,12 +2,17 @@ package com.sensorberg.sdk.scanner;
 
 import java.io.Serializable;
 
+import lombok.Getter;
+
 public class EventEntry implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    long lastBeaconTime;
-    private final int  eventMask;
+    @Getter
+    private long lastBeaconTime;
+
+    @Getter
+    private final int eventMask;
 
     EventEntry(EventEntry other) {
         this.lastBeaconTime = other.lastBeaconTime;

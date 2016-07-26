@@ -1,10 +1,10 @@
 package com.sensorberg.sdk.model.server;
 
-import android.support.test.runner.AndroidJUnit4;
-
 import org.fest.assertions.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import android.support.test.runner.AndroidJUnit4;
 
 @RunWith(AndroidJUnit4.class)
 public class TheTimeFrameShould {
@@ -16,7 +16,6 @@ public class TheTimeFrameShould {
         Assertions.assertThat(tested.valid(1)).isTrue();
         Assertions.assertThat(tested.valid(1000)).isTrue();
         Assertions.assertThat(tested.valid(1001)).isFalse();
-
     }
 
     @Test
@@ -26,7 +25,6 @@ public class TheTimeFrameShould {
         Assertions.assertThat(tested.valid(1)).isFalse();
         Assertions.assertThat(tested.valid(1000)).isTrue();
         Assertions.assertThat(tested.valid(1001)).isTrue();
-
     }
 
     @Test
@@ -37,6 +35,5 @@ public class TheTimeFrameShould {
         Assertions.assertThat(tested.valid(1)).isTrue();
         Assertions.assertThat(tested.valid(1000)).isTrue();
         Assertions.assertThat(tested.valid(1001)).isFalse();
-
     }
 }

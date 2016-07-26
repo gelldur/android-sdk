@@ -1,126 +1,136 @@
 package com.sensorberg.sdk.resolver;
 
-import android.test.AndroidTestCase;
+import com.google.gson.Gson;
 
-import com.sensorberg.sdk.BuildConfig;
-import com.sensorberg.sdk.internal.OkHttpClientTransport;
-import com.sensorberg.sdk.internal.URLFactory;
-import com.sensorberg.sdk.model.BeaconId;
+import com.sensorberg.sdk.SensorbergTestApplication;
+import com.sensorberg.sdk.di.TestComponent;
+import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
+import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
+import com.sensorberg.sdk.internal.transport.interfaces.Transport;
+import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.sdk.scanner.ScanEvent;
 import com.sensorberg.sdk.scanner.ScanEventType;
-import com.sensorberg.sdk.testUtils.TestPlatform;
+import com.sensorberg.sdk.testUtils.TestHandlerManager;
 
 import org.fest.assertions.api.Assertions;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.joda.time.DateTime;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+
+import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
 
 import java.util.List;
-import java.util.UUID;
 
+import javax.inject.Inject;
+
+import retrofit2.mock.Calls;
 import util.TestConstants;
+import util.Utils;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
-public class TheResolverShould extends AndroidTestCase{
-
-    private Resolver testedWithFakeBackend;
+@RunWith(AndroidJUnit4.class)
+public class TheResolverShould {
 
     private static final ScanEvent SCANEVENT_1 = new ScanEvent.Builder()
             .withBeaconId(TestConstants.REGULAR_BEACON_ID)
             .build();
-    private Resolver tested;
-    private TestPlatform androidPlattform;
 
-    @Override
+    private static final ScanEvent RESOLVABLE_ENTRY_EVENT_WITH_ID_3 = new ScanEvent.Builder()
+            .withBeaconId(TestConstants.LEET_BEACON_ID_3)
+            .withEventMask(ScanEventType.ENTRY.getMask())
+            .build();
+
+    private static final ScanEvent RESOLVABLE_ENTRY_EVENT_WITH_INAPP_ACTIONS = new ScanEvent.Builder()
+            .withBeaconId(TestConstants.IN_APP_BEACON_ID)
+            .withEventMask(ScanEventType.ENTRY.getMask())
+            .build();
+
+    @Inject
+    Gson gson;
+
+    private Resolver tested;
+
+    RetrofitApiServiceImpl mockRetrofitApiService = mock(RetrofitApiServiceImpl.class);
+
+    TestHandlerManager testHandlerManager = new TestHandlerManager();
+
+    private ResolutionConfiguration resolutionConfiguration;
+
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
+        ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         ResolverConfiguration resolverConfiguration = new ResolverConfiguration();
-        androidPlattform = spy(new TestPlatform());
-        androidPlattform.setContext(getContext());
-        androidPlattform.setTransport(new OkHttpClientTransport(androidPlattform, null));
-        androidPlattform.getTransport().setApiToken(TestConstants.API_TOKEN);
-        androidPlattform.clock.setNowInMillis(new DateTime(2015, 7, 7, 1, 1, 1).getMillis());
+        testHandlerManager.getCustomClock().setNowInMillis(new DateTime(2015, 7, 7, 1, 1, 1).getMillis());
+        Transport testTransportWithMockService = new RetrofitApiTransport(mockRetrofitApiService, testHandlerManager.getCustomClock());
 
-        testedWithFakeBackend = new Resolver(resolverConfiguration, androidPlattform);
-        ResolverConfiguration realConfiguration = new ResolverConfiguration();
-        tested = new Resolver(realConfiguration, androidPlattform);
+        tested = new Resolver(resolverConfiguration, testHandlerManager, testTransportWithMockService);
+
+        resolutionConfiguration = new ResolutionConfiguration();
     }
 
-
-    public void test_should_try_to_resolve_a_beacon(){
-        Resolution resolution = getResolution();
+    @Test
+    public void test_should_try_to_resolve_a_beacon() throws Exception {
+        resolutionConfiguration.setScanEvent(SCANEVENT_1);
+        Resolution resolution = tested.createResolution(resolutionConfiguration);
         Resolution spyResolution = spy(resolution);
+        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+                .thenReturn(Calls.response(new ResolveResponse.Builder().build()));
 
-        testedWithFakeBackend.startResolution(spyResolution);
-
+        tested.startResolution(spyResolution);
 
         verify(spyResolution).queryServer();
     }
 
-    private Resolution getResolution() {
-        ResolutionConfiguration resolutionConiguration = new ResolutionConfiguration();
-        resolutionConiguration.setScanEvent(SCANEVENT_1);
-        return testedWithFakeBackend.createResolution(resolutionConiguration);
-    }
+    @Test
+    public void test_enter_exit_action() throws Exception {
+        ResolveResponse resolveResponse = gson
+                .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.resolve_response_enter_exit_action, InstrumentationRegistry
+                        .getContext()), ResolveResponse.class);
+        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+                .thenReturn(Calls.response(resolveResponse));
 
-
-    /**
-     * account falko@sensorberg.com
-     * https://manage.sensorberg.com/#/applications/edit/38eda3c5-649e-4178-9682-314d14abf1fe
-     * https://manage.sensorberg.com/#/campaign/edit/bd67e5ec-4426-4f51-b962-6beea2c82695
-     * https://manage.sensorberg.com/#/beacon/view/14053e1f-567b-43e5-818f-811c700b7ae4
-     *
-     */
-    public void test_enter_exit_action(){
-        URLFactory.Conf env = URLFactory.switchToProductionEnvironment();
-
-        androidPlattform.getTransport().setApiToken("8961ee72ea4834053b376ad54007ea277cba4305db12188b74d104351ca8bf8a");
-
-
-        ResolverListener mockListener = new ResolverListener() {
+        ResolverListener testListener = new ResolverListener() {
             @Override
             public void onResolutionFailed(Resolution resolution, Throwable cause) {
-                fail(cause.getMessage());
+                Assert.fail(cause.getMessage());
             }
 
             @Override
             public void onResolutionsFinished(List<BeaconEvent> events) {
                 Assertions.assertThat(events).hasSize(1);
             }
-
         };
-        tested.addResolverListener(mockListener);
-        ResolutionConfiguration conf = new ResolutionConfiguration();
-        conf.setScanEvent(new ScanEvent.Builder()
-                        .withBeaconId(new BeaconId(UUID.fromString("73676723-7400-0000-ffff-0000ffff0003"), 40122, 43878))
-                        .withEventMask(ScanEventType.ENTRY.getMask()).build()
-        );
-        Resolution resolution = tested.createResolution(conf);
+
+        tested.addResolverListener(testListener);
+        resolutionConfiguration.setScanEvent(RESOLVABLE_ENTRY_EVENT_WITH_ID_3);
+        Resolution resolution = tested.createResolution(resolutionConfiguration);
+
         resolution.start();
-
-
-        URLFactory.restorePreviousConf(env);
     }
 
-    /**
-     * https://manage.sensorberg.com/#/campaign/edit/ab68d4ee-8b2d-4f40-adc2-a7ebc9505e89
-     * https://manage.sensorberg.com/#/campaign/edit/5dc7f22f-dbcf-4065-8b28-e81b0149fcc8
-     * https://manage.sensorberg.com/#/campaign/edit/292ba508-226e-41c3-aac7-969fa712c435
-     *
-     * https://staging-manage.sensorberg.com/#/campaign/edit/be0c8822-937c-49ee-9890-13fb8ecbad05
-     * https://staging-manage.sensorberg.com/#/campaign/edit/01fc187b-de29-4b87-b04c-32cdf60d4270
-     * https://staging-manage.sensorberg.com/#/campaign/edit/ed464330-ea1b-4132-a993-d81796871587
-     *
-     */
-
+    @Test
     public void test_resolve_in_app_function() throws Exception {
+        ResolveResponse resolveResponse = gson
+                .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.resolve_response_inapp_action, InstrumentationRegistry
+                        .getContext()), ResolveResponse.class);
+        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+                .thenReturn(Calls.response(resolveResponse));
 
         ResolverListener mockListener = new ResolverListener() {
             @Override
             public void onResolutionFailed(Resolution resolution, Throwable cause) {
-                fail(cause.getMessage() + resolution.toString());
+                Assert.fail(cause.getMessage() + resolution.toString());
             }
 
             @Override
@@ -129,32 +139,25 @@ public class TheResolverShould extends AndroidTestCase{
             }
 
         };
-        tested.addResolverListener(mockListener);
-        ResolutionConfiguration conf = new ResolutionConfiguration();
-        conf.setScanEvent(new ScanEvent.Builder()
-                        .withBeaconId(TestConstants.IN_APP_BEACON_ID)
-                        .withEventMask(ScanEventType.ENTRY.getMask()).build()
-        );
-        Resolution resolution = tested.createResolution(conf);
-        resolution.start();
 
+        tested.addResolverListener(mockListener);
+        resolutionConfiguration.setScanEvent(RESOLVABLE_ENTRY_EVENT_WITH_INAPP_ACTIONS);
+        Resolution resolution = tested.createResolution(resolutionConfiguration);
+        resolution.start();
     }
 
-    /**
-     *  https://manage.sensorberg.com/#/campaign/edit/6edd5ff0-d63a-4968-b7fa-b448d1c3a0e9
-     *
-     *  https://staging-manage.sensorberg.com/#/campaign/edit/be0c8822-937c-49ee-9890-13fb8ecbad05
-     */
+    @Test
     public void test_beacon_with_delay() throws Exception {
+        ResolveResponse resolveResponse = gson
+                .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.resolve_response_delayed_action, InstrumentationRegistry
+                        .getContext()), ResolveResponse.class);
+        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+                .thenReturn(Calls.response(resolveResponse));
 
         ResolverListener mockListener = mock(ResolverListener.class);
         tested.addResolverListener(mockListener);
-        ResolutionConfiguration conf = new ResolutionConfiguration();
-        conf.setScanEvent(new ScanEvent.Builder()
-                .withBeaconId(TestConstants.DELAY_BEACON_ID)
-                .withEventMask(ScanEventType.ENTRY.getMask()).build()
-        );
-        Resolution resolution = tested.createResolution(conf);
+        resolutionConfiguration.setScanEvent(RESOLVABLE_ENTRY_EVENT_WITH_ID_3);
+        Resolution resolution = tested.createResolution(resolutionConfiguration);
         resolution.start();
 
         verify(mockListener).onResolutionsFinished(argThat(new BaseMatcher<List<BeaconEvent>>() {

@@ -1,60 +1,127 @@
 package com.sensorberg.sdk.scanner;
 
-import com.sensorberg.sdk.SensorbergApplicationTest;
+import com.google.gson.Gson;
+
+import com.sensorberg.sdk.SensorbergTestApplication;
+import com.sensorberg.sdk.di.TestComponent;
+import com.sensorberg.sdk.internal.interfaces.Clock;
+import com.sensorberg.sdk.internal.interfaces.HandlerManager;
+import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
+import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
+import com.sensorberg.sdk.internal.transport.model.HistoryBody;
+import com.sensorberg.sdk.model.persistence.BeaconAction;
+import com.sensorberg.sdk.model.persistence.BeaconScan;
+import com.sensorberg.sdk.model.server.ResolveResponse;
+import com.sensorberg.sdk.settings.SettingsManager;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+
+import android.content.SharedPreferences;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
+
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import retrofit2.mock.Calls;
 import util.TestConstants;
-import com.sensorberg.sdk.internal.AndroidPlatform;
-import com.sensorberg.sdk.internal.Clock;
-import com.sensorberg.sdk.internal.Platform;
-import com.sensorberg.sdk.resolver.ResolverListener;
-import com.sensorberg.sdk.settings.Settings;
-import com.squareup.okhttp.mockwebserver.MockResponse;
-import com.squareup.okhttp.mockwebserver.RecordedRequest;
 
-import static com.sensorberg.sdk.scanner.RecordedRequestAssert.assertThat;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
-public class TheBeaconActionHistoryPublisherIntegrationShould extends SensorbergApplicationTest{
+@RunWith(AndroidJUnit4.class)
+public class TheBeaconActionHistoryPublisherIntegrationShould {
 
+    @Inject
+    @Named("testHandlerWithCustomClock")
+    HandlerManager testHandlerManager;
 
-    private  ScanEvent SCAN_EVENT;
+    @Inject
+    @Named("realClock")
+    Clock clock;
+
+    @Inject
+    @Named("dummyTransportSettingsManager")
+    SettingsManager testSettingsManager;
+
+    @Inject
+    SharedPreferences sharedPreferences;
+
+    @Inject
+    Gson gson;
+
+    private RetrofitApiServiceImpl mockRetrofitApiService = mock(RetrofitApiServiceImpl.class);
+
+    private RetrofitApiTransport testTransportWithMockService;
+
     private BeaconActionHistoryPublisher tested;
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
+        ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
-        Platform platform = spy(new AndroidPlatform(getContext()));
-        when(platform.getClock()).thenReturn(new Clock() {
-            @Override
-            public long now() {
-                return 0;
-            }
-
-            @Override
-            public long elapsedRealtime() {
-                return 0;
-            }
-        });
-
-        Settings settings = new Settings(platform, platform.getSettingsSharedPrefs());
-        tested = new BeaconActionHistoryPublisher(platform, ResolverListener.NONE, settings);
-
-        startWebserver();
-        server.enqueue(new MockResponse().setBody("{}"));
-        SCAN_EVENT = new ScanEvent.Builder()
-                .withEventMask(ScanEventType.ENTRY.getMask())
-                .withBeaconId(TestConstants.ANY_BEACON_ID)
-                .withEventTime(100)
-                .build();
+        testTransportWithMockService = new RetrofitApiTransport(mockRetrofitApiService, clock);
+        tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), testTransportWithMockService, testSettingsManager, clock,
+                testHandlerManager, sharedPreferences, gson);
     }
 
+    @Test
     public void test_should_send_history_to_the_server() throws Exception {
-        tested.onScanEventDetected(SCAN_EVENT);
+        Mockito.when(mockRetrofitApiService.publishHistory(Mockito.anyString(), Mockito.any(HistoryBody.class)))
+                .thenReturn(Calls.response(new ResolveResponse.Builder().build()));
+
+        tested.onScanEventDetected(TestConstants.REGULAR_BEACON_SCAN_EVENT(100));
         tested.publishHistory();
 
-        RecordedRequest request = server.takeRequest();
+        verify(mockRetrofitApiService, times(1)).publishHistory(Mockito.anyString(), Mockito.any(HistoryBody.class));
+    }
 
-        assertThat(request).matchesRawResourceRequest(com.sensorberg.sdk.test.R.raw.request_reporting_001, getContext());
+    @Test
+    public void should_have_persisted_beacon_actions() throws Exception {
+        //first we delete all previous data
+        tested.deleteAllData();
+
+        //add one action in the future
+        tested.onActionPresented(TestConstants.BEACON_EVENT_IN_FUTURE);
+        List<BeaconAction> notSentObjects = tested.notSentBeaconActions();
+        assertThat(notSentObjects).hasSize(1);
+
+        //persist it, nullify and make new instance
+        tested.saveAllData();
+        tested = null;
+        tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), testTransportWithMockService, testSettingsManager, clock,
+                testHandlerManager, sharedPreferences, gson);
+
+        //check that this instance read from local persistence layer
+        List<BeaconAction> notSentObjectsFromPersistence = tested.notSentBeaconActions();
+        assertThat(notSentObjectsFromPersistence).hasSize(1);
+    }
+
+    @Test
+    public void should_have_persisted_beacon_scans() throws Exception {
+        //first we delete all previous data
+        tested.deleteAllData();
+
+        //add one scan
+        tested.onScanEventDetected(TestConstants.REGULAR_BEACON_SCAN_EVENT(100));
+        List<BeaconScan> notSentObjects = tested.notSentBeaconScans();
+        assertThat(notSentObjects).hasSize(1);
+
+        //persist it, nullify and make new instance
+        tested.saveAllData();
+        tested = null;
+        tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), testTransportWithMockService, testSettingsManager, clock,
+                testHandlerManager, sharedPreferences, gson);
+
+        //check that this instance read from local persistence layer
+        List<BeaconScan> notSentObjectsFromPersistence = tested.notSentBeaconScans();
+        assertThat(notSentObjectsFromPersistence).hasSize(1);
     }
 }

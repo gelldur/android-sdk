@@ -14,7 +14,7 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="SB Test App${applicationLabelAddition}"
-        android:theme="@android:style/Theme.Black" >
+        android:theme="@android:style/Theme.Black">
 
         <activity
             android:name="com.sensorberg.sdk.demo.DemoActivity"
@@ -27,7 +27,7 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name="com.sensorberg.sdk.demo.MyActionPresenter"
+        <receiver android:name="com.sensorberg.sdk.demo.presenters.MyActionPresenter"
                   android:process=".sensorberg"
                   android:exported="false">
             <intent-filter>
@@ -39,18 +39,20 @@
         <service android:name="com.sensorberg.sdk.SensorbergService"
             tools:replace="android:process"
             android:process=""/>
-            android:process=""/>
 
-        <receiver android:name="com.sensorberg.sdk.GenericBroadcastReceiver"
+        <receiver android:name="com.sensorberg.sdk.receivers.GenericBroadcastReceiver"
             tools:replace="android:process"
             android:process=""/>
         <receiver
-            android:name="com.sensorberg.sdk.background.ScannerBroadcastReceiver"
+            android:name="com.sensorberg.sdk.receivers.ScannerBroadcastReceiver"
             tools:replace="android:process"
             android:process=""/>
-        <receiver android:name="com.sensorberg.sdk.SensorbergCodeReceiver"
+        <receiver android:name="com.sensorberg.sdk.receivers.SensorbergCodeReceiver"
             tools:replace="android:process"
             android:process=""/>
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
         <!-- //Do not use this in production. It´s only used so you can debug easier-->
 
     </application>

@@ -4,15 +4,15 @@
     package="com.sensorberg.sdk">
 
     <application
-        android:name="android.support.multidex.MultiDexApplication">
-        <receiver android:name="com.sensorberg.sdk.internal.TestGenericBroadcastReceiver"
+        android:name="com.sensorberg.sdk.SensorbergTestApplication">
+        <receiver android:name="com.sensorberg.sdk.test.TestGenericBroadcastReceiver"
             android:enabled="true">
             <intent-filter>
                 <action android:name="com.sensorberg.android.PRESENT_ACTION" />
             </intent-filter>
         </receiver>
 
-        <receiver android:name="com.sensorberg.sdk.internal.TestGenericBroadcastReceiver2"
+        <receiver android:name="com.sensorberg.sdk.test.TestGenericBroadcastReceiver2"
             android:process=".sensorberg"
             android:enabled="true">
             <intent-filter>

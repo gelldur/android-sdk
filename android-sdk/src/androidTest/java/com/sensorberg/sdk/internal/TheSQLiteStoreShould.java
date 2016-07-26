@@ -1,18 +1,23 @@
 package com.sensorberg.sdk.internal;
 
-import android.os.Bundle;
-import android.test.AndroidTestCase;
-
 import com.sensorberg.sdk.action.Action;
 import com.sensorberg.sdk.action.UriMessageAction;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 
 import org.fest.assertions.api.Assertions;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import android.os.Bundle;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
 
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class TheSQLiteStoreShould extends AndroidTestCase {
+@RunWith(AndroidJUnit4.class)
+public class TheSQLiteStoreShould {
 
     private static final Action URI_ACTION = new UriMessageAction(UUID.randomUUID(), "title", "content", "http://something.com", null, 3000);
     public static final String BEACON_EVENT_KEY = "beaconEvent";
@@ -21,10 +26,9 @@ public class TheSQLiteStoreShould extends AndroidTestCase {
     SQLiteStore tested;
     private Bundle bundle;
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-        tested = new SQLiteStore(Long.toString(System.currentTimeMillis()), getContext());
+        tested = new SQLiteStore(Long.toString(System.currentTimeMillis()), InstrumentationRegistry.getContext());
 
         BeaconEvent beaconEvent = new BeaconEvent.Builder()
                 .withAction(URI_ACTION)
@@ -33,23 +37,26 @@ public class TheSQLiteStoreShould extends AndroidTestCase {
         bundle.putParcelable(BEACON_EVENT_KEY, beaconEvent);
     }
 
+    @Test
     public void test_should_initially_be_empty() throws Exception {
         Assertions.assertThat(tested.size()).isEqualTo(0);
     }
 
+    @Test
     public void test_should_store_a_ScanEvent() throws Exception {
         tested.put(new SQLiteStore.Entry(1, TIMESTAMP_OF_EVENT, IRRELEVANT, bundle));
 
         Assertions.assertThat(tested.size()).isEqualTo(1);
-
     }
 
+    @Test
     public void test_should_delete_a_scanEvent() throws Exception {
         tested.put(new SQLiteStore.Entry(1, TIMESTAMP_OF_EVENT, IRRELEVANT, bundle));
         tested.delete(1);
         Assertions.assertThat(tested.size()).isEqualTo(0);
     }
 
+    @Test
     public void test_load_all_entries_to_memory() throws Exception {
         tested.put(new SQLiteStore.Entry(1, TIMESTAMP_OF_EVENT, IRRELEVANT, bundle));
 
@@ -57,6 +64,7 @@ public class TheSQLiteStoreShould extends AndroidTestCase {
         Assertions.assertThat(all).isNotNull().hasSize(1);
     }
 
+    @Test
     public void test_should_restore_the_content_of_an_entry() throws Exception {
         tested.put(new SQLiteStore.Entry(1, TIMESTAMP_OF_EVENT, IRRELEVANT, bundle));
 
@@ -65,6 +73,7 @@ public class TheSQLiteStoreShould extends AndroidTestCase {
         Assertions.assertThat((BeaconEvent) entry.bundle.get(BEACON_EVENT_KEY)).isEqualsToByComparingFields((BeaconEvent) bundle.get(BEACON_EVENT_KEY));
     }
 
+    @Test
     public void test_should_not_restore_entries_that_are_expired() throws Exception {
         tested.put(new SQLiteStore.Entry(1, TIMESTAMP_OF_EVENT, IRRELEVANT, bundle));
 
@@ -73,6 +82,7 @@ public class TheSQLiteStoreShould extends AndroidTestCase {
         Assertions.assertThat(tested.size()).isEqualTo(0);
     }
 
+    @Test
     public void test_should_be_able_to_delete_one_entry() throws Exception {
         tested.put(new SQLiteStore.Entry(1, TIMESTAMP_OF_EVENT, IRRELEVANT, bundle));
         tested.put(new SQLiteStore.Entry(2, TIMESTAMP_OF_EVENT, IRRELEVANT, bundle));
@@ -82,6 +92,7 @@ public class TheSQLiteStoreShould extends AndroidTestCase {
         Assertions.assertThat(tested.size()).isEqualTo(1);
     }
 
+    @Test
     public void test_clear_all_entries() throws Exception {
         tested.put(new SQLiteStore.Entry(1, TIMESTAMP_OF_EVENT, IRRELEVANT, bundle));
         tested.put(new SQLiteStore.Entry(2, TIMESTAMP_OF_EVENT, IRRELEVANT, bundle));
@@ -91,7 +102,5 @@ public class TheSQLiteStoreShould extends AndroidTestCase {
         tested.clear();
 
         Assertions.assertThat(tested.size()).isEqualTo(0);
-
-
     }
 }

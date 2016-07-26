@@ -1,11 +1,11 @@
 package com.sensorberg.sdk.resolver;
 
-import android.os.Message;
-
 import com.sensorberg.sdk.Logger;
-import com.sensorberg.sdk.internal.Platform;
-import com.sensorberg.sdk.internal.RunLoop;
-import com.sensorberg.sdk.internal.Transport;
+import com.sensorberg.sdk.internal.interfaces.RunLoop;
+import com.sensorberg.sdk.internal.transport.interfaces.Transport;
+import com.sensorberg.sdk.internal.interfaces.HandlerManager;
+
+import android.os.Message;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,19 +13,23 @@ import java.util.List;
 public final class Resolver implements RunLoop.MessageHandlerCallback {
 
     private final Object listenersMonitor = new Object();
+
     private final Object resolutionsMonitor = new Object();
 
     public final ResolverConfiguration configuration;
+
     private final List<ResolverListener> listeners = new ArrayList<>();
 
     private final CurrentResolutions currentResolutions = new CurrentResolutions();
+
     private final Transport transport;
+
     private final RunLoop runLoop;
 
-    public Resolver(ResolverConfiguration configuration, Platform platform) {
+    public Resolver(ResolverConfiguration configuration, HandlerManager handlerManager, Transport transport) {
         this.configuration = configuration;
-        runLoop = platform.getResolverRunLoop(this);
-        transport = platform.getTransport();
+        runLoop = handlerManager.getResolverRunLoop(this);
+        this.transport = transport;
     }
 
     /**
@@ -40,7 +44,8 @@ public final class Resolver implements RunLoop.MessageHandlerCallback {
     }
 
     /**
-     * Creates a new {@link Resolution}; the {@link ResolutionConfiguration} is copied and therefore cannot be changed after creation of the {@link Resolution}.
+     * Creates a new {@link Resolution}; the {@link ResolutionConfiguration} is copied and therefore cannot be changed after creation of the {@link
+     * Resolution}.
      *
      * @param resolutionConfiguration the {@link ResolutionConfiguration} to configure the {@link Resolution} with
      * @return the {@link Resolution} created
@@ -113,7 +118,7 @@ public final class Resolver implements RunLoop.MessageHandlerCallback {
 
     public void retry(ResolutionConfiguration configuration) {
         Resolution resolution = currentResolutions.get(configuration.getScanEvent());
-        if (resolution == null){
+        if (resolution == null) {
             resolution = createResolution(configuration);
             Logger.log.beaconResolveState(configuration.getScanEvent(), "creating a new resolution, we have been in the background for too long");
         }

@@ -1,6 +1,8 @@
 package com.sensorberg.sdk.model.server;
 
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.scanner.ScanEvent;
 import com.sensorberg.utils.ListUtils;
@@ -10,13 +12,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.ToString;
+
+@ToString
 public class ResolveResponse extends BaseResolveResponse implements Serializable {
 
-    static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
+    @Expose
     private List<ResolveAction> actions = Collections.emptyList();
+
+    @Expose
     private List<ResolveAction> instantActions = Collections.emptyList();
 
+    @Expose
     @SerializedName("reportTrigger")
     public Long reportTriggerSeconds;
 
@@ -29,11 +38,12 @@ public class ResolveResponse extends BaseResolveResponse implements Serializable
 
     /**
      * used internally to create all the @{ResolveAction} from the @{actions} array
-     * @return all matching BeaconEvents
+     *
      * @param scanEvent used to match
+     * @return all matching BeaconEvents
      */
     private List<ResolveAction> getActionsFromLayout(final ScanEvent scanEvent, final long now) {
-        if (actions == null){
+        if (actions == null) {
             return Collections.emptyList();
         }
         return ListUtils.filter(actions, new ListUtils.Filter<ResolveAction>() {
@@ -42,7 +52,7 @@ public class ResolveResponse extends BaseResolveResponse implements Serializable
                 boolean matchTrigger = resolveAction.matchTrigger(scanEvent.getEventMask());
                 if (matchTrigger) {
                     boolean matchBeacon = resolveAction.containsBeacon(scanEvent.getBeaconId());
-                    if (matchBeacon){
+                    if (matchBeacon) {
                         return resolveAction.isValidNow(now);
                     }
                 }
@@ -52,11 +62,10 @@ public class ResolveResponse extends BaseResolveResponse implements Serializable
     }
 
     /**
-     *
      * @return all instantActions based on the @{instantAction} ResolveActionsArray.
      */
     public List<ResolveAction> getInstantActions() {
-        if (instantActions == null){
+        if (instantActions == null) {
             return Collections.emptyList();
         }
         return ListUtils.filter(instantActions, new ListUtils.Filter<ResolveAction>() {
@@ -72,16 +81,23 @@ public class ResolveResponse extends BaseResolveResponse implements Serializable
     }
 
 
-    private ResolveResponse(List<String> accountProximityUUIDs, List<ResolveAction> actions, List<ResolveAction> instantActions) {
+    private ResolveResponse(List<String> accountProximityUUIDs, List<ResolveAction> actions, List<ResolveAction> instantActions,
+            Long reportTriggerSeconds) {
         super(accountProximityUUIDs);
         this.actions = actions;
         this.instantActions = instantActions;
+        this.reportTriggerSeconds = reportTriggerSeconds;
     }
 
     public static class Builder {
-        List<String> accountProximityUUIDs = Collections.emptyList();
-        List<ResolveAction> actions = Collections.emptyList();
-        List<ResolveAction> instantActions = Collections.emptyList();
+
+        private List<String> accountProximityUUIDs = Collections.emptyList();
+
+        private List<ResolveAction> actions = Collections.emptyList();
+
+        private List<ResolveAction> instantActions = Collections.emptyList();
+
+        private Long reportTrigger = 0L;
 
         public Builder() {
         }
@@ -101,9 +117,13 @@ public class ResolveResponse extends BaseResolveResponse implements Serializable
             return this;
         }
 
+        public Builder withReportTrigger(long reportTrigger) {
+            this.reportTrigger = reportTrigger;
+            return this;
+        }
 
         public ResolveResponse build() {
-            return new ResolveResponse(accountProximityUUIDs, actions, instantActions);
+            return new ResolveResponse(accountProximityUUIDs, actions, instantActions, reportTrigger);
         }
     }
 }

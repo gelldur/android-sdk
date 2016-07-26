@@ -1,11 +1,4 @@
 {
-    "statusCode": 200,
-    "headers": {
-        "Cache-Control": "no-transform,public,max-age=10000",
-        "Content-Type": " application/json",
-        "Etag": "1416996436511"
-    },
-    "body": {
         "accountProximityUUIDs": [
             "7367672374000000ffff0000ffff0001",
             "7367672374000000ffff0000ffff0002",
@@ -69,5 +62,4 @@
             }
         ],
         "instantActions": []
-    }
 }

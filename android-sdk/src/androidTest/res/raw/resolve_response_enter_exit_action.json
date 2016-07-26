@@ -1,0 +1,31 @@
+{
+  "accountProximityUUIDs": [
+    "7367672374000000ffff0000ffff0003"
+  ],
+  "actions": [
+    {
+      "eid": "5054d7f1ab5747d9975aaf4ee3252ef4",
+      "trigger": 3,
+      "beacons": [
+        "7367672374000000ffff0000ffff00030133701337"
+      ],
+      "supressionTime": 900,
+      "suppressionTime": 900,
+      "content": {
+        "subject": "notification",
+        "body": "test",
+        "payload": null,
+        "url": ""
+      },
+      "type": 1,
+      "timeframes": [
+        {
+          "start": "2015-06-30T15:46:40.619+0000"
+        }
+      ],
+      "sendOnlyOnce": false,
+      "typeString": "notification"
+    }
+  ],
+  "currentVersion": false
+}

@@ -1,30 +1,94 @@
+#general setup
+
 -keepattributes Signature
--keep class com.sensorberg.sdk.action.** { *; }
+-keepattributes InnerClasses
+-dontoptimize
+
+# Sensorberg SDK
+
+-keep class com.sensorberg.sdk.action.Action { *; }
+-keep class com.sensorberg.sdk.action.ActionType { *; }
 -keep class com.sensorberg.sdk.model.** { *; }
+-keep class com.sensorberg.sdk.settings.** { *; }
 -keep,includedescriptorclasses class com.sensorberg.sdk.scanner.ScanEvent { *; }
 -keep,includedescriptorclasses class com.sensorberg.sdk.resolver.BeaconEvent { *; }
--keep class com.sensorberg.sdk.internal.interfaces.Clock { *; }
+-keep class com.sensorberg.sdk.internal.interfaces.** { *; }
+-keep class com.sensorberg.sdk.internal.transport.model.** { *; }
+-keep class com.sensorberg.sdk.internal.transport.interfaces.** { *; }
 -keep class * implements android.content.BroadcastReceiver
 
-#realm db config
--keepnames public class * extends io.realm.RealmObject
--keep class io.realm.** { *; }
--dontwarn javax.**
--dontwarn io.realm.**
+# GSON
 
-#volley
--keep class android.security.** { *; }
--keep class com.sensorberg.android.okvolley.** { *; }
--keep class com.android.sensorbergVolley.** { *; }
--keep class com.squareup.okhttp.internal.huc.** { *; }
--keep class okio.** { *; }
--dontwarn java.nio.file.**
--dontwarn android.security.**
--dontwarn org.codehaus.mojo.animal_sniffer.**
--dontwarn com.squareup.okhttp.internal.huc.**
+# For using GSON @Expose annotation
+-keepattributes *Annotation*
+# Gson specific classes
+-keep class com.google.gson.** { *;  }
+#Note: com.google.gson.internal.UnsafeAllocator accesses a declared field 'theUnsafe' dynamically
+-keep class com.google.gson.internal.UnsafeAllocator { java.lang.reflect.Field theUnsafe; }
+#Resulting Note: the configuration refers to the unknown field 'java.lang.reflect.Field theUnsafe' in class 'com.google.gson.internal.UnsafeAllocator'
+-dontnote com.google.gson.internal.**
 
 # Joda Time
+
 -dontwarn org.joda.convert.**
 -dontwarn org.joda.time.**
 -keep class org.joda.time.** { *; }
 -keep interface org.joda.time.** { *; }
+
+# Retrofit 2.X
+
+-dontwarn retrofit2.**
+-dontnote retrofit2.**
+-keep class retrofit2.** { *; }
+-keepattributes Signature
+-keepattributes Exceptions
+
+-keepclasseswithmembers class * {
+    @retrofit2.http.* <methods>;
+}
+
+#OkHttp3
+
+-keep class okhttp3.** { *; }
+-keep interface okhttp3.* { *; }
+-keep class okio.** { *; }
+-dontwarn okhttp3.*
+-dontwarn java.nio.file.**
+-dontwarn android.security.**
+-dontwarn org.codehaus.mojo.animal_sniffer.**
+-dontnote okhttp3.*
+-dontnote sun.misc.**
+-dontnote sun.security.ssl.**
+-dontnote com.android.org.**
+-dontnote org.apache.harmony.**
+
+# support library v4
+
+-dontwarn android.support.v4.**
+-dontnote android.support.v4.**
+-keep class android.support.v4.** { *; }
+-keep interface android.support.v4.** { *; }
+-keep class android.support.v4.app.** { *; }
+-keep interface android.support.v4.app.** { *; }
+
+# Android
+
+-dontnote android.net.http.*
+-dontnote org.apache.commons.codec.**
+-dontnote org.apache.http.**
+-dontnote libcore.icu.**
+
+# GMS ads
+
+-keep class com.google.android.gms.** { *; }
+-keep class com.google.ads.** { *; }
+
+# various
+
+-dontnote com.google.vending.licensing.ILicensingService
+-dontnote **ILicensingService
+
+# Sensorberg's Sugar ORM implementation
+
+-keep class com.sensorbergorm.query.** { *; }
+-keep class com.sensorbergorm.SugarRecord { java.lang.Long id; }

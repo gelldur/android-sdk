@@ -46,10 +46,14 @@ import java.util.Set;
  */
 @SuppressWarnings({"ConstantConditions", "PointlessBooleanExpression"})
 public class LocalBroadcastManager {
+
     private static class ReceiverRecord {
-        final IntentFilter filter;
-        final BroadcastReceiver receiver;
-        boolean broadcasting;
+
+        private final IntentFilter filter;
+
+        private final BroadcastReceiver receiver;
+
+        private boolean broadcasting;
 
         ReceiverRecord(IntentFilter _filter, BroadcastReceiver _receiver) {
             filter = _filter;
@@ -70,8 +74,10 @@ public class LocalBroadcastManager {
     }
 
     private static class BroadcastRecord {
-        final Intent intent;
-        final ArrayList<ReceiverRecord> receivers;
+
+        private final Intent intent;
+
+        private final ArrayList<ReceiverRecord> receivers;
 
         BroadcastRecord(Intent _intent, ArrayList<ReceiverRecord> _receivers) {
             intent = _intent;
@@ -80,23 +86,23 @@ public class LocalBroadcastManager {
     }
 
     private static final String TAG = "LocalBroadcastManager";
+
     private static final boolean DEBUG = false;
 
     private final Context mAppContext;
 
-    private final HashMap<BroadcastReceiver, ArrayList<IntentFilter>> mReceivers
-            = new HashMap<>();
-    private final HashMap<String, ArrayList<ReceiverRecord>> mActions
-            = new HashMap<>();
+    private final HashMap<BroadcastReceiver, ArrayList<IntentFilter>> mReceivers = new HashMap<>();
 
-    private final ArrayList<BroadcastRecord> mPendingBroadcasts
-            = new ArrayList<>();
+    private final HashMap<String, ArrayList<ReceiverRecord>> mActions = new HashMap<>();
+
+    private final ArrayList<BroadcastRecord> mPendingBroadcasts = new ArrayList<>();
 
     private static final int MSG_EXEC_PENDING_BROADCASTS = 1;
 
     private final Handler mHandler;
 
     private static final Object mLock = new Object();
+
     private static LocalBroadcastManager mInstance;
 
     public static LocalBroadcastManager getInstance(Context context) {
@@ -132,8 +138,7 @@ public class LocalBroadcastManager {
      * Register a receive for any local broadcasts that match the given IntentFilter.
      *
      * @param receiver The BroadcastReceiver to handle the broadcast.
-     * @param filter Selects the Intent broadcasts to be received.
-     *
+     * @param filter   Selects the Intent broadcasts to be received.
      * @see #unregisterReceiver
      */
     public void registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
@@ -145,7 +150,7 @@ public class LocalBroadcastManager {
                 mReceivers.put(receiver, filters);
             }
             filters.add(filter);
-            for (int i=0; i<filter.countActions(); i++) {
+            for (int i = 0; i < filter.countActions(); i++) {
                 String action = filter.getAction(i);
                 ArrayList<ReceiverRecord> entries = mActions.get(action);
                 if (entries == null) {
@@ -163,7 +168,6 @@ public class LocalBroadcastManager {
      * removed.
      *
      * @param receiver The BroadcastReceiver to unregister.
-     *
      * @see #registerReceiver
      */
     public void unregisterReceiver(BroadcastReceiver receiver) {
@@ -172,13 +176,13 @@ public class LocalBroadcastManager {
             if (filters == null) {
                 return;
             }
-            for (int i=0; i<filters.size(); i++) {
+            for (int i = 0; i < filters.size(); i++) {
                 IntentFilter filter = filters.get(i);
-                for (int j=0; j<filter.countActions(); j++) {
+                for (int j = 0; j < filter.countActions(); j++) {
                     String action = filter.getAction(j);
                     ArrayList<ReceiverRecord> receivers = mActions.get(action);
                     if (receivers != null) {
-                        for (int k=0; k<receivers.size(); k++) {
+                        for (int k = 0; k < receivers.size(); k++) {
                             if (receivers.get(k).receiver == receiver) {
                                 receivers.remove(k);
                                 k--;
@@ -199,8 +203,7 @@ public class LocalBroadcastManager {
      * executing while the receivers are run.
      *
      * @param intent The Intent to broadcast; all receivers matching this
-     *     Intent will receive the broadcast.
-     *
+     *               Intent will receive the broadcast.
      * @see #registerReceiver
      */
     public boolean sendBroadcast(Intent intent) {
@@ -212,31 +215,38 @@ public class LocalBroadcastManager {
             final String scheme = intent.getScheme();
             final Set<String> categories = intent.getCategories();
 
-            final boolean debug = DEBUG ||
-                    ((intent.getFlags() & Intent.FLAG_DEBUG_LOG_RESOLUTION) != 0);
-            if (debug) Log.v(
-                    TAG, "Resolving type " + type + " scheme " + scheme
-                            + " of intent " + intent);
+            final boolean debug = DEBUG || ((intent.getFlags() & Intent.FLAG_DEBUG_LOG_RESOLUTION) != 0);
+            if (debug) {
+                Log.v(TAG, "Resolving type " + type + " scheme " + scheme + " of intent " + intent);
+            }
 
             ArrayList<ReceiverRecord> entries = mActions.get(intent.getAction());
             if (entries != null) {
-                if (debug) Log.v(TAG, "Action list: " + entries);
+                if (debug) {
+                    Log.v(TAG, "Action list: " + entries);
+                }
 
                 ArrayList<ReceiverRecord> receivers = null;
-                for (int i=0; i<entries.size(); i++) {
+                for (int i = 0; i < entries.size(); i++) {
                     ReceiverRecord receiver = entries.get(i);
-                    if (debug) Log.v(TAG, "Matching against filter " + receiver.filter);
+                    if (debug) {
+                        Log.v(TAG, "Matching against filter " + receiver.filter);
+                    }
 
                     if (receiver.broadcasting) {
-                        if (debug) {Log.v(TAG, "  Filter's target already added");}
+                        if (debug) {
+                            Log.v(TAG, "  Filter's target already added");
+                        }
                         continue;
                     }
 
                     int match = receiver.filter.match(action, type, scheme, data,
                             categories, "LocalBroadcastManager");
                     if (match >= 0) {
-                        if (debug) Log.v(TAG, "  Filter matched!  match=0x" +
-                                Integer.toHexString(match));
+                        if (debug) {
+                            Log.v(TAG, "  Filter matched!  match=0x" +
+                                    Integer.toHexString(match));
+                        }
                         if (receivers == null) {
                             receivers = new ArrayList<>();
                         }
@@ -246,11 +256,21 @@ public class LocalBroadcastManager {
                         if (debug) {
                             String reason;
                             switch (match) {
-                                case IntentFilter.NO_MATCH_ACTION: reason = "action"; break;
-                                case IntentFilter.NO_MATCH_CATEGORY: reason = "category"; break;
-                                case IntentFilter.NO_MATCH_DATA: reason = "data"; break;
-                                case IntentFilter.NO_MATCH_TYPE: reason = "type"; break;
-                                default: reason = "unknown reason"; break;
+                                case IntentFilter.NO_MATCH_ACTION:
+                                    reason = "action";
+                                    break;
+                                case IntentFilter.NO_MATCH_CATEGORY:
+                                    reason = "category";
+                                    break;
+                                case IntentFilter.NO_MATCH_DATA:
+                                    reason = "data";
+                                    break;
+                                case IntentFilter.NO_MATCH_TYPE:
+                                    reason = "type";
+                                    break;
+                                default:
+                                    reason = "unknown reason";
+                                    break;
                             }
                             Log.v(TAG, "  Filter did not match: " + reason);
                         }
@@ -258,7 +278,7 @@ public class LocalBroadcastManager {
                 }
 
                 if (receivers != null) {
-                    for (int i=0; i<receivers.size(); i++) {
+                    for (int i = 0; i < receivers.size(); i++) {
                         receivers.get(i).broadcasting = false;
                     }
                     mPendingBroadcasts.add(new BroadcastRecord(intent, receivers));
@@ -295,9 +315,9 @@ public class LocalBroadcastManager {
                 mPendingBroadcasts.toArray(brs);
                 mPendingBroadcasts.clear();
             }
-            for (int i=0; i<brs.length; i++) {
+            for (int i = 0; i < brs.length; i++) {
                 BroadcastRecord br = brs[i];
-                for (int j=0; j<br.receivers.size(); j++) {
+                for (int j = 0; j < br.receivers.size(); j++) {
                     br.receivers.get(j).receiver.onReceive(mAppContext, br.intent);
                 }
             }

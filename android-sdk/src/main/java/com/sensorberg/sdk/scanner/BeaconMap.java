@@ -1,6 +1,6 @@
 package com.sensorberg.sdk.scanner;
 
-import com.sensorberg.sdk.internal.FileHelper;
+import com.sensorberg.sdk.internal.interfaces.FileManager;
 import com.sensorberg.sdk.model.BeaconId;
 
 import java.io.File;
@@ -10,17 +10,23 @@ import java.util.Map;
 
 public class BeaconMap {
 
+    private FileManager fileManager;
+
     public interface Filter {
+
         boolean filter(EventEntry beaconEntry, BeaconId beaconId);
     }
 
     private final HashMap<BeaconId, EventEntry> storage;
-    private final File file;
 
-    public BeaconMap(File fileForPersistance) {
-        this.file = fileForPersistance;
+    private final File fileForPersistance;
+
+    public BeaconMap(FileManager fm, File file) {
+        fileManager = fm;
+        fileForPersistance = file;
+
         if (fileForPersistance != null) {
-            storage = FileHelper.readFile(fileForPersistance);
+            storage = readBeaconEntriesFile(fileForPersistance);
 
         } else {
             storage = new HashMap<>();
@@ -38,8 +44,8 @@ public class BeaconMap {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private void deleteFile() {
-        if(file != null) {
-            file.delete();
+        if (fileForPersistance != null) {
+            fileForPersistance.delete();
         }
     }
 
@@ -55,23 +61,37 @@ public class BeaconMap {
     public void filter(Filter filter) {
         boolean modified = false;
         Iterator<Map.Entry<BeaconId, EventEntry>> iterator = storage.entrySet().iterator();
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             Map.Entry<BeaconId, EventEntry> enteredBeacon = iterator.next();
             EventEntry beaconEntry = enteredBeacon.getValue();
             BeaconId beaconId = enteredBeacon.getKey();
-            if(filter.filter(beaconEntry, beaconId)){
+            if (filter.filter(beaconEntry, beaconId)) {
                 iterator.remove();
                 modified = true;
             }
         }
-        if(modified){
+        if (modified) {
             persist();
         }
     }
 
     private void persist() {
-        if (file != null) {
-            FileHelper.write(storage, file);
+        if (fileForPersistance != null) {
+            fileManager.write(storage, fileForPersistance);
         }
+    }
+
+    private HashMap<BeaconId, EventEntry> readBeaconEntriesFile(File file) {
+        HashMap<BeaconId, EventEntry> value;
+        try {
+            //noinspection unchecked if it fails, see catch block
+            value = (HashMap<BeaconId, EventEntry>) fileManager.getContentsOfFileOrNull(file);
+            if (value == null) {
+                return new HashMap<>();
+            }
+        } catch (ClassCastException e) {
+            return new HashMap<>();
+        }
+        return value;
     }
 }
