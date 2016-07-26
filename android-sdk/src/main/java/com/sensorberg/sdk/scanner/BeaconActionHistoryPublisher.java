@@ -131,6 +131,8 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
         if (scans.isEmpty() && actions.isEmpty()) {
             Logger.log.verbose("nothing to report");
             return;
+        } else {
+            Logger.log.verbose("reporting " + scans.size() + " scans and " + actions.size() + " actions");
         }
 
         transport.publishHistory(scans, actions, new TransportHistoryCallback() {
