@@ -92,7 +92,7 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
         long now = clock.now();
         switch (queueEvent.what) {
             case MSG_SCAN_EVENT:
-                BeaconScan scan = BeaconScan.from((ScanEvent) queueEvent.obj, clock.now());
+                BeaconScan scan = BeaconScan.from((ScanEvent) queueEvent.obj);
                 saveData(scan);
                 break;
             case MSG_MARK_SCANS_AS_SENT:

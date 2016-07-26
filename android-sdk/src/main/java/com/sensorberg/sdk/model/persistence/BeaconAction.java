@@ -1,6 +1,7 @@
 package com.sensorberg.sdk.model.persistence;
 
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 import com.sensorberg.sdk.internal.interfaces.Clock;
 import com.sensorberg.sdk.resolver.BeaconEvent;
@@ -22,14 +23,13 @@ public class BeaconAction {
     @Expose
     @Getter
     @Setter
+    @SerializedName("eid")
     private String actionId;
 
-    @Expose
     @Getter
     @Setter
     private long timeOfPresentation;
 
-    @Expose
     @Getter
     @Setter
     private long sentToServerTimestamp2;
@@ -37,19 +37,21 @@ public class BeaconAction {
     @Expose
     @Getter
     @Setter
+    @SerializedName("dt")
     private long createdAt;
 
     @Expose
     @Getter
     @Setter
+    @SerializedName("trigger")
     private int trigger;
 
     @Expose
     @Getter
     @Setter
+    @SerializedName("pid")
     private String pid;
 
-    @Expose
     @Getter
     @Setter
     private boolean keepForever;
@@ -73,7 +75,7 @@ public class BeaconAction {
         value.setTrigger(beaconEvent.trigger);
 
         if (beaconEvent.getBeaconId() != null) {
-            value.setPid(beaconEvent.getBeaconId().getBid());
+            value.setPid(beaconEvent.getBeaconId().getPid());
         }
         if (beaconEvent.sendOnlyOnce || beaconEvent.getSuppressionTimeMillis() > 0) {
             value.setKeepForever(true);
