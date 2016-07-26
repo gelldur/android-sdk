@@ -2,6 +2,7 @@ package com.sensorberg.sdk.internal.transport;
 
 import com.google.gson.Gson;
 
+import com.sensorberg.sdk.BuildConfig;
 import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
 import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiService;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
@@ -11,11 +12,13 @@ import com.sensorberg.sdk.model.server.BaseResolveResponse;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 
 import android.content.Context;
+import android.os.Build;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import okhttp3.Cache;
@@ -29,12 +32,11 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
 import retrofit2.http.Header;
-import retrofit2.http.Url;
-
-import static com.sensorberg.sdk.internal.URLFactory.getSettingsURLString;
 
 @Accessors(prefix = "m")
 public class RetrofitApiServiceImpl {
+
+    public static final String DEFAULT_BASE_URL = "https://resolver.sensorberg.com/";
 
     private static final int CONNECTION_TIMEOUT = 30; //seconds
 
@@ -46,8 +48,10 @@ public class RetrofitApiServiceImpl {
 
     private final PlatformIdentifier mPlatformIdentifier;
 
-    private final String mBaseUrl;
+    @Getter
+    private String mBaseUrl;
 
+    @Getter
     @Setter
     private String mApiToken;
 
@@ -55,15 +59,15 @@ public class RetrofitApiServiceImpl {
 
     private RetrofitApiService mApiService;
 
-    public RetrofitApiServiceImpl(Context ctx, Gson gson, PlatformIdentifier platformId, String baseUrl) {
+    public RetrofitApiServiceImpl(Context ctx, Gson gson, PlatformIdentifier platformId) {
         mContext = ctx;
         mGson = gson;
         mPlatformIdentifier = platformId;
 
-        if (!baseUrl.endsWith("/")) {
-            mBaseUrl = baseUrl + "/";
+        if (BuildConfig.RESOLVER_URL != null && !BuildConfig.RESOLVER_URL.equalsIgnoreCase("null")) {
+            mBaseUrl = BuildConfig.RESOLVER_URL;
         } else {
-            mBaseUrl = baseUrl;
+            mBaseUrl = DEFAULT_BASE_URL;
         }
     }
 
@@ -132,7 +136,6 @@ public class RetrofitApiServiceImpl {
 
     public void setLoggingEnabled(boolean enabled) {
         synchronized (mGson) {
-
             if (enabled) {
                 mApiServiceLogLevel = HttpLoggingInterceptor.Level.BODY;
             } else {
@@ -145,24 +148,36 @@ public class RetrofitApiServiceImpl {
         }
     }
 
-    public Call<BaseResolveResponse> updateBeaconLayout(@Url String beaconLayoutUrl) {
-        return getApiService().updateBeaconLayout(beaconLayoutUrl);
+    public void setBaseUrl(String baseUrl) {
+        synchronized (mGson) {
+            if (baseUrl == null) {
+                mBaseUrl = DEFAULT_BASE_URL;
+            } else if (!baseUrl.endsWith("/")) {
+                mBaseUrl = baseUrl + "/";
+            } else {
+                mBaseUrl = baseUrl;
+            }
+
+            if (mApiService != null) {
+                mApiService = null;
+            }
+        }
     }
 
-    public Call<ResolveResponse> getBeacon(@Url String beaconURLString, @Header("X-pid") String beaconId, @Header("X-qos") String networkInfo) {
-        return getApiService().getBeacon(beaconURLString, beaconId, networkInfo);
+    public Call<BaseResolveResponse> updateBeaconLayout() {
+        return getApiService().updateBeaconLayout();
     }
 
-    public Call<ResolveResponse> publishHistory(@Url String beaconLayoutUrl, @Body HistoryBody body) {
-        return getApiService().publishHistory(beaconLayoutUrl, body);
+    public Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo) {
+        return getApiService().getBeacon(beaconId, networkInfo);
+    }
+
+    public Call<ResolveResponse> publishHistory(@Body HistoryBody body) {
+        return getApiService().publishHistory(body);
     }
 
     public Call<SettingsResponse> getSettings() {
-        return getSettings(getSettingsURLString(mApiToken));
-    }
-
-    public Call<SettingsResponse> getSettings(@Url String url) {
-        return getApiService().getSettings(url);
+        return getApiService().getSettings(mApiToken);
     }
 
 }

@@ -74,7 +74,7 @@ public class RetrofitApiTransport implements Transport {
                 ? NetworkInfoBroadcastReceiver.getNetworkInfoString() : "";
 
         Call<ResolveResponse> call = getApiService()
-                .getBeacon(getResolveURLString(), resolutionConfiguration.getScanEvent().getBeaconId().getBid(), networkInfo);
+                .getBeacon(resolutionConfiguration.getScanEvent().getBeaconId().getBid(), networkInfo);
 
         call.enqueue(new Callback<ResolveResponse>() {
             @Override
@@ -164,7 +164,7 @@ public class RetrofitApiTransport implements Transport {
     public void publishHistory(final List<BeaconScan> scans, final List<BeaconAction> actions, final TransportHistoryCallback callback) {
 
         HistoryBody body = new HistoryBody(scans, actions, mClock);
-        Call<ResolveResponse> call = getApiService().publishHistory(getResolveURLString(), body);
+        Call<ResolveResponse> call = getApiService().publishHistory(body);
 
         call.enqueue(new Callback<ResolveResponse>() {
             @Override
@@ -187,7 +187,7 @@ public class RetrofitApiTransport implements Transport {
     @Override
     public void updateBeaconLayout() {
 
-        Call<BaseResolveResponse> call = getApiService().updateBeaconLayout(getResolveURLString());
+        Call<BaseResolveResponse> call = getApiService().updateBeaconLayout();
 
         call.enqueue(new Callback<BaseResolveResponse>() {
             @Override
