@@ -58,8 +58,8 @@ public class HttpStackShouldCacheTheSettings {
 
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        RetrofitApiServiceImpl realRetrofitApiService = new RetrofitApiServiceImpl(InstrumentationRegistry.getContext(), gson, platformIdentifier, baseUrl);
-        Call<SettingsResponse> call = realRetrofitApiService.getSettings(baseUrl);
+        RetrofitApiServiceImpl realRetrofitApiService = new RetrofitApiServiceImpl(InstrumentationRegistry.getContext(), gson, platformIdentifier);
+        Call<SettingsResponse> call = realRetrofitApiService.getSettings();
 
         Response response1 = call.execute();
         Response response2 = call.clone().execute();

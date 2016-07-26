@@ -1,7 +1,6 @@
 package com.sensorberg.sdk;
 
 import com.sensorberg.sdk.di.TestComponent;
-import com.sensorberg.sdk.internal.URLFactory;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
 import com.sensorberg.sdk.internal.interfaces.Clock;
 import com.sensorberg.sdk.internal.interfaces.FileManager;
@@ -253,7 +252,7 @@ public class SensorbergServiceInternalTests {
         SensorbergServiceConfiguration diskConfNew = (SensorbergServiceConfiguration) fileManager.getContentsOfFileOrNull(
                 fileManager.getFile(SensorbergServiceMessage.SERVICE_CONFIGURATION));
         Assertions.assertThat(diskConfNew.resolverConfiguration.getResolverLayoutURL()).isEqualTo(resolverURL);
-        Assertions.assertThat(URLFactory.getResolveURLString()).isEqualTo(resolverURL.toString());
+        Assertions.assertThat(transport.getBaseUrl()).isEqualTo(resolverURL.toString());
     }
 
     @Test
@@ -303,23 +302,23 @@ public class SensorbergServiceInternalTests {
 
     @Test
     public void setting_invalid_resolver_endpoint_shouldnt_change_endpoint() {
-        String oldResolverUrl = URLFactory.getResolveURLString();
+        String oldResolverUrl = transport.getBaseUrl();
         Intent serviceIntent = TestConstants.getInvalidResolverEndpointIntent(InstrumentationRegistry.getContext());
 
         tested.setResolverEndpoint(serviceIntent);
 
-        Assertions.assertThat(oldResolverUrl).isEqualTo(URLFactory.getResolveURLString());
+        Assertions.assertThat(oldResolverUrl).isEqualTo(transport.getBaseUrl());
     }
 
     @Test
     public void setting_valid_resolver_endpoint_should_change_endpoint() throws Exception {
-        String oldResolverUrl = URLFactory.getResolveURLString();
+        String oldResolverUrl = transport.getBaseUrl();
         Intent serviceIntent = SensorbergServiceIntents.getResolverEndpointIntent(InstrumentationRegistry.getContext(),
                 new URL("http://newresolver.sensorberg.com"));
 
         tested.setResolverEndpoint(serviceIntent);
 
-        Assertions.assertThat(oldResolverUrl).isNotEqualTo(URLFactory.getResolveURLString());
+        Assertions.assertThat(oldResolverUrl).isNotEqualTo(transport.getBaseUrl());
     }
 
     @Test

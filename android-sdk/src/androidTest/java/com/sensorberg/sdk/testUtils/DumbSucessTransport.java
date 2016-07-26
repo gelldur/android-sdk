@@ -29,6 +29,16 @@ public class DumbSucessTransport implements Transport {
     }
 
     @Override
+    public void setBaseUrl(String baseUrl) {
+
+    }
+
+    @Override
+    public String getBaseUrl() {
+        return null;
+    }
+
+    @Override
     public void setBeaconReportHandler(BeaconReportHandler beaconReportHandler) {
 
     }

@@ -1,7 +1,6 @@
 package com.sensorberg.sdk.test;
 
 import com.sensorberg.sdk.SensorbergTestApplication;
-import com.sensorberg.sdk.internal.URLFactory;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -34,9 +33,6 @@ public class SensorbergTestRunner extends android.support.test.runner.AndroidJUn
         super.onCreate(arguments);
         System.setProperty("dexmaker.dexcache", getContext().getCacheDir().getPath());
 
-        if (com.sensorberg.sdk.BuildConfig.RESOLVER_URL != null) {
-            URLFactory.setLayoutURL(com.sensorberg.sdk.BuildConfig.RESOLVER_URL);
-        }
         JodaTimeAndroid.init(getContext());
 
         DateTimeZone e = DateTimeZone.forTimeZone(TimeZone.getTimeZone("GMT+01:00"));
