@@ -1,7 +1,6 @@
 package com.sensorberg.sdk;
 
 import com.sensorberg.SensorbergSdk;
-import com.sensorberg.sdk.internal.URLFactory;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
 import com.sensorberg.sdk.internal.interfaces.Clock;
 import com.sensorberg.sdk.internal.interfaces.FileManager;
@@ -219,7 +218,7 @@ public class SensorbergService extends Service {
                     if (intent.hasExtra(SensorbergServiceMessage.MSG_SET_RESOLVER_ENDPOINT_ENDPOINT_URL)) {
                         URL resolverURL = (URL) intent.getSerializableExtra(SensorbergServiceMessage.MSG_SET_RESOLVER_ENDPOINT_ENDPOINT_URL);
                         diskConf.resolverConfiguration.setResolverLayoutURL(resolverURL);
-                        URLFactory.setLayoutURL(diskConf.resolverConfiguration.getResolverLayoutURL().toString());
+                        transport.setBaseUrl(resolverURL.toString());
                     }
                     break;
                 }
@@ -274,7 +273,7 @@ public class SensorbergService extends Service {
 
             //first case is when the service gets started outside of bootstrapper. we're not creating a bootstrapper in that case
             if (diskConf != null && diskConf.resolverConfiguration.getResolverLayoutURL() != null) {
-                URLFactory.setLayoutURL(diskConf.resolverConfiguration.getResolverLayoutURL().toString());
+                transport.setBaseUrl(diskConf.resolverConfiguration.getResolverLayoutURL().toString());
             }
             if (diskConf != null && diskConf.isComplete()) {
                 newBootstrapper = createBootstrapper(diskConf.resolverConfiguration.apiToken);
@@ -413,7 +412,7 @@ public class SensorbergService extends Service {
         if (intent.hasExtra(SensorbergServiceMessage.MSG_SET_RESOLVER_ENDPOINT_ENDPOINT_URL)) {
             try {
                 URL resolverURL = (URL) intent.getSerializableExtra(SensorbergServiceMessage.MSG_SET_RESOLVER_ENDPOINT_ENDPOINT_URL);
-                URLFactory.setLayoutURL(resolverURL.toString());
+                transport.setBaseUrl(resolverURL.toString());
             } catch (Exception e) {
                 logError("Could not parse the extra " + SensorbergServiceMessage.MSG_SET_RESOLVER_ENDPOINT_ENDPOINT_URL, e);
             }

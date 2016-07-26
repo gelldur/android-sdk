@@ -52,6 +52,7 @@ group = "com.sensorberg.sdk"
 archivesBaseName = 'android-sdk'
 version = "${project.ext.SDK_VERSION}${project.ext.RC_VERSION}"
 
+//base URL should always terminate with "/", like "http://resolver.server.com/"
 def resolverURL = System.getenv("RESOLVER_URL") ?: project.ext.has("resolver_url") ? project.ext.get("resolver_url"): null
 
 if (resolverURL != null) {
@@ -100,6 +101,7 @@ android {
         }
         release {
             testCoverageEnabled false
+            buildConfigField "String", "RESOLVER_URL", resolverURL ? wrapInQuotes(resolverURL) : "null"
         }
     }
 }

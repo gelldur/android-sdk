@@ -8,11 +8,11 @@ import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback
 import com.sensorberg.sdk.internal.transport.interfaces.TransportSettingsCallback;
 import com.sensorberg.sdk.internal.transport.model.HistoryBody;
 import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
+import com.sensorberg.sdk.model.persistence.BeaconAction;
+import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.model.server.BaseResolveResponse;
 import com.sensorberg.sdk.model.server.ResolveAction;
 import com.sensorberg.sdk.model.server.ResolveResponse;
-import com.sensorberg.sdk.model.persistence.BeaconAction;
-import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.receivers.NetworkInfoBroadcastReceiver;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolutionConfiguration;
@@ -29,7 +29,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.sensorberg.sdk.internal.URLFactory.getResolveURLString;
 import static com.sensorberg.utils.ListUtils.map;
 
 public class RetrofitApiTransport implements Transport {
@@ -52,6 +51,16 @@ public class RetrofitApiTransport implements Transport {
 
     private RetrofitApiServiceImpl getApiService() {
         return apiService;
+    }
+
+    @Override
+    public void setBaseUrl(String baseUrl) {
+        getApiService().setBaseUrl(baseUrl);
+    }
+
+    @Override
+    public String getBaseUrl() {
+        return getApiService().getBaseUrl();
     }
 
     @Override

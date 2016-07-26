@@ -41,6 +41,11 @@ public interface Transport {
 
         void reportImmediately();
     }
+
+    void setBaseUrl(String baseUrl);
+
+    String getBaseUrl();
+
     void setBeaconReportHandler(BeaconReportHandler beaconReportHandler);
 
     void setProximityUUIDUpdateHandler(ProximityUUIDUpdateHandler proximityUUIDUpdateHandler);
