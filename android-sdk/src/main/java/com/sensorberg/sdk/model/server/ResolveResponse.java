@@ -49,7 +49,7 @@ public class ResolveResponse extends BaseResolveResponse implements Serializable
         return ListUtils.filter(actions, new ListUtils.Filter<ResolveAction>() {
             @Override
             public boolean matches(ResolveAction resolveAction) {
-                boolean matchTrigger = resolveAction.matchTrigger(scanEvent.getEventMask());
+                boolean matchTrigger = resolveAction.matchTrigger(scanEvent.getTrigger());
                 if (matchTrigger) {
                     boolean matchBeacon = resolveAction.containsBeacon(scanEvent.getBeaconId());
                     if (matchBeacon) {

@@ -1,9 +1,9 @@
 package com.sensorberg.sdk.model;
 
+import com.sensorberg.utils.UUIDUtils;
+
 import android.os.Parcel;
 import android.os.Parcelable;
-
-import com.sensorberg.utils.UUIDUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -212,7 +212,7 @@ public class BeaconId implements Parcelable, Serializable {
         return UUIDUtils.uuidWithoutDashesString(getUuid());
     }
 
-    public String getBid(){
+    public String getPid(){
         return String.format("%1s%2$05d%3$05d", this.getProximityUUIDWithoutDashes(), this.getMajorId(), this.getMinorId());
     }
 

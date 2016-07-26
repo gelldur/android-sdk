@@ -91,7 +91,7 @@ public class TheInternalBootstrapperIntegration {
     private static final ResolveResponse PUBLISH_HISTORY_RESPONSE = new ResolveResponse.Builder()
             .withInstantActions(Arrays.asList(
                     new ResolveAction.Builder()
-                            .withBeacons(Arrays.asList(TestConstants.ANY_BEACON_ID.getBid()))
+                            .withBeacons(Arrays.asList(TestConstants.ANY_BEACON_ID.getPid()))
                             .withType(ActionFactory.ServerType.IN_APP)
                             .withUuid(ANY_UUID)
                             .withContent(ANY_IN_APP_JSON)
@@ -102,7 +102,7 @@ public class TheInternalBootstrapperIntegration {
     private ResolveResponse RESOLVE_RESPONSE_WITH_REPORT_IMMEDIATELY = new ResolveResponse.Builder()
             .withActions(Arrays.asList(
                     new ResolveAction.Builder()
-                            .withBeacons(Arrays.asList(TestConstants.ANY_BEACON_ID.getBid()))
+                            .withBeacons(Arrays.asList(TestConstants.ANY_BEACON_ID.getPid()))
                             .withTrigger(ScanEventType.ENTRY.getMask())
                             .withUuid(ANOTHER_UUID)
                             .withReportImmediately(true)
@@ -113,7 +113,7 @@ public class TheInternalBootstrapperIntegration {
     private ResolveResponse RESOLVE_RESPONSE_WITH_ACTION = new ResolveResponse.Builder()
             .withActions(Arrays.asList(
                     new ResolveAction.Builder()
-                            .withBeacons(Arrays.asList(TestConstants.ANY_BEACON_ID.getBid()))
+                            .withBeacons(Arrays.asList(TestConstants.ANY_BEACON_ID.getPid()))
                             .withType(ActionFactory.ServerType.IN_APP)
                             .withTrigger(ScanEventType.ENTRY.getMask())
                             .withUuid(ANY_UUID)

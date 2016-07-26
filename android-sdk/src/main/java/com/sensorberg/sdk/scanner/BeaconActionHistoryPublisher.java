@@ -92,7 +92,7 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
         long now = clock.now();
         switch (queueEvent.what) {
             case MSG_SCAN_EVENT:
-                BeaconScan scan = BeaconScan.from((ScanEvent) queueEvent.obj, clock.now());
+                BeaconScan scan = BeaconScan.from((ScanEvent) queueEvent.obj);
                 saveData(scan);
                 break;
             case MSG_MARK_SCANS_AS_SENT:
@@ -131,6 +131,8 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
         if (scans.isEmpty() && actions.isEmpty()) {
             Logger.log.verbose("nothing to report");
             return;
+        } else {
+            Logger.log.verbose("reporting " + scans.size() + " scans and " + actions.size() + " actions");
         }
 
         transport.publishHistory(scans, actions, new TransportHistoryCallback() {
@@ -167,14 +169,14 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     //local persistence
     private void saveData(BeaconScan beaconScan) {
         beaconScans.add(beaconScan);
-        Logger.log.verbose("saving scan = " + beaconScan.getProximityUUID() + ", total saved = " + beaconScans.size());
+        Logger.log.verbose("saving scan = " + beaconScan.getPid() + ", total saved = " + beaconScans.size());
     }
 
     public List<BeaconScan> notSentBeaconScans() {
         return ListUtils.filter(beaconScans, new ListUtils.Filter<BeaconScan>() {
             @Override
             public boolean matches(BeaconScan beaconEvent) {
-                return beaconEvent.getSentToServerTimestamp2() == BeaconScan.NO_DATE;
+                return beaconEvent.getSentToServerTimestamp() == BeaconScan.NO_DATE;
             }
         });
     }
@@ -186,7 +188,7 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
                     if (beaconScans.contains(scans.get(i))) {
                         beaconScans.remove(scans.get(i));
                     }
-                    scans.get(i).setSentToServerTimestamp2(timeNow);
+                    scans.get(i).setSentToServerTimestamp(timeNow);
                     saveData(scans.get(i));
                 }
             }
@@ -199,7 +201,7 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
             @Override
             public boolean matches(BeaconScan beaconEvent) {
                 return beaconEvent.getCreatedAt() < (timeNow - cacheTtl)
-                        && beaconEvent.getSentToServerTimestamp2() != BeaconScan.NO_DATE;
+                        && beaconEvent.getSentToServerTimestamp() != BeaconScan.NO_DATE;
             }
         });
 
@@ -221,7 +223,7 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
         return ListUtils.filter(beaconActions, new ListUtils.Filter<BeaconAction>() {
             @Override
             public boolean matches(BeaconAction beaconAction) {
-                return beaconAction.getSentToServerTimestamp2() == BeaconAction.NO_DATE;
+                return beaconAction.getSentToServerTimestamp() == BeaconAction.NO_DATE;
             }
         });
     }
@@ -233,7 +235,7 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
                     if (beaconActions.contains(scans.get(i))) {
                         beaconActions.remove(scans.get(i));
                     }
-                    scans.get(i).setSentToServerTimestamp2(timeNow);
+                    scans.get(i).setSentToServerTimestamp(timeNow);
                     saveData(scans.get(i));
                 }
             }
@@ -245,8 +247,8 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
         List<BeaconAction> actionsToDelete = ListUtils.filter(beaconActions, new ListUtils.Filter<BeaconAction>() {
             @Override
             public boolean matches(BeaconAction beaconEvent) {
-                return beaconEvent.getCreatedAt() < (timeNow - cacheTtl)
-                        && beaconEvent.getSentToServerTimestamp2() != BeaconAction.NO_DATE;
+                return !beaconEvent.isKeepForever() && (beaconEvent.getCreatedAt() < (timeNow - cacheTtl)
+                        && beaconEvent.getSentToServerTimestamp() != BeaconAction.NO_DATE);
             }
         });
 

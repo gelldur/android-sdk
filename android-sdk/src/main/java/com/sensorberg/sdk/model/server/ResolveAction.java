@@ -107,7 +107,7 @@ public class ResolveAction implements Serializable {
     }
 
     public boolean containsBeacon(BeaconId beaconId) {
-        final String scanEventBid = beaconId.getBid();
+        final String scanEventBid = beaconId.getPid();
         for (String bid : beacons) {
             boolean matchBid = scanEventBid.equalsIgnoreCase(bid);
             if (matchBid) {
