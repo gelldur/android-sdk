@@ -156,8 +156,16 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
         }
     }
 
-    public void setResolverBaseURL(URL resolverBaseURL) {
-        context.startService(SensorbergServiceIntents.getResolverEndpointIntent(context, resolverBaseURL));
+    /**
+     * This sets a new base URL for the calls. The calls will be directed to "baseUrl/layout/" URL.
+     * Note: this will also redirect settings calls, to
+     * "baseuUrl/applications/{apiKey}/settings/android/{sdkVersion}/{osVersion}/{deviceManufacturer}/{deviceModel}" URL.
+     * Important: base URL should always terminate with "/", like "http://resolver.server.com/".
+     *
+     * @param baseURL {@code URL} URL to be used as base URL for the calls.
+     */
+    public void setBaseURL(URL baseURL) {
+        context.startService(SensorbergServiceIntents.getResolverEndpointIntent(context, baseURL));
     }
 
     public void enableService(Context context, String apiKey) {
