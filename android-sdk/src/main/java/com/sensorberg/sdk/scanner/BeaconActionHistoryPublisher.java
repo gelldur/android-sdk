@@ -167,7 +167,7 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     //local persistence
     private void saveData(BeaconScan beaconScan) {
         beaconScans.add(beaconScan);
-        Logger.log.verbose("saving scan = " + beaconScan.getProximityUUID() + ", total saved = " + beaconScans.size());
+        Logger.log.verbose("saving scan = " + beaconScan.getPid() + ", total saved = " + beaconScans.size());
     }
 
     public List<BeaconScan> notSentBeaconScans() {

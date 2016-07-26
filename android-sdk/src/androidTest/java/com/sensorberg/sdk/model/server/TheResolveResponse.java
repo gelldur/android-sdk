@@ -43,7 +43,7 @@ public class TheResolveResponse {
     private static final ResolveResponse PUBLISH_HISTORY_RESPONSE = new ResolveResponse.Builder()
             .withInstantActions(Arrays.asList(
                     new ResolveAction.Builder()
-                            .withBeacons(Arrays.asList(TestConstants.ANY_BEACON_ID.getBid()))
+                            .withBeacons(Arrays.asList(TestConstants.ANY_BEACON_ID.getPid()))
                             .withType(ActionFactory.ServerType.IN_APP)
                             .withUuid(UUID.randomUUID().toString())
                             .withContent(ANY_IN_APP_JSON)

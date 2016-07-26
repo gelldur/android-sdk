@@ -74,7 +74,7 @@ public class RetrofitApiTransport implements Transport {
                 ? NetworkInfoBroadcastReceiver.getNetworkInfoString() : "";
 
         Call<ResolveResponse> call = getApiService()
-                .getBeacon(getResolveURLString(), resolutionConfiguration.getScanEvent().getBeaconId().getBid(), networkInfo);
+                .getBeacon(getResolveURLString(), resolutionConfiguration.getScanEvent().getBeaconId().getPid(), networkInfo);
 
         call.enqueue(new Callback<ResolveResponse>() {
             @Override
