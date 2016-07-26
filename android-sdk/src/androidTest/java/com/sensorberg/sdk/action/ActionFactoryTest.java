@@ -31,9 +31,13 @@ public class ActionFactoryTest {
     };
 
     public static final JsonElement JSON_ELEMENT_HTTP_LINK = new JsonPrimitive("http://google.com");
+
     public static final JsonElement JSON_ELEMENT_HTTPS_LINK = new JsonPrimitive("https://google.com");
+
     public static final JsonElement JSON_ELEMENT_HTTP_LINK_WITH_PARAMS = new JsonPrimitive("http://google.com?test=test&test2=test2");
+
     public static final JsonElement JSON_ELEMENT_HTTP_LINK_WITH_PAGE = new JsonPrimitive("http://google.com/test.html");
+
     public static final JsonElement JSON_ELEMENT_DEEPLINK = new JsonPrimitive("android-app://com.sensorberg.bconfig");
 
     @Test
@@ -46,7 +50,7 @@ public class ActionFactoryTest {
             Assertions.assertThat(result).isNotNull();
             Assertions.assertThat(result.getContent()).isEqualTo("This is a message");
             Assertions.assertThat(result.getTitle()).isEqualTo("this is a subject");
-            Assertions.assertThat(result.getUri()).isEqualTo("");
+            Assertions.assertThat(result.getUri()).isEqualTo("something://");
         } catch (Exception e) {
             Assertions.fail(e.getMessage());
         }
@@ -78,7 +82,7 @@ public class ActionFactoryTest {
             Assertions.assertThat(result).isInstanceOf(UriMessageAction.class);
             Assertions.assertThat(((UriMessageAction) result).getContent()).isNotEmpty();
             Assertions.assertThat(((UriMessageAction) result).getTitle()).isNotEmpty();
-            Assertions.assertThat(((UriMessageAction) result).getUri()).isEmpty();
+            Assertions.assertThat(((UriMessageAction) result).getUri()).isEqualToIgnoringCase("something://");
 
         } catch (Exception e) {
             Assertions.fail(e.getMessage());
@@ -213,20 +217,29 @@ public class ActionFactoryTest {
     }
 
     @Test
-    public void should_validate_valid_only_network_urls_for_url_message() {
-        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTP_LINK, ActionFactory.ServerType.URL_MESSAGE)).isEqualTo("http://google.com");
-        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTPS_LINK, ActionFactory.ServerType.URL_MESSAGE)).isEqualTo("https://google.com");
-        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTP_LINK_WITH_PARAMS, ActionFactory.ServerType.URL_MESSAGE)).isEqualTo("http://google.com?test=test&test2=test2");
-        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTP_LINK_WITH_PAGE, ActionFactory.ServerType.URL_MESSAGE)).isEqualTo("http://google.com/test.html");
-        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_DEEPLINK, ActionFactory.ServerType.URL_MESSAGE)).isEmpty();
+    public void should_validate_valid_all_urls_for_url_message() {
+        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTP_LINK, ActionFactory.ServerType.URL_MESSAGE))
+                .isEqualTo("http://google.com");
+        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTPS_LINK, ActionFactory.ServerType.URL_MESSAGE))
+                .isEqualTo("https://google.com");
+        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTP_LINK_WITH_PARAMS, ActionFactory.ServerType.URL_MESSAGE))
+                .isEqualTo("http://google.com?test=test&test2=test2");
+        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTP_LINK_WITH_PAGE, ActionFactory.ServerType.URL_MESSAGE))
+                .isEqualTo("http://google.com/test.html");
+        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_DEEPLINK, ActionFactory.ServerType.URL_MESSAGE))
+                .isEqualTo("android-app://com.sensorberg.bconfig");
     }
 
     @Test
     public void should_validate_valid_only_network_urls_for_visit_website_message() {
-        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTP_LINK, ActionFactory.ServerType.VISIT_WEBSITE)).isEqualTo("http://google.com");
-        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTPS_LINK, ActionFactory.ServerType.VISIT_WEBSITE)).isEqualTo("https://google.com");
-        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTP_LINK_WITH_PARAMS, ActionFactory.ServerType.VISIT_WEBSITE)).isEqualTo("http://google.com?test=test&test2=test2");
-        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTP_LINK_WITH_PAGE, ActionFactory.ServerType.VISIT_WEBSITE)).isEqualTo("http://google.com/test.html");
+        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTP_LINK, ActionFactory.ServerType.VISIT_WEBSITE))
+                .isEqualTo("http://google.com");
+        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTPS_LINK, ActionFactory.ServerType.VISIT_WEBSITE))
+                .isEqualTo("https://google.com");
+        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTP_LINK_WITH_PARAMS, ActionFactory.ServerType.VISIT_WEBSITE))
+                .isEqualTo("http://google.com?test=test&test2=test2");
+        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTP_LINK_WITH_PAGE, ActionFactory.ServerType.VISIT_WEBSITE))
+                .isEqualTo("http://google.com/test.html");
         Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_DEEPLINK, ActionFactory.ServerType.VISIT_WEBSITE)).isEmpty();
     }
 
@@ -234,9 +247,12 @@ public class ActionFactoryTest {
     public void should_validate_valid_all_urls_for_in_app_message() {
         Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTP_LINK, ActionFactory.ServerType.IN_APP)).isEqualTo("http://google.com");
         Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTPS_LINK, ActionFactory.ServerType.IN_APP)).isEqualTo("https://google.com");
-        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTP_LINK_WITH_PARAMS, ActionFactory.ServerType.IN_APP)).isEqualTo("http://google.com?test=test&test2=test2");
-        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTP_LINK_WITH_PAGE, ActionFactory.ServerType.IN_APP)).isEqualTo("http://google.com/test.html");
-        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_DEEPLINK, ActionFactory.ServerType.IN_APP)).isEqualTo("android-app://com.sensorberg.bconfig");
+        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTP_LINK_WITH_PARAMS, ActionFactory.ServerType.IN_APP))
+                .isEqualTo("http://google.com?test=test&test2=test2");
+        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_HTTP_LINK_WITH_PAGE, ActionFactory.ServerType.IN_APP))
+                .isEqualTo("http://google.com/test.html");
+        Assertions.assertThat(ActionFactory.getUriFromJson(JSON_ELEMENT_DEEPLINK, ActionFactory.ServerType.IN_APP))
+                .isEqualTo("android-app://com.sensorberg.bconfig");
     }
 
     @Test

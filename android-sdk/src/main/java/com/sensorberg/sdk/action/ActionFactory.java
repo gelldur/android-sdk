@@ -136,9 +136,11 @@ public class ActionFactory {
         String urlToCheck = jsonElement == null ? "" : jsonElement.getAsString();
         String returnUrl = "";
 
-        //we allow deep links for in app actions; otherwise we want a valid Url
+        //we allow deep links for in app actions and URL messages; we enforce valid network URLs
+        // for the visit website action
         if ((messageType == ServerType.IN_APP && validatedUrl(urlToCheck))
-                || URLUtil.isValidUrl(urlToCheck)) {
+                || (messageType == ServerType.URL_MESSAGE && validatedUrl(urlToCheck))
+                || URLUtil.isNetworkUrl(urlToCheck)) {
             returnUrl = urlToCheck;
         }
 
