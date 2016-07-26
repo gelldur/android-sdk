@@ -26,6 +26,7 @@ public class BeaconAction {
     @SerializedName("eid")
     private String actionId;
 
+    @Expose
     @Getter
     @Setter
     @SerializedName("dt")
@@ -33,9 +34,8 @@ public class BeaconAction {
 
     @Getter
     @Setter
-    private long sentToServerTimestamp2;
+    private long sentToServerTimestamp;
 
-    @Expose
     @Getter
     @Setter
     private long createdAt;
@@ -70,7 +70,7 @@ public class BeaconAction {
         BeaconAction value = new BeaconAction();
         value.setActionId(beaconEvent.getAction().getUuid().toString());
         value.setTimeOfPresentation(beaconEvent.getPresentationTime());
-        value.setSentToServerTimestamp2(NO_DATE);
+        value.setSentToServerTimestamp(NO_DATE);
         value.setCreatedAt(clock.now());
         value.setTrigger(beaconEvent.trigger);
 

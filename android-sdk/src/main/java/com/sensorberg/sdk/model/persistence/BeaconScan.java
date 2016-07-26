@@ -31,7 +31,7 @@ public class BeaconScan {
 
     @Getter
     @Setter
-    private long sentToServerTimestamp2;
+    private long sentToServerTimestamp;
 
     @Expose
     @Getter
@@ -52,7 +52,7 @@ public class BeaconScan {
         BeaconScan value = new BeaconScan();
         value.setTrigger(scanEvent.isEntry() ? ScanEventType.ENTRY.getMask() : ScanEventType.EXIT.getMask());
         value.setPid(scanEvent.getBeaconId().getPid());
-        value.setSentToServerTimestamp2(NO_DATE);
+        value.setSentToServerTimestamp(NO_DATE);
         value.setCreatedAt(scanEvent.getEventTime());
         return value;
     }
