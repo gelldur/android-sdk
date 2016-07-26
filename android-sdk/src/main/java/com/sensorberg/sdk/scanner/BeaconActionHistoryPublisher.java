@@ -245,8 +245,8 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
         List<BeaconAction> actionsToDelete = ListUtils.filter(beaconActions, new ListUtils.Filter<BeaconAction>() {
             @Override
             public boolean matches(BeaconAction beaconEvent) {
-                return beaconEvent.getCreatedAt() < (timeNow - cacheTtl)
-                        && beaconEvent.getSentToServerTimestamp2() != BeaconAction.NO_DATE;
+                return !beaconEvent.isKeepForever() && (beaconEvent.getCreatedAt() < (timeNow - cacheTtl)
+                        && beaconEvent.getSentToServerTimestamp() != BeaconAction.NO_DATE);
             }
         });
 
