@@ -77,7 +77,7 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
         Mockito.when(mockRetrofitApiService.publishHistory(Mockito.anyString(), Mockito.any(HistoryBody.class)))
                 .thenReturn(Calls.response(new ResolveResponse.Builder().build()));
 
-        tested.onScanEventDetected(TestConstants.REGULAR_BEACON_SCAN_EVENT(100));
+        tested.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(100));
         tested.publishHistory();
 
         verify(mockRetrofitApiService, times(1)).publishHistory(Mockito.anyString(), Mockito.any(HistoryBody.class));
@@ -110,7 +110,7 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
         tested.deleteAllData();
 
         //add one scan
-        tested.onScanEventDetected(TestConstants.REGULAR_BEACON_SCAN_EVENT(100));
+        tested.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(100));
         List<BeaconScan> notSentObjects = tested.notSentBeaconScans();
         assertThat(notSentObjects).hasSize(1);
 
