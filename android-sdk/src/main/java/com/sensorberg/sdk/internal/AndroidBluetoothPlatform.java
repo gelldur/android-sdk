@@ -23,12 +23,16 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
 
     private PermissionChecker permissionChecker;
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    public AndroidBluetoothPlatform(BluetoothAdapter adapter, CrashCallBackWrapper wrapper, Context ctx) {
+    public AndroidBluetoothPlatform(BluetoothAdapter adapter, Context ctx) {
         context = ctx;
-        crashCallBackWrapper = wrapper;
         bluetoothAdapter = adapter;
         permissionChecker = new PermissionChecker(ctx);
+
+        if (Build.VERSION.SDK_INT >= 18) {
+            crashCallBackWrapper = new CrashCallBackWrapper(ctx);
+        } else {
+            crashCallBackWrapper = null;
+        }
     }
 
     /**
@@ -50,6 +54,7 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
     @Override
     public boolean isBluetoothLowEnergySupported() {
         return bluetoothAdapter != null
+                && crashCallBackWrapper != null
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
                 && context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
     }
@@ -57,7 +62,7 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     public void startLeScan(BluetoothAdapter.LeScanCallback scanCallback) {
-        if (isBluetoothLowEnergySupported()) {
+        if (isBluetoothLowEnergySupported() && crashCallBackWrapper != null) {
             if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_ON
                     && permissionChecker.hasScanPermissionCheckAndroid6()) {
                 Log.i("bluetooth adapter", Integer.toString(bluetoothAdapter.getState()));
@@ -72,7 +77,7 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     public void stopLeScan() {
-        if (isBluetoothLowEnergySupported()) {
+        if (isBluetoothLowEnergySupported() && crashCallBackWrapper != null) {
             try {
                 //noinspection deprecation old API compatability
                 bluetoothAdapter.stopLeScan(crashCallBackWrapper);
