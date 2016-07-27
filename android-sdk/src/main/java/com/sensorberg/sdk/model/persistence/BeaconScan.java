@@ -6,11 +6,9 @@ import com.google.gson.annotations.SerializedName;
 import com.sensorberg.sdk.scanner.ScanEvent;
 import com.sensorberg.sdk.scanner.ScanEventType;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-@EqualsAndHashCode
 public class BeaconScan {
 
     public static final String SHARED_PREFS_TAG = "BeaconScans";
@@ -55,5 +53,34 @@ public class BeaconScan {
         value.setSentToServerTimestamp(NO_DATE);
         value.setCreatedAt(scanEvent.getEventTime());
         return value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        BeaconScan that = (BeaconScan) o;
+
+        if (trigger != that.trigger) {
+            return false;
+        }
+        if (createdAt != that.createdAt) {
+            return false;
+        }
+        return !(pid != null ? !pid.equals(that.pid) : that.pid != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = trigger;
+        result = 31 * result + (pid != null ? pid.hashCode() : 0);
+        result = 31 * result + (int) (createdAt ^ (createdAt >>> 32));
+        return result;
     }
 }
