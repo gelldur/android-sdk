@@ -38,7 +38,6 @@ import android.support.test.runner.AndroidJUnit4;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -55,12 +54,6 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 @RunWith(AndroidJUnit4.class)
 public class TransportShould {
-
-    private static final UUID BEACON_ID = UUID.fromString("192E463C-9B8E-4590-A23F-D32007299EF5");
-
-    private static final int MAJOR = 1337;
-
-    private static final int MINOR = 1337;
 
     @Inject
     @Named("testClock")
