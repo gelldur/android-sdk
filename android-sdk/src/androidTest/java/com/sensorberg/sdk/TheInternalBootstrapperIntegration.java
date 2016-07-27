@@ -154,7 +154,7 @@ public class TheInternalBootstrapperIntegration {
         //simulate the entry
         spiedInternalApplicationBootstrapper.onScanEventDetected(new ScanEvent.Builder()
                 .withBeaconId(TestConstants.ANY_BEACON_ID)
-                .withEventMask(ScanEventType.ENTRY.getMask())
+                .withEntry(true)
                 .build());
 
         //we should have exactly one notification
