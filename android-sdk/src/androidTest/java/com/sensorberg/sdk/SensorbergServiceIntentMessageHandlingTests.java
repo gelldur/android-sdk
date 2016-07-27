@@ -128,7 +128,7 @@ public class SensorbergServiceIntentMessageHandlingTests {
     @Test
     public void should_handle_intent_with_retry_scan_event_resolve_message() {
         ResolutionConfiguration configuration = new ResolutionConfiguration();
-        configuration.setScanEvent(TestConstants.REGULAR_BEACON_SCAN_EVENT(DateTime.now().getMillis()));
+        configuration.setScanEvent(TestConstants.BEACON_SCAN_ENTRY_EVENT(DateTime.now().getMillis()));
 
         tested.handleIntentMessage(SensorbergServiceIntents.getRetryResolveScanEventIntent(InstrumentationRegistry.getContext(), configuration));
 

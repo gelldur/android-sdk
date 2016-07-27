@@ -63,7 +63,7 @@ public class TheBeaconActionHistoryPublisherShould {
         tested.deleteAllData();
         tested = Mockito.spy(tested);
 
-        tested.onScanEventDetected(TestConstants.REGULAR_BEACON_SCAN_EVENT(100));
+        tested.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(100));
         tested.onActionPresented(TestConstants.BEACON_EVENT_IN_FUTURE);
     }
 

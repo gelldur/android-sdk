@@ -69,7 +69,9 @@ public class TestConstants {
         return new BeaconId(UUID.randomUUID(), 1, 1);
     }
 
-    public static ScanEvent REGULAR_BEACON_SCAN_EVENT(long now) {
+    //beacon events
+
+    public static ScanEvent BEACON_SCAN_ENTRY_EVENT(long now) {
         return new ScanEvent.Builder()
                 .withBeaconId(TestConstants.REGULAR_BEACON_ID)
                 .withEntry(true)
