@@ -1,8 +1,6 @@
 package com.sensorberg.sdk.demo;
 
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
 
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.SensorbergServiceMessage;
@@ -17,14 +15,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.util.Pair;
 import android.widget.TextView;
-
-import java.io.IOException;
 
 @SuppressWarnings("javadoc")
 public class DemoActivity extends Activity {
@@ -51,16 +48,20 @@ public class DemoActivity extends Activity {
                 builder.setMessage("Since location access has not been granted, " +
                         "this app will not be able to discover beacons when in the background.");
                 builder.setPositiveButton(android.R.string.ok, null);
-                builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
 
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        ActivityCompat.requestPermissions(DemoActivity.this,
-                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                MY_PERMISSION_REQUEST_LOCATION_SERVICES);
-                    }
+                if (Build.VERSION.SDK_INT >= 17) {
+                    builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
 
-                });
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                            ActivityCompat.requestPermissions(DemoActivity.this,
+                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                    MY_PERMISSION_REQUEST_LOCATION_SERVICES);
+                        }
+
+                    });
+                }
+
                 builder.show();
             } else {
                 ActivityCompat.requestPermissions(this,
@@ -71,10 +72,14 @@ public class DemoActivity extends Activity {
 
         textView = new TextView(this);
         StringBuilder infoText = new StringBuilder("This is an app that exposes some SDK APIs to the user").append('\n');
+
+        if (Build.VERSION.SDK_INT < 18){
+            infoText.append('\n').append("BLE NOT SUPPORTED, NO BEACONS WILL BE SCANNED").append('\n');
+        }
+
         infoText.append('\n').append("API Key: ").append(DemoApplication.API_KEY);
         infoText.append('\n').append("SDK Version: ").append(com.sensorberg.sdk.BuildConfig.VERSION_NAME);
         infoText.append('\n').append("Demo Version: ").append(BuildConfig.VERSION_NAME);
-
         textView.setText(infoText.toString());
         setContentView(textView);
         ((DemoApplication) getApplication()).setActivityContext(this);
@@ -85,17 +90,13 @@ public class DemoActivity extends Activity {
             protected Pair<String, Long> doInBackground(String... params) {
                 long timeBefore = System.currentTimeMillis();
                 String advertiserIdentifier = "not-found";
+
                 try {
                     advertiserIdentifier = "google:" + AdvertisingIdClient.getAdvertisingIdInfo(DemoActivity.this).getId();
-                } catch (IOException e) {
-                    Logger.log.logError("foreground could not fetch the advertising identifier because of an IO Exception", e);
-                } catch (GooglePlayServicesNotAvailableException e) {
-                    Logger.log.logError("foreground play services not available", e);
-                } catch (GooglePlayServicesRepairableException e) {
-                    Logger.log.logError("foreground  services need repairing", e);
                 } catch (Exception e) {
-                    Logger.log.logError("foreground could not fetch the advertising identifier because of an unknown error", e);
+                    //not logging anything because it's already logged in the Application
                 }
+
                 long timeItTook = System.currentTimeMillis() - timeBefore;
                 Logger.log.verbose("foreground fetching the advertising identifier took " + timeItTook + " millis");
                 return Pair.create(advertiserIdentifier, timeItTook);
