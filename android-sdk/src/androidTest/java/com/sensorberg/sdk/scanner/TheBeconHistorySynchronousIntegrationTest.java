@@ -53,11 +53,7 @@ public class TheBeconHistorySynchronousIntegrationTest {
         tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), new DumbSucessTransport(), testSettingsManager,
                 testHandlerManager.getCustomClock(), testHandlerManager, mSharedPreferences, mGson);
 
-        tested.onScanEventDetected(new ScanEvent.Builder()
-                .withEventMask(ScanEventType.ENTRY.getMask())
-                .withBeaconId(TestConstants.ANY_BEACON_ID)
-                .withEventTime(100)
-                .build());
+        tested.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(100));
 
         tested.onActionPresented(new BeaconEvent.Builder()
                 .withAction(new VisitWebsiteAction(UUID.randomUUID(), "foo", "bar", null, null, 0))

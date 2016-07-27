@@ -20,7 +20,6 @@ import java.util.UUID;
 
 public class TestConstants {
 
-
     //    https://manage.sensorberg.com/#/beacon/edit/7e7c8ae1-e593-404e-a131-b4cbf149ed1d
     public static final BeaconId DELAY_BEACON_ID = new BeaconId(UUID.fromString("73676723-7400-0000-FFFF-0000FFFF0004"), 64202, 20003);
 
@@ -64,12 +63,43 @@ public class TestConstants {
 
     public static final BeaconId ANY_OTHER_BEACON_ID = new BeaconId(BEACON_PROXIMITY_ID, MAJOR + 1, MINOR + 2);
 
-
     public static BeaconId randomBeaconId() {
         return new BeaconId(UUID.randomUUID(), 1, 1);
     }
 
     //beacon events
+
+    public static BeaconEvent BEACON_EVENT_IN_FUTURE = new BeaconEvent.Builder()
+            .withAction(new VisitWebsiteAction(UUID.randomUUID(), "foo", "bar", null, null, 0))
+            .withPresentationTime(1337)
+            .build();
+
+    //scan events
+
+    public static final ScanEvent RESOLVABLE_ENTRY_EVENT_WITH_ID_3 = new ScanEvent.Builder()
+            .withBeaconId(TestConstants.LEET_BEACON_ID_3)
+            .withEntry(true)
+            .build();
+
+    public static final ScanEvent RESOLVABLE_ENTRY_EVENT_WITH_INAPP_ACTIONS = new ScanEvent.Builder()
+            .withBeaconId(TestConstants.IN_APP_BEACON_ID)
+            .withEntry(true)
+            .build();
+
+    public static final ScanEvent RESOLVABLE_ENTRY_EVENT_WITH_ID_1 = new ScanEvent.Builder()
+            .withBeaconId(TestConstants.LEET_BEACON_ID_1)
+            .withEntry(true)
+            .build();
+
+    public static final ScanEvent RESOLVABLE_EXIT_EVENT_WITH_ID_4 = new ScanEvent.Builder()
+            .withBeaconId(TestConstants.LEET_BEACON_ID_4)
+            .withEntry(false)
+            .build();
+
+    public static final ScanEvent NON_RESOLVABLE_ENTRY_EVENT_WITH_ID_4 = new ScanEvent.Builder()
+            .withBeaconId(TestConstants.LEET_BEACON_ID_4)
+            .withEntry(true)
+            .build();
 
     public static ScanEvent BEACON_SCAN_ENTRY_EVENT(long now) {
         return new ScanEvent.Builder()
@@ -79,16 +109,14 @@ public class TestConstants {
                 .build();
     }
 
-    public static BeaconEvent BEACON_EVENT_IN_FUTURE = new BeaconEvent.Builder()
-            .withAction(new VisitWebsiteAction(UUID.randomUUID(), "foo", "bar", null, null, 0))
-            .withPresentationTime(1337)
-            .build();
+    //actions
 
     public static final String ACTION_MESSAGE = "message";
 
     public static final String ACTION_TITLE = "title";
 
     public static final String ACTION_URL = "http://www.sensorberg.com";
+
 
     public static InAppAction getInAppAction() {
         return new InAppAction(UUID.randomUUID(), TestConstants.ACTION_MESSAGE, ACTION_TITLE, ACTION_URL, null, 0);

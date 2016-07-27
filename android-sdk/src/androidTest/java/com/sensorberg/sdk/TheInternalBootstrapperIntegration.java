@@ -190,11 +190,7 @@ public class TheInternalBootstrapperIntegration {
         spiedInternalApplicationBootstrapper.updateBeaconLayout();
 
         //simulate the entry
-        spiedInternalApplicationBootstrapper.onScanEventDetected(new ScanEvent.Builder()
-                        .withBeaconId(TestConstants.ANY_BEACON_ID)
-                        .withEventMask(ScanEventType.ENTRY.getMask())
-                        .build()
-        );
+        spiedInternalApplicationBootstrapper.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(0));
 
         Mockito.verify(spiedTransportWithMockService, Mockito.timeout(5000).times(1))
                 .getBeacon(Mockito.any(ResolutionConfiguration.class), Mockito.any(BeaconResponseHandler.class));

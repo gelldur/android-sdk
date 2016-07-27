@@ -14,14 +14,11 @@ import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback
 import com.sensorberg.sdk.internal.transport.interfaces.TransportSettingsCallback;
 import com.sensorberg.sdk.internal.transport.model.HistoryBody;
 import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
-import com.sensorberg.sdk.model.BeaconId;
-import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.sdk.model.persistence.BeaconAction;
 import com.sensorberg.sdk.model.persistence.BeaconScan;
+import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolutionConfiguration;
-import com.sensorberg.sdk.scanner.ScanEvent;
-import com.sensorberg.sdk.scanner.ScanEventType;
 import com.sensorberg.sdk.settings.Settings;
 import com.sensorberg.sdk.settings.TimeConstants;
 import com.sensorberg.sdk.testUtils.TestClock;
@@ -74,8 +71,6 @@ public class TransportShould {
 
     private Transport tested;
 
-    private ScanEvent scanEvent;
-
     RetrofitApiServiceImpl mockRetrofitApiService;
 
     @Before
@@ -83,12 +78,6 @@ public class TransportShould {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         clock.setNowInMillis(new DateTime(2015, 7, 10, 1, 1, 1).getMillis());
-
-        scanEvent = new ScanEvent.Builder()
-                .withBeaconId(new BeaconId(BEACON_ID, MAJOR, MINOR))
-                .withEventMask(ScanEventType.ENTRY.getMask())
-                .withEventTime(clock.now())
-                .build();
 
         mockRetrofitApiService = mock(RetrofitApiServiceImpl.class);
         tested = new RetrofitApiTransport(mockRetrofitApiService, clock);
@@ -104,7 +93,7 @@ public class TransportShould {
         Mockito.when(mockRetrofitApiService.getBeacon(anyString(), anyString(), anyString()))
                 .thenReturn(Calls.response(resolveResponse));
 
-        tested.getBeacon(new ResolutionConfiguration(scanEvent), BeaconResponseHandler.NONE);
+        tested.getBeacon(new ResolutionConfiguration(TestConstants.BEACON_SCAN_ENTRY_EVENT(clock.now())), BeaconResponseHandler.NONE);
         Mockito.verify(mockListener).historyUploadIntervalChanged(1337L * 1000);
     }
 
@@ -139,13 +128,14 @@ public class TransportShould {
         Mockito.when(mockRetrofitApiService.getBeacon(anyString(), anyString(), anyString())).thenReturn(Calls.response(response));
 
         Assertions.assertThat(response).isNotNull();
-        tested.getBeacon(new ResolutionConfiguration(scanEvent), new BeaconResponseHandler() {
+        tested.getBeacon(new ResolutionConfiguration(TestConstants.BEACON_SCAN_ENTRY_EVENT(clock.now())), new BeaconResponseHandler() {
             @Override
             public void onSuccess(List<BeaconEvent> foundBeaconEvents) {
                 Assertions
                         .assertThat(foundBeaconEvents)
                         .overridingErrorMessage("There should be 1 action to the Beacon %s at %s there were %d",
-                                scanEvent.getBeaconId().toTraditionalString(), URLFactory.getResolveURLString(), foundBeaconEvents.size())
+                                TestConstants.BEACON_SCAN_ENTRY_EVENT(clock.now()).getBeaconId().toTraditionalString(),
+                                URLFactory.getResolveURLString(), foundBeaconEvents.size())
                         .isNotNull()
                         .hasSize(1);
             }
@@ -184,14 +174,8 @@ public class TransportShould {
         List<BeaconScan> scans = new ArrayList<>();
         List<BeaconAction> actions = new ArrayList<>();
 
-        BeaconScan scan1 = new BeaconScan();
+        BeaconScan scan1 = BeaconScan.from(TestConstants.BEACON_SCAN_ENTRY_EVENT(System.currentTimeMillis() - TimeConstants.ONE_HOUR));
         scan1.setCreatedAt(System.currentTimeMillis() - TimeConstants.ONE_HOUR);
-        scan1.setEntry(true);
-        scan1.setProximityUUID(TestConstants.ANY_BEACON_ID.getUuid().toString());
-        scan1.setProximityMajor(TestConstants.ANY_BEACON_ID.getMajorId());
-        scan1.setProximityMinor(TestConstants.ANY_BEACON_ID.getMinorId());
-        scan1.setEventTime(scan1.getCreatedAt());
-
         scans.add(scan1);
 
         Mockito.when(mockRetrofitApiService.publishHistory(anyString(), any(HistoryBody.class)))
