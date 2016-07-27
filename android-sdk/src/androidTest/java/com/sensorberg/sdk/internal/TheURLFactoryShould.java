@@ -1,24 +1,19 @@
 package com.sensorberg.sdk.internal;
 
+import com.sensorberg.sdk.BuildConfig;
+
+import org.fest.assertions.api.Assertions;
+
 import android.app.Application;
 import android.os.Build;
 import android.test.ApplicationTestCase;
-
-import com.sensorberg.sdk.BuildConfig;
-import com.sensorberg.sdk.model.BeaconId;
-import com.sensorberg.sdk.scanner.ScanEvent;
-import com.sensorberg.sdk.scanner.ScanEventType;
-
-import org.fest.assertions.api.Assertions;
 
 import java.io.UnsupportedEncodingException;
 
 import util.TestConstants;
 import util.URLAssertion;
 
-public class TheURLFactoryShould extends ApplicationTestCase<Application>{
-
-    private ScanEvent scanEvent;
+public class TheURLFactoryShould extends ApplicationTestCase<Application> {
 
     private String apiKey = "doesnt-matter";
 
@@ -30,14 +25,11 @@ public class TheURLFactoryShould extends ApplicationTestCase<Application>{
     public void setUp() throws Exception {
         super.setUp();
         createApplication();
-        scanEvent = new ScanEvent.Builder()
-                .withBeaconId(new BeaconId(TestConstants.BEACON_PROXIMITY_ID, TestConstants.MAJOR, TestConstants.MINOR))
-                .withEventMask(ScanEventType.ENTRY.getMask())
-                .build();
     }
 
-    public void test_proximity_uuid_conversion(){
-        Assertions.assertThat(scanEvent.getBeaconId().getNormalizedUUIDString()).isEqualTo(TestConstants.BEACON_ID_STRING);
+    public void test_proximity_uuid_conversion() {
+        Assertions.assertThat(TestConstants.BEACON_SCAN_ENTRY_EVENT(0).getBeaconId().getNormalizedUUIDString()).isEqualTo(
+                TestConstants.BEACON_ID_STRING);
     }
 
     public void test_should_provide_the_correct_settings_endpoint() throws UnsupportedEncodingException {
@@ -60,9 +52,8 @@ public class TheURLFactoryShould extends ApplicationTestCase<Application>{
 
     public void test_should_provide_the_correct_settings_containing_name_of_the_sdk_release() throws UnsupportedEncodingException {
         URLAssertion.assertThat(URLFactory.getSettingsURLString(TestConstants.REVISION, apiKey))
-                .pathContains( Build.VERSION.RELEASE);
+                .pathContains(Build.VERSION.RELEASE);
     }
 
 
-    
 }

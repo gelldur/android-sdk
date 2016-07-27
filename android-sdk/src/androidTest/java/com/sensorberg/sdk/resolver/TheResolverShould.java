@@ -8,8 +8,6 @@ import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
 import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.model.server.ResolveResponse;
-import com.sensorberg.sdk.scanner.ScanEvent;
-import com.sensorberg.sdk.scanner.ScanEventType;
 import com.sensorberg.sdk.testUtils.TestHandlerManager;
 
 import org.fest.assertions.api.Assertions;
@@ -41,20 +39,6 @@ import static org.mockito.Mockito.verify;
 @RunWith(AndroidJUnit4.class)
 public class TheResolverShould {
 
-    private static final ScanEvent SCANEVENT_1 = new ScanEvent.Builder()
-            .withBeaconId(TestConstants.REGULAR_BEACON_ID)
-            .build();
-
-    private static final ScanEvent RESOLVABLE_ENTRY_EVENT_WITH_ID_3 = new ScanEvent.Builder()
-            .withBeaconId(TestConstants.LEET_BEACON_ID_3)
-            .withEventMask(ScanEventType.ENTRY.getMask())
-            .build();
-
-    private static final ScanEvent RESOLVABLE_ENTRY_EVENT_WITH_INAPP_ACTIONS = new ScanEvent.Builder()
-            .withBeaconId(TestConstants.IN_APP_BEACON_ID)
-            .withEventMask(ScanEventType.ENTRY.getMask())
-            .build();
-
     @Inject
     Gson gson;
 
@@ -81,7 +65,7 @@ public class TheResolverShould {
 
     @Test
     public void test_should_try_to_resolve_a_beacon() throws Exception {
-        resolutionConfiguration.setScanEvent(SCANEVENT_1);
+        resolutionConfiguration.setScanEvent(TestConstants.BEACON_SCAN_ENTRY_EVENT(0));
         Resolution resolution = tested.createResolution(resolutionConfiguration);
         Resolution spyResolution = spy(resolution);
         Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
@@ -113,7 +97,7 @@ public class TheResolverShould {
         };
 
         tested.addResolverListener(testListener);
-        resolutionConfiguration.setScanEvent(RESOLVABLE_ENTRY_EVENT_WITH_ID_3);
+        resolutionConfiguration.setScanEvent(TestConstants.RESOLVABLE_ENTRY_EVENT_WITH_ID_3);
         Resolution resolution = tested.createResolution(resolutionConfiguration);
 
         resolution.start();
@@ -141,7 +125,7 @@ public class TheResolverShould {
         };
 
         tested.addResolverListener(mockListener);
-        resolutionConfiguration.setScanEvent(RESOLVABLE_ENTRY_EVENT_WITH_INAPP_ACTIONS);
+        resolutionConfiguration.setScanEvent(TestConstants.RESOLVABLE_ENTRY_EVENT_WITH_INAPP_ACTIONS);
         Resolution resolution = tested.createResolution(resolutionConfiguration);
         resolution.start();
     }
@@ -156,7 +140,7 @@ public class TheResolverShould {
 
         ResolverListener mockListener = mock(ResolverListener.class);
         tested.addResolverListener(mockListener);
-        resolutionConfiguration.setScanEvent(RESOLVABLE_ENTRY_EVENT_WITH_ID_3);
+        resolutionConfiguration.setScanEvent(TestConstants.RESOLVABLE_ENTRY_EVENT_WITH_ID_3);
         Resolution resolution = tested.createResolution(resolutionConfiguration);
         resolution.start();
 
