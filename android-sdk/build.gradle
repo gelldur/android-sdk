@@ -62,7 +62,7 @@ android {
     buildToolsVersion project.ext.buildToolsVersion
     compileSdkVersion project.ext.compileSdkVersion
     defaultConfig {
-        versionCode 11
+        versionCode 12
         versionName version
         minSdkVersion 9
         targetSdkVersion project.ext.targetSdkVersion
