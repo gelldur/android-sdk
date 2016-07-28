@@ -96,7 +96,6 @@ public class RetrofitApiServiceImpl {
 
             if (mApiToken != null) {
                 headersBuilder
-                        .add(Transport.HEADER_AUTHORIZATION, mApiToken)
                         .add(Transport.HEADER_XAPIKEY, mApiToken);
             }
 
