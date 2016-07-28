@@ -9,6 +9,7 @@ import com.sensorberg.sdk.internal.transport.model.HistoryBody;
 import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
 import com.sensorberg.sdk.model.server.BaseResolveResponse;
 import com.sensorberg.sdk.model.server.ResolveResponse;
+import com.sensorberg.utils.Objects;
 
 import android.content.Context;
 
@@ -16,8 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import lombok.Setter;
-import lombok.experimental.Accessors;
 import okhttp3.Cache;
 import okhttp3.Headers;
 import okhttp3.Interceptor;
@@ -33,7 +32,6 @@ import retrofit2.http.Url;
 
 import static com.sensorberg.sdk.internal.URLFactory.getSettingsURLString;
 
-@Accessors(prefix = "m")
 public class RetrofitApiServiceImpl implements PlatformIdentifier.DeviceInstallationIdentifierChangeListener,
         PlatformIdentifier.AdvertiserIdentifierChangeListener {
 
@@ -49,12 +47,13 @@ public class RetrofitApiServiceImpl implements PlatformIdentifier.DeviceInstalla
 
     private final String mBaseUrl;
 
-    @Setter
     private String mApiToken;
 
     private HttpLoggingInterceptor.Level mApiServiceLogLevel = HttpLoggingInterceptor.Level.NONE;
 
     private RetrofitApiService mApiService;
+
+    private OkHttpClient mClient;
 
     public RetrofitApiServiceImpl(Context ctx, Gson gson, PlatformIdentifier platformId, String baseUrl) {
         mContext = ctx;
@@ -131,7 +130,8 @@ public class RetrofitApiServiceImpl implements PlatformIdentifier.DeviceInstalla
         okClientBuilder.readTimeout(CONNECTION_TIMEOUT, TimeUnit.SECONDS);
         okClientBuilder.writeTimeout(CONNECTION_TIMEOUT, TimeUnit.SECONDS);
 
-        return okClientBuilder.build();
+        mClient = okClientBuilder.build();
+        return mClient;
     }
 
     public void setLoggingEnabled(boolean enabled) {
@@ -168,6 +168,19 @@ public class RetrofitApiServiceImpl implements PlatformIdentifier.DeviceInstalla
     public Call<SettingsResponse> getSettings(@Url String url) {
         return getApiService().getSettings(url);
     }
+
+    public void setApiToken(String newToken) {
+        if (!Objects.equals(newToken, mApiToken) && mClient != null){
+            try {
+                mClient.cache().evictAll();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        this.mApiToken = newToken;
+    }
+
 
     @Override
     public void advertiserIdentifierChanged(String advertiserIdentifier) {
