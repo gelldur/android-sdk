@@ -3,7 +3,6 @@ package com.sensorberg.di;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import com.sensorberg.bluetooth.CrashCallBackWrapper;
 import com.sensorberg.sdk.internal.AndroidBluetoothPlatform;
 import com.sensorberg.sdk.internal.AndroidClock;
 import com.sensorberg.sdk.internal.AndroidFileManager;
@@ -116,12 +115,6 @@ public class ProvidersModule {
     }
 
     @Provides
-    @Singleton
-    public CrashCallBackWrapper provideCrashCallBackWrapper(Context context) {
-        return new CrashCallBackWrapper(context);
-    }
-
-    @Provides
     @Named("realHandlerManager")
     @Singleton
     public HandlerManager provideAndroidHandlerManager() {
@@ -138,8 +131,8 @@ public class ProvidersModule {
     @Provides
     @Named("androidBluetoothPlatform")
     @Singleton
-    public BluetoothPlatform provideAndroidBluetoothPlatform(BluetoothAdapter adapter, CrashCallBackWrapper wrapper, Context context) {
-        return new AndroidBluetoothPlatform(adapter, wrapper, context);
+    public BluetoothPlatform provideAndroidBluetoothPlatform(BluetoothAdapter adapter, Context context) {
+        return new AndroidBluetoothPlatform(adapter, context);
     }
 
     @Provides

@@ -21,6 +21,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
+import android.os.Build;
 import android.support.multidex.MultiDexApplication;
 import android.util.Log;
 import android.widget.Toast;
@@ -63,7 +64,10 @@ public class DemoApplication extends MultiDexApplication {
         });
 
         detector = new BackgroundDetector(boot);
-        registerActivityLifecycleCallbacks(detector);
+
+        if (Build.VERSION.SDK_INT >= 14) {
+            registerActivityLifecycleCallbacks(detector);
+        }
 
         //consider this a bad sample, you may want to use another threading model, AsyncTask or something
         // similar. This part is your responsibility.
@@ -79,13 +83,13 @@ public class DemoApplication extends MultiDexApplication {
                     }
                     boot.setAdvertisingIdentifier(info.getId());
                 } catch (IOException e) {
-                    Logger.log.logError("could not fetch the advertising identifier beacuse of an IO Exception", e);
+                    Logger.log.logError("could not fetch the advertising identifier beacuse of an IO Exception = ", e.getCause());
                 } catch (GooglePlayServicesNotAvailableException e) {
-                    Logger.log.logError("play services not available", e);
+                    Logger.log.logError("play services not available!");
                 } catch (GooglePlayServicesRepairableException e) {
-                    Logger.log.logError("play services need repairing", e);
+                    Logger.log.logError("play services need repairing, error = ", e.getCause());
                 } catch (Exception e) {
-                    Logger.log.logError("could not fetch the advertising identifier beacuse of an unknown error", e);
+                    Logger.log.logError("could not fetch the advertising identifier because of an unknown error, error = ", e.getCause());
                 }
                 Logger.log.verbose("fetching the advertising identifier took " + (System.currentTimeMillis() - timeBefore) + " millis");
             }

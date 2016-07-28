@@ -5,7 +5,7 @@ android {
     buildToolsVersion project.ext.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion 18
+        minSdkVersion 9
         targetSdkVersion project.ext.targetSdkVersion
         manifestPlaceholders = [
                 applicationLabelAddition :  ""
@@ -41,7 +41,7 @@ android {
         debug {
             applicationIdSuffix ".debug"
             versionNameSuffix "ø"
-            minifyEnabled true
+            minifyEnabled false
             manifestPlaceholders = [
                     applicationLabelAddition :  " Debug ø"
             ]
