@@ -95,9 +95,13 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
 
         //persist it, nullify and make new instance
         tested.saveAllData();
+
         tested = null;
         tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), testTransportWithMockService, testSettingsManager, clock,
                 testHandlerManager, sharedPreferences, gson);
+
+        //Make sure the object returned is not null.
+        assertThat(tested);
 
         //check that this instance read from local persistence layer
         List<BeaconAction> notSentObjectsFromPersistence = tested.notSentBeaconActions();
@@ -119,6 +123,9 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
         tested = null;
         tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), testTransportWithMockService, testSettingsManager, clock,
                 testHandlerManager, sharedPreferences, gson);
+
+        //Make sure the object returned is not null.
+        assertThat(tested);
 
         //check that this instance read from local persistence layer
         List<BeaconScan> notSentObjectsFromPersistence = tested.notSentBeaconScans();
