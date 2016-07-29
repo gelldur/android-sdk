@@ -27,6 +27,7 @@ public class BeaconScan {
     @SerializedName("pid")
     private String pid;
 
+    @Expose
     @Getter
     @Setter
     private long sentToServerTimestamp;

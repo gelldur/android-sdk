@@ -27,6 +27,7 @@ public class BeaconAction {
     @SerializedName("dt")
     private long timeOfPresentation;
 
+    @Expose
     @Getter
     @Setter
     private long sentToServerTimestamp;
