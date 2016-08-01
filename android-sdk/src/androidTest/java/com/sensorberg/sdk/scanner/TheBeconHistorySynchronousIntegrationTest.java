@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import android.content.SharedPreferences;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import java.util.UUID;
@@ -50,7 +49,7 @@ public class TheBeconHistorySynchronousIntegrationTest {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         testHandlerManager.getCustomClock().setNowInMillis(System.currentTimeMillis());
-        tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), new DumbSucessTransport(), testSettingsManager,
+        tested = new BeaconActionHistoryPublisher(new DumbSucessTransport(), testSettingsManager,
                 testHandlerManager.getCustomClock(), testHandlerManager, mSharedPreferences, mGson);
 
         tested.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(100));

@@ -53,7 +53,7 @@ public class TheBeaconActionShould {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         clock = NoClock.CLOCK;
-        tested = BeaconAction.from(beaconEvent, clock);
+        tested = BeaconAction.from(beaconEvent);
     }
 
     @Test

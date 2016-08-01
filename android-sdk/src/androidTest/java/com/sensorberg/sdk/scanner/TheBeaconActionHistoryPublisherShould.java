@@ -6,8 +6,8 @@ import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback;
-import com.sensorberg.sdk.model.persistence.BeaconAction;
-import com.sensorberg.sdk.model.persistence.BeaconScan;
+import com.sensorberg.sdk.model.persistence.InternalBeaconAction;
+import com.sensorberg.sdk.model.persistence.InternalBeaconScan;
 import com.sensorberg.sdk.settings.SettingsManager;
 import com.sensorberg.sdk.testUtils.TestHandlerManager;
 
@@ -17,7 +17,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
 import android.content.SharedPreferences;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import java.util.List;
@@ -58,8 +57,7 @@ public class TheBeaconActionHistoryPublisherShould {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         testHandlerManager.getCustomClock().setNowInMillis(System.currentTimeMillis());
-        tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), transport, testSettingsManager,
-                testHandlerManager.getCustomClock(), testHandlerManager, sharedPreferences, gson);
+        tested = new BeaconActionHistoryPublisher(transport, testSettingsManager, testHandlerManager.getCustomClock(), testHandlerManager, sharedPreferences, gson);
         tested.deleteAllData();
         tested = Mockito.spy(tested);
 
@@ -69,13 +67,13 @@ public class TheBeaconActionHistoryPublisherShould {
 
     @Test
     public void test_should_persist_scans_that_need_queing() throws Exception {
-        List<BeaconScan> notSentObjects = tested.notSentBeaconScans();
+        List<InternalBeaconScan> notSentObjects = tested.notSentBeaconScans();
         assertThat(notSentObjects).hasSize(1);
     }
 
     @Test
     public void test_should_persist_actions_that_need_queing() throws Exception {
-        List<BeaconAction> notSentObjects = tested.notSentBeaconActions();
+        List<InternalBeaconAction> notSentObjects = tested.notSentBeaconActions();
         assertThat(notSentObjects).hasSize(1);
     }
 

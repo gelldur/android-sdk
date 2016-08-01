@@ -11,10 +11,13 @@ import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback;
 import com.sensorberg.sdk.model.persistence.BeaconAction;
 import com.sensorberg.sdk.model.persistence.BeaconScan;
+import com.sensorberg.sdk.model.persistence.InternalBeaconAction;
+import com.sensorberg.sdk.model.persistence.InternalBeaconScan;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolverListener;
 import com.sensorberg.sdk.settings.SettingsManager;
 import com.sensorberg.utils.ListUtils;
+import com.sensorberg.utils.Objects;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -32,19 +35,10 @@ import lombok.Setter;
 
 public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.MessageHandlerCallback {
 
-    private static final int MSG_SCAN_EVENT = 2;
-
-    private static final int MSG_MARK_SCANS_AS_SENT = 3;
 
     private static final int MSG_PUBLISH_HISTORY = 1;
 
-    private static final int MSG_ACTION = 4;
-
-    private static final int MSG_MARK_ACTIONS_AS_SENT = 5;
-
     private static final int MSG_DELETE_ALL_DATA = 6;
-
-    private Context context;
 
     private Clock clock;
 
@@ -61,17 +55,12 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
 
     private final Gson gson;
 
-    private Set<BeaconScan> beaconScans = Collections.synchronizedSet(new HashSet<BeaconScan>());
+    private Set<InternalBeaconScan> beaconScans = Collections.synchronizedSet(new HashSet<InternalBeaconScan>());
 
-    private Set<BeaconAction> beaconActions = Collections.synchronizedSet(new HashSet<BeaconAction>());
+    private Set<InternalBeaconAction> beaconActions = Collections.synchronizedSet(new HashSet<InternalBeaconAction>());
 
-    private final Integer beaconScansLock = 5;
-
-    private final Integer beaconActionsLock = 6;
-
-    public BeaconActionHistoryPublisher(Context ctx, Transport transport, SettingsManager settingsManager, Clock clock,
-            HandlerManager handlerManager, SharedPreferences sharedPrefs, Gson gson) {
-        context = ctx;
+    public BeaconActionHistoryPublisher(Transport transport, SettingsManager settingsManager, Clock clock,
+                                        HandlerManager handlerManager, SharedPreferences sharedPrefs, Gson gson) {
         this.settingsManager = settingsManager;
         this.transport = transport;
         this.clock = clock;
@@ -84,32 +73,14 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
 
     @Override
     public void onScanEventDetected(ScanEvent scanEvent) {
-        runloop.sendMessage(MSG_SCAN_EVENT, scanEvent);
+        beaconScans.add(InternalBeaconScan.from(scanEvent));
     }
 
     @Override
     public void handleMessage(Message queueEvent) {
-        long now = clock.now();
         switch (queueEvent.what) {
-            case MSG_SCAN_EVENT:
-                BeaconScan scan = BeaconScan.from((ScanEvent) queueEvent.obj);
-                saveData(scan);
-                break;
-            case MSG_MARK_SCANS_AS_SENT:
-                //noinspection unchecked -> see useage of MSG_MARK_SCANS_AS_SENT
-                List<BeaconScan> scans = (List<BeaconScan>) queueEvent.obj;
-                markBeaconScansAsSent(scans, now, settingsManager.getCacheTtl());
-                break;
-            case MSG_MARK_ACTIONS_AS_SENT:
-                List<BeaconAction> actions = (List<BeaconAction>) queueEvent.obj;
-                markBeaconActionsAsSent(actions, now, settingsManager.getCacheTtl());
-                break;
             case MSG_PUBLISH_HISTORY:
                 publishHistorySynchronously();
-                break;
-            case MSG_ACTION:
-                BeaconAction beaconAction = BeaconAction.from((BeaconEvent) queueEvent.obj, clock);
-                saveData(beaconAction);
                 break;
             case MSG_DELETE_ALL_DATA:
                 deleteAllData();
@@ -118,15 +89,12 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     }
 
     private void publishHistorySynchronously() {
-        List<BeaconScan> scans = new ArrayList<>();
-        List<BeaconAction> actions = new ArrayList<>();
+        final List<InternalBeaconScan> internalScans = notSentBeaconScans();
+        final List<InternalBeaconAction> internalActions = notSentBeaconActions();
 
-        try {
-            scans = notSentBeaconScans();
-            actions = notSentBeaconActions();
-        } catch (Exception e) {
-            Logger.log.logError("error fetching scans that were not sent from database", e);
-        }
+        final List<BeaconScan> scans = ListUtils.map(internalScans, InternalBeaconScan.TO_BEACON_SCAN);
+        final List<BeaconAction> actions = ListUtils.map(internalActions, InternalBeaconAction.TO_BEACON_ACTION);
+
 
         if (scans.isEmpty() && actions.isEmpty()) {
             Logger.log.verbose("nothing to report");
@@ -138,8 +106,14 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
         transport.publishHistory(scans, actions, new TransportHistoryCallback() {
             @Override
             public void onSuccess(List<BeaconScan> scanObjectList, List<BeaconAction> actionList) {
-                runloop.sendMessage(MSG_MARK_SCANS_AS_SENT, scanObjectList);
-                runloop.sendMessage(MSG_MARK_ACTIONS_AS_SENT, actionList);
+                for (InternalBeaconAction internalAction : internalActions) {
+                    internalAction.setSentToServerTimestamp(clock.now());
+                }
+                for (InternalBeaconScan internalScan : internalScans) {
+                    internalScan.setSentToServerTimestamp(clock.now());
+                }
+                removeBeaconScansOlderThan(clock.now(), settingsManager.getCacheTtl());
+                removeBeaconActionsOlderThan(clock.now(), settingsManager.getCacheTtl());
             }
 
             @Override
@@ -159,106 +133,53 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     }
 
     public void onActionPresented(BeaconEvent beaconEvent) {
-        runloop.sendMessage(MSG_ACTION, beaconEvent);
+        beaconActions.add(InternalBeaconAction.from(beaconEvent));
     }
 
     public void deleteAllObjects() {
         runloop.sendMessage(MSG_DELETE_ALL_DATA);
     }
 
-    //local persistence
-    private void saveData(BeaconScan beaconScan) {
-        beaconScans.add(beaconScan);
-        Logger.log.verbose("saving scan = " + beaconScan.getPid() + ", total saved = " + beaconScans.size());
-    }
 
-    public List<BeaconScan> notSentBeaconScans() {
-        return ListUtils.filter(beaconScans, new ListUtils.Filter<BeaconScan>() {
+    public List<InternalBeaconScan> notSentBeaconScans() {
+        return ListUtils.filter(beaconScans, new ListUtils.Filter<InternalBeaconScan>() {
             @Override
-            public boolean matches(BeaconScan beaconEvent) {
-                return beaconEvent.getSentToServerTimestamp() == BeaconScan.NO_DATE;
+            public boolean matches(InternalBeaconScan beaconEvent) {
+                return beaconEvent.getSentToServerTimestamp() == null;
             }
         });
-    }
-
-    private void markBeaconScansAsSent(List<BeaconScan> scans, long timeNow, long cacheTtl) {
-        if (scans.size() > 0) {
-            synchronized (beaconScansLock) {
-                for (int i = scans.size() - 1; i >= 0; i--) {
-                    if (beaconScans.contains(scans.get(i))) {
-                        beaconScans.remove(scans.get(i));
-                    }
-                    scans.get(i).setSentToServerTimestamp(timeNow);
-                    saveData(scans.get(i));
-                }
-            }
-        }
-        removeBeaconScansOlderThan(timeNow, cacheTtl);
     }
 
     private void removeBeaconScansOlderThan(final long timeNow, final long cacheTtl) {
-        List<BeaconScan> scansToDelete = ListUtils.filter(beaconScans, new ListUtils.Filter<BeaconScan>() {
+        List<InternalBeaconScan> scansToDelete = ListUtils.filter(beaconScans, new ListUtils.Filter<InternalBeaconScan>() {
             @Override
-            public boolean matches(BeaconScan beaconEvent) {
-                return beaconEvent.getCreatedAt() < (timeNow - cacheTtl)
-                        && beaconEvent.getSentToServerTimestamp() != BeaconScan.NO_DATE;
+            public boolean matches(InternalBeaconScan beaconEvent) {
+                return beaconEvent.getBeaconScan().getCreatedAt() < (timeNow - cacheTtl)
+                        && beaconEvent.getSentToServerTimestamp() != null;
             }
         });
-
-        synchronized (beaconScansLock) {
-            if (scansToDelete.size() > 0) {
-                for (int i = scansToDelete.size() - 1; i >= 0; i--) {
-                    beaconScans.remove(scansToDelete.get(i));
-                }
-            }
-        }
+        beaconScans.removeAll(scansToDelete);
     }
 
-    private void saveData(BeaconAction beaconAction) {
-        beaconActions.add(beaconAction);
-        Logger.log.verbose("saving action = " + beaconAction.getActionId() + ", total saved = " + beaconActions.size());
-    }
-
-    public List<BeaconAction> notSentBeaconActions() {
-        return ListUtils.filter(beaconActions, new ListUtils.Filter<BeaconAction>() {
+    public List<InternalBeaconAction> notSentBeaconActions() {
+        return ListUtils.filter(beaconActions, new ListUtils.Filter<InternalBeaconAction>() {
             @Override
-            public boolean matches(BeaconAction beaconAction) {
-                return beaconAction.getSentToServerTimestamp() == BeaconAction.NO_DATE;
+            public boolean matches(InternalBeaconAction internalBeaconAction) {
+                return internalBeaconAction.getSentToServerTimestamp() == null;
             }
         });
-    }
-
-    private void markBeaconActionsAsSent(List<BeaconAction> scans, long timeNow, long cacheTtl) {
-        if (scans.size() > 0) {
-            synchronized (beaconActionsLock) {
-                for (int i = scans.size() - 1; i >= 0; i--) {
-                    if (beaconActions.contains(scans.get(i))) {
-                        beaconActions.remove(scans.get(i));
-                    }
-                    scans.get(i).setSentToServerTimestamp(timeNow);
-                    saveData(scans.get(i));
-                }
-            }
-        }
-        removeBeaconActionsOlderThan(timeNow, cacheTtl);
     }
 
     synchronized private void removeBeaconActionsOlderThan(final long timeNow, final long cacheTtl) {
-        List<BeaconAction> actionsToDelete = ListUtils.filter(beaconActions, new ListUtils.Filter<BeaconAction>() {
+        List<InternalBeaconAction> actionsToDelete = ListUtils.filter(beaconActions, new ListUtils.Filter<InternalBeaconAction>() {
             @Override
-            public boolean matches(BeaconAction beaconEvent) {
+            public boolean matches(InternalBeaconAction beaconEvent) {
                 return !beaconEvent.isKeepForever() && (beaconEvent.getCreatedAt() < (timeNow - cacheTtl)
-                        && beaconEvent.getSentToServerTimestamp() != BeaconAction.NO_DATE);
+                        && beaconEvent.getSentToServerTimestamp() != null);
             }
         });
 
-        synchronized (beaconActionsLock) {
-            if (actionsToDelete.size() > 0) {
-                for (int i = actionsToDelete.size() - 1; i >= 0; i--) {
-                    beaconActions.remove(actionsToDelete.get(i));
-                }
-            }
-        }
+        beaconActions.removeAll(actionsToDelete);
     }
 
     /**
@@ -267,11 +188,11 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
      * @return - A list of notSentBeaconScans.
      */
     public boolean getCountForSuppressionTime(final long lastAllowedPresentationTime, final UUID actionUUID) {
-        List<BeaconAction> actionsToKeep = ListUtils.filter(beaconActions, new ListUtils.Filter<BeaconAction>() {
+        List<InternalBeaconAction> actionsToKeep = ListUtils.filter(beaconActions, new ListUtils.Filter<InternalBeaconAction>() {
             @Override
-            public boolean matches(BeaconAction beaconEvent) {
-                return beaconEvent.getTimeOfPresentation() >= lastAllowedPresentationTime
-                        && beaconEvent.getActionId().equalsIgnoreCase(actionUUID.toString());
+            public boolean matches(InternalBeaconAction beaconEvent) {
+                return beaconEvent.getBeaconAction().getTimeOfPresentation() >= lastAllowedPresentationTime
+                        && beaconEvent.getBeaconAction().getActionId().equalsIgnoreCase(actionUUID.toString());
             }
         });
 
@@ -284,17 +205,9 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
      *
      * @param beaconActionSelect - The select statement you would like to save.
      */
-    private void keepForever(List<BeaconAction> beaconActionSelect) {
-        if (beaconActionSelect.size() > 0) {
-            synchronized (beaconActionsLock) {
-                for (int i = 0; i < beaconActionSelect.size(); i++) {
-                    if (beaconActions.contains(beaconActionSelect.get(i))) {
-                        beaconActions.remove(beaconActionSelect.get(i));
-                    }
-                    beaconActionSelect.get(i).setKeepForever(true);
-                    saveData(beaconActionSelect.get(i));
-                }
-            }
+    private void keepForever(List<InternalBeaconAction> beaconActionSelect) {
+        for (InternalBeaconAction internalBeaconAction : beaconActionSelect) {
+            internalBeaconAction.setKeepForever(true);
         }
     }
 
@@ -305,10 +218,10 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
      * @return - Select class object.
      */
     public boolean getCountForShowOnlyOnceSuppression(final UUID actionUUID) {
-        List<BeaconAction> actionsToKeep = ListUtils.filter(beaconActions, new ListUtils.Filter<BeaconAction>() {
+        List<InternalBeaconAction> actionsToKeep = ListUtils.filter(beaconActions, new ListUtils.Filter<InternalBeaconAction>() {
             @Override
-            public boolean matches(BeaconAction beaconEvent) {
-                return beaconEvent.getActionId().equalsIgnoreCase(actionUUID.toString());
+            public boolean matches(InternalBeaconAction internalBeaconAction) {
+                return internalBeaconAction.getBeaconAction().getActionId().equalsIgnoreCase(actionUUID.toString());
             }
         });
 
@@ -317,60 +230,52 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     }
 
     private void loadAllData() {
-        String actionJson = sharedPreferences.getString(BeaconAction.SHARED_PREFS_TAG, "");
+        String actionJson = sharedPreferences.getString(InternalBeaconAction.SHARED_PREFS_TAG, "");
         if (!actionJson.isEmpty()) {
-            Type listType = new TypeToken<Set<BeaconAction>>() {
-            }.getType();
-
-            synchronized (beaconActionsLock) {
-                beaconActions = Collections.synchronizedSet((Set<BeaconAction>) gson.fromJson(actionJson, listType));
-            }
+            Type listType = new TypeToken<Set<InternalBeaconAction>>() {}.getType();
+            beaconActions = Collections.synchronizedSet((Set<InternalBeaconAction>) gson.fromJson(actionJson, listType));
         }
 
-        String scanJson = sharedPreferences.getString(BeaconScan.SHARED_PREFS_TAG, "");
+        String scanJson = sharedPreferences.getString(InternalBeaconScan.SHARED_PREFS_TAG, "");
         if (!scanJson.isEmpty()) {
-            Type listType = new TypeToken<Set<BeaconScan>>() {
-            }.getType();
-
-            synchronized (beaconScansLock) {
-                beaconScans = Collections.synchronizedSet((Set<BeaconScan>) gson.fromJson(scanJson, listType));
-            }
+            Type listType = new TypeToken<Set<InternalBeaconScan>>() {}.getType();
+            beaconScans = Collections.synchronizedSet((Set<InternalBeaconScan>) gson.fromJson(scanJson, listType));
         }
     }
 
-    public void saveAllData() {
+    public void saveAllDataBeforeDestroy() {
         if (beaconActions.size() > 0) {
-            deleteSavedBeaconActions();
+            deleteSavedBeaconActionsFromSharedPreferences();
             String actionsJson = gson.toJson(beaconActions);
-            sharedPreferences.edit().putString(BeaconAction.SHARED_PREFS_TAG, actionsJson).apply();
-            beaconActions = Collections.synchronizedSet(new HashSet<BeaconAction>());
+            sharedPreferences.edit().putString(InternalBeaconAction.SHARED_PREFS_TAG, actionsJson).apply();
+            beaconActions = Collections.synchronizedSet(new HashSet<InternalBeaconAction>());
         }
 
         if (beaconScans.size() > 0) {
-            deleteSavedBeaconScans();
+            deleteSavedBeaconScansFromSharedPreferences();
             String scansJson = gson.toJson(beaconScans);
-            sharedPreferences.edit().putString(BeaconScan.SHARED_PREFS_TAG, scansJson).apply();
-            beaconScans = Collections.synchronizedSet(new HashSet<BeaconScan>());
+            sharedPreferences.edit().putString(InternalBeaconScan.SHARED_PREFS_TAG, scansJson).apply();
+            beaconScans = Collections.synchronizedSet(new HashSet<InternalBeaconScan>());
         }
     }
 
-    private void deleteSavedBeaconScans() {
-        if (sharedPreferences.contains(BeaconScan.SHARED_PREFS_TAG)) {
-            sharedPreferences.edit().remove(BeaconScan.SHARED_PREFS_TAG).apply();
+    private void deleteSavedBeaconScansFromSharedPreferences() {
+        if (sharedPreferences.contains(InternalBeaconScan.SHARED_PREFS_TAG)) {
+            sharedPreferences.edit().remove(InternalBeaconScan.SHARED_PREFS_TAG).apply();
         }
     }
 
-    private void deleteSavedBeaconActions() {
-        if (sharedPreferences.contains(BeaconAction.SHARED_PREFS_TAG)) {
-            sharedPreferences.edit().remove(BeaconAction.SHARED_PREFS_TAG).apply();
+    private void deleteSavedBeaconActionsFromSharedPreferences() {
+        if (sharedPreferences.contains(InternalBeaconAction.SHARED_PREFS_TAG)) {
+            sharedPreferences.edit().remove(InternalBeaconAction.SHARED_PREFS_TAG).apply();
         }
     }
 
     public void deleteAllData() {
-        beaconActions = Collections.synchronizedSet(new HashSet<BeaconAction>());
-        beaconScans = Collections.synchronizedSet(new HashSet<BeaconScan>());
+        beaconActions = Collections.synchronizedSet(new HashSet<InternalBeaconAction>());
+        beaconScans = Collections.synchronizedSet(new HashSet<InternalBeaconScan>());
 
-        deleteSavedBeaconScans();
-        deleteSavedBeaconActions();
+        deleteSavedBeaconScansFromSharedPreferences();
+        deleteSavedBeaconActionsFromSharedPreferences();
     }
 }

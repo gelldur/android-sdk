@@ -172,7 +172,7 @@ public class ProvidersModule {
             @Named("realSettingsManager") SettingsManager settingsManager, @Named("realClock") Clock clock,
             @Named("realHandlerManager") HandlerManager handlerManager,
             SharedPreferences sharedPreferences, Gson gson) {
-        return new BeaconActionHistoryPublisher(context, transport, settingsManager, clock, handlerManager, sharedPreferences, gson);
+        return new BeaconActionHistoryPublisher(transport, settingsManager, clock, handlerManager, sharedPreferences, gson);
     }
 
     @Provides
