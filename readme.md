@@ -2,11 +2,10 @@
 [![Join the chat at https://gitter.im/sensorberg-dev/android-sdk](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sensorberg-dev/android-sdk?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
-*Api key caching is 24hrs currently.*
-There were issues found regarding the HTTP cache. This mainly affects the sending of the API key at runtime. The cache was being kept for 24hrs. This of course causes problems when changing the api key to another 
-campaign. We are in the process of fixing this issue; a fix will be out shortly.
+#*HTTP caching is 24hrs currently.*
+There were issues found regarding the HTTP cache. This mainly affects the sending of the API key at runtime. The cache was being kept for 24hrs. This of course causes problems when changing the api key in the app. We are in the process of fixing this issue; a fix will be out shortly.
 
-##Warning:
+#Warning:
 You are viewing the sources of version 2.0.3. The SDK is released. Feel free to explore it.
 
 #Last stable release
