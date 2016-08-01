@@ -1,11 +1,10 @@
 [![Build Status](https://travis-ci.org/sensorberg-dev/android-sdk.svg?branch=master)](https://travis-ci.org/sensorberg-dev/android-sdk?branch=master)
 [![Join the chat at https://gitter.im/sensorberg-dev/android-sdk](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sensorberg-dev/android-sdk?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-<div class="callout callout-alert">
-    <h1><i class="fa fa-exclamation-triangle"></i>Api key caching is 24hrs currently..</h1>
-    <p>There were issues found regarding caching of the api key. <br /> In other words if you change the api in the app this would not be sent until after 24 hrs<br /
-    We are working on it and a fix will be out shortly.</p>
-</div>
+
+*Api key caching is 24hrs currently.*
+There were issues found regarding the HTTP cache. This mainly affects the sending of the API key at runtime. The cache was being kept for 24hrs. This of course causes problems when changing the api key to another 
+campaign. We are in the process of fixing this issue; a fix will be out shortly.
 
 ##Warning:
 You are viewing the sources of version 2.0.3. The SDK is released. Feel free to explore it.
