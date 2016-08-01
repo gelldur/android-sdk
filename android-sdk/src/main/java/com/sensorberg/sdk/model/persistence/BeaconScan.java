@@ -11,10 +11,6 @@ import lombok.Setter;
 
 public class BeaconScan {
 
-    public static final String SHARED_PREFS_TAG = "BeaconScans";
-
-    public static final long NO_DATE = Long.MIN_VALUE;
-
     @Expose
     @Getter
     @Setter
@@ -26,11 +22,6 @@ public class BeaconScan {
     @Setter
     @SerializedName("pid")
     private String pid;
-
-    @Expose
-    @Getter
-    @Setter
-    private long sentToServerTimestamp;
 
     @Expose
     @Getter
@@ -51,7 +42,6 @@ public class BeaconScan {
         BeaconScan value = new BeaconScan();
         value.setTrigger(scanEvent.isEntry() ? ScanEventType.ENTRY.getMask() : ScanEventType.EXIT.getMask());
         value.setPid(scanEvent.getBeaconId().getPid());
-        value.setSentToServerTimestamp(NO_DATE);
         value.setCreatedAt(scanEvent.getEventTime());
         return value;
     }

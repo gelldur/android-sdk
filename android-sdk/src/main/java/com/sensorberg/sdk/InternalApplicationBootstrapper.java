@@ -215,8 +215,8 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper
         scanner.stop();
     }
 
-    public void saveAllData() {
-        beaconActionHistoryPublisher.saveAllData();
+    public void saveAllDataBeforeDestroy() {
+        beaconActionHistoryPublisher.saveAllDataBeforeDestroy();
     }
 
     public void hostApplicationInForeground() {

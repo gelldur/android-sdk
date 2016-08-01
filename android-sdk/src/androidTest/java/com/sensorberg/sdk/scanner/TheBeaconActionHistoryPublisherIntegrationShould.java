@@ -9,8 +9,8 @@ import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
 import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
 import com.sensorberg.sdk.internal.transport.model.HistoryBody;
-import com.sensorberg.sdk.model.persistence.BeaconAction;
-import com.sensorberg.sdk.model.persistence.BeaconScan;
+import com.sensorberg.sdk.model.persistence.InternalBeaconAction;
+import com.sensorberg.sdk.model.persistence.InternalBeaconScan;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.sdk.settings.SettingsManager;
 
@@ -20,7 +20,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
 import android.content.SharedPreferences;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import java.util.List;
@@ -68,7 +67,7 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         testTransportWithMockService = new RetrofitApiTransport(mockRetrofitApiService, clock);
-        tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), testTransportWithMockService, testSettingsManager, clock,
+        tested = new BeaconActionHistoryPublisher(testTransportWithMockService, testSettingsManager, clock,
                 testHandlerManager, sharedPreferences, gson);
     }
 
@@ -90,21 +89,21 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
 
         //add one action in the future
         tested.onActionPresented(TestConstants.BEACON_EVENT_IN_FUTURE);
-        List<BeaconAction> notSentObjects = tested.notSentBeaconActions();
+        List<InternalBeaconAction> notSentObjects = tested.notSentBeaconActions();
         assertThat(notSentObjects).hasSize(1);
 
         //persist it, nullify and make new instance
-        tested.saveAllData();
+        tested.saveAllDataBeforeDestroy();
 
         tested = null;
-        tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), testTransportWithMockService, testSettingsManager, clock,
+        tested = new BeaconActionHistoryPublisher(testTransportWithMockService, testSettingsManager, clock,
                 testHandlerManager, sharedPreferences, gson);
 
         //Make sure the object returned is not null.
         assertThat(tested);
 
         //check that this instance read from local persistence layer
-        List<BeaconAction> notSentObjectsFromPersistence = tested.notSentBeaconActions();
+        List<InternalBeaconAction> notSentObjectsFromPersistence = tested.notSentBeaconActions();
         assertThat(notSentObjectsFromPersistence).hasSize(1);
     }
 
@@ -115,20 +114,20 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
 
         //add one scan
         tested.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(100));
-        List<BeaconScan> notSentObjects = tested.notSentBeaconScans();
+        List<InternalBeaconScan> notSentObjects = tested.notSentBeaconScans();
         assertThat(notSentObjects).hasSize(1);
 
         //persist it, nullify and make new instance
-        tested.saveAllData();
+        tested.saveAllDataBeforeDestroy();
         tested = null;
-        tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), testTransportWithMockService, testSettingsManager, clock,
+        tested = new BeaconActionHistoryPublisher(testTransportWithMockService, testSettingsManager, clock,
                 testHandlerManager, sharedPreferences, gson);
 
         //Make sure the object returned is not null.
         assertThat(tested);
 
         //check that this instance read from local persistence layer
-        List<BeaconScan> notSentObjectsFromPersistence = tested.notSentBeaconScans();
+        List<InternalBeaconScan> notSentObjectsFromPersistence = tested.notSentBeaconScans();
         assertThat(notSentObjectsFromPersistence).hasSize(1);
     }
 }
