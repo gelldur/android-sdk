@@ -18,10 +18,12 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Cache;
+import okhttp3.CacheWrapper;
 import okhttp3.Headers;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.internal.cache.SensorbergCacheInterceptor;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -92,8 +94,9 @@ public class RetrofitApiServiceImpl {
 
         okClientBuilder.addInterceptor(headerAuthorizationInterceptor);
 
-        httpLoggingInterceptor = new HttpLoggingInterceptor();
-        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
+
+        HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
+        httpLoggingInterceptor.setLevel(mApiServiceLogLevel);
         okClientBuilder.addInterceptor(httpLoggingInterceptor);
 
         okClientBuilder.retryOnConnectionFailure(true);
@@ -101,7 +104,9 @@ public class RetrofitApiServiceImpl {
         final File baseDir = context.getCacheDir();
         if (baseDir != null) {
             final File cacheDir = new File(baseDir, "HttpResponseCache");
-            okClientBuilder.cache(new Cache(cacheDir, HTTP_RESPONSE_DISK_CACHE_MAX_SIZE));
+            Cache cache = new Cache(cacheDir, HTTP_RESPONSE_DISK_CACHE_MAX_SIZE);
+            okClientBuilder.cache(cache);
+            okClientBuilder.addInterceptor(new SensorbergCacheInterceptor(new CacheWrapper(cache).getInternalCache()));
         }
 
         okClientBuilder.connectTimeout(CONNECTION_TIMEOUT, TimeUnit.SECONDS);

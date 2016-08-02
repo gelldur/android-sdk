@@ -17,7 +17,10 @@ public class RawJSONMockResponse {
         JSONObject json = new JSONObject(theString);
         MockResponse value = new MockResponse();
 
-        value.setBody(json.getJSONObject("body").toString());
+        JSONObject body = json.optJSONObject("body");
+        if (body != null) {
+            value.setBody(body.toString());
+        }
         value.setResponseCode(json.optInt("statusCode", 200));
 
         JSONObject headers = json.optJSONObject("headers");

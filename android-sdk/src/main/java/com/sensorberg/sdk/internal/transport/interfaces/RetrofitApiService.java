@@ -5,16 +5,19 @@ import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
 import com.sensorberg.sdk.model.server.BaseResolveResponse;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 
+import okhttp3.internal.cache.SensorbergCacheInterceptor;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
+import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.Url;
 
 public interface RetrofitApiService {
 
+    @Headers(SensorbergCacheInterceptor.CACHE_BUST_HEADER_WITH_VALUE)
     @GET("/layout")
     Call<BaseResolveResponse> updateBeaconLayout();
 

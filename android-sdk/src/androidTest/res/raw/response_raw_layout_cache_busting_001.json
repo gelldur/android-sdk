@@ -1,0 +1,30 @@
+{
+    "statusCode" : 200,
+    "headers": {
+        "Cache-Control": "no-transform,public,max-age=1",
+        "Content-Type": " application/json",
+        "Etag": "1416996436511"
+    },
+    "body": {
+      "accountProximityUUIDs": [
+        "7367672374000000ffff0000ffff0001",
+        "7367672374000000ffff0000ffff0002",
+        "7367672374000000ffff0000ffff0003"
+      ],
+      "actions": [
+        {
+          "eid": "D0F8A7-B0CF-446D-981B-F33077997FA8",
+          "trigger": 3,
+          "type": 1,
+          "name": "name",
+          "beacons": [
+            "7367672374000000ffff0000ffff00010133701337",
+            "7367672374000000ffff0000ffff00020133701337"
+          ],
+          "delay": 0,
+          "reportImmediately": true
+        }
+      ],
+      "instantActions": []
+    }
+}
