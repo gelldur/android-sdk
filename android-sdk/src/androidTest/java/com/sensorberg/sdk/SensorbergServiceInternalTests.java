@@ -9,6 +9,7 @@ import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.resolver.BeaconEvent;
+import com.sensorberg.sdk.resolver.ResolverConfiguration;
 import com.sensorberg.sdk.test.TestGenericBroadcastReceiver;
 import com.sensorberg.sdk.test.TestGenericBroadcastReceiver2;
 
@@ -283,7 +284,7 @@ public class SensorbergServiceInternalTests {
 
     private InternalApplicationBootstrapper createSpyBootstrapper() {
         InternalApplicationBootstrapper bootstrapper = new InternalApplicationBootstrapper(transport, serviceScheduler, handlerManager, clock,
-                bluetoothPlatform);
+                bluetoothPlatform, new ResolverConfiguration());
         bootstrapper.setApiToken(TestConstants.API_TOKEN_DEFAULT);
         bootstrapper = spy(bootstrapper);
         return bootstrapper;

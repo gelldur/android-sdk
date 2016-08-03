@@ -4,6 +4,7 @@ import com.sensorberg.sdk.action.InAppAction;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
 import com.sensorberg.sdk.resolver.BeaconEvent;
+import com.sensorberg.sdk.resolver.ResolverConfiguration;
 import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 import com.sensorberg.sdk.testUtils.DumbSucessTransport;
 import com.sensorberg.sdk.testUtils.TestHandlerManager;
@@ -62,7 +63,7 @@ public class TheInternalApplicationBootstrapperShould {
         beaconActionHistoryPublisher.deleteAllData();
 
         tested = spy(new InternalApplicationBootstrapper(new DumbSucessTransport(), testServiceScheduler, testHandlerManager,
-                testHandlerManager.getCustomClock(), bluetoothPlatform));
+                testHandlerManager.getCustomClock(), bluetoothPlatform, new ResolverConfiguration()));
 
         beaconEventSupressionTime = new BeaconEvent.Builder()
                 .withAction(new InAppAction(UUID, "irrelevant", "irrelevant", null, null, 0))
