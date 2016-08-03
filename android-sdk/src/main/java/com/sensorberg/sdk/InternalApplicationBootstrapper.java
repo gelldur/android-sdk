@@ -84,7 +84,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper
     protected BluetoothPlatform bluetoothPlatform;
 
     public InternalApplicationBootstrapper(Transport transport, ServiceScheduler scheduler, HandlerManager handlerManager,
-            Clock clk, BluetoothPlatform btPlatform) {
+                                           Clock clk, BluetoothPlatform btPlatform, ResolverConfiguration resolverConfiguration) {
         super(scheduler);
         SensorbergSdk.getComponent().inject(this);
 
@@ -95,8 +95,6 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper
         bluetoothPlatform = btPlatform;
 
         beaconActionHistoryPublisher.setResolverListener(resolverListener);
-
-        ResolverConfiguration resolverConfiguration = new ResolverConfiguration();
 
         scanner = new Scanner(settingsManager, settingsManager.isShouldRestoreBeaconStates(), clock, fileManager, scheduler, handlerManager,
                 btPlatform);

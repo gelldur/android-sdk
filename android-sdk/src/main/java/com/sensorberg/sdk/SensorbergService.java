@@ -277,7 +277,7 @@ public class SensorbergService extends Service {
                 URLFactory.setLayoutURL(diskConf.resolverConfiguration.getResolverLayoutURL().toString());
             }
             if (diskConf != null && diskConf.isComplete()) {
-                newBootstrapper = createBootstrapper(diskConf.resolverConfiguration.apiToken);
+                newBootstrapper = createBootstrapper(diskConf.resolverConfiguration);
             } else {
                 logError("configuration from disk could not be loaded or is not complete");
             }
@@ -288,11 +288,9 @@ public class SensorbergService extends Service {
         return newBootstrapper;
     }
 
-    private InternalApplicationBootstrapper createBootstrapper(String apikey) {
+    private InternalApplicationBootstrapper createBootstrapper(ResolverConfiguration resolverConfiguration) {
         InternalApplicationBootstrapper newBootstrapper = new InternalApplicationBootstrapper(transport, serviceScheduler, handlerManager, clock,
-                bluetoothPlatform);
-        newBootstrapper.setApiToken(apikey);
-
+                bluetoothPlatform, resolverConfiguration);
         return newBootstrapper;
     }
 

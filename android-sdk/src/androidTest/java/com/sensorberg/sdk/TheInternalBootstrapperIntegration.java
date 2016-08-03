@@ -17,6 +17,7 @@ import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.sdk.presenter.LocalBroadcastManager;
 import com.sensorberg.sdk.presenter.ManifestParser;
 import com.sensorberg.sdk.resolver.ResolutionConfiguration;
+import com.sensorberg.sdk.resolver.ResolverConfiguration;
 import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 import com.sensorberg.sdk.scanner.ScanEvent;
 import com.sensorberg.sdk.scanner.ScanEventType;
@@ -129,7 +130,7 @@ public class TheInternalBootstrapperIntegration {
 
         spiedTransportWithMockService = Mockito.spy(new RetrofitApiTransport(mockRetrofitApiService, testHandlerManager.getCustomClock()));
         spiedInternalApplicationBootstrapper = Mockito.spy(new InternalApplicationBootstrapper(spiedTransportWithMockService, testServiceScheduler,
-                testHandlerManager, testHandlerManager.getCustomClock(), bluetoothPlatform));
+                testHandlerManager, testHandlerManager.getCustomClock(), bluetoothPlatform, new ResolverConfiguration()));
 
         TestGenericBroadcastReceiver broadcastReceiver = new TestGenericBroadcastReceiver();
         LocalBroadcastManager.getInstance(InstrumentationRegistry.getContext()).registerReceiver(broadcastReceiver,
