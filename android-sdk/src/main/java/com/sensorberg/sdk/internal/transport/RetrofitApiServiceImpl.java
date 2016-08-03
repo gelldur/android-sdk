@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Cache;
-import okhttp3.CacheWrapper;
+import okhttp3.SensorbergCacheWrapper;
 import okhttp3.Headers;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -106,7 +106,7 @@ public class RetrofitApiServiceImpl {
             final File cacheDir = new File(baseDir, "HttpResponseCache");
             Cache cache = new Cache(cacheDir, HTTP_RESPONSE_DISK_CACHE_MAX_SIZE);
             okClientBuilder.cache(cache);
-            okClientBuilder.addInterceptor(new SensorbergCacheInterceptor(new CacheWrapper(cache).getInternalCache()));
+            okClientBuilder.addInterceptor(new SensorbergCacheInterceptor(cache));
         }
 
         okClientBuilder.connectTimeout(CONNECTION_TIMEOUT, TimeUnit.SECONDS);

@@ -19,6 +19,7 @@ package okhttp3.internal.cache;
 import java.io.IOException;
 import java.util.Date;
 
+import okhttp3.Cache;
 import okhttp3.CacheControl;
 import okhttp3.Headers;
 import okhttp3.Interceptor;
@@ -27,6 +28,7 @@ import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okhttp3.SensorbergCacheWrapper;
 import okhttp3.internal.Internal;
 import okhttp3.internal.InternalCache;
 import okhttp3.internal.http.CacheRequest;
@@ -70,8 +72,8 @@ public final class SensorbergCacheInterceptor implements Interceptor {
 
     final InternalCache cache;
 
-    public SensorbergCacheInterceptor(InternalCache cache) {
-        this.cache = cache;
+    public SensorbergCacheInterceptor(Cache cache) {
+        this.cache = new SensorbergCacheWrapper(cache).getInternalCache();
     }
 
     @Override public Response intercept(Chain chain) throws IOException {
