@@ -1,12 +1,16 @@
 [![Build Status](https://travis-ci.org/sensorberg-dev/android-sdk.svg?branch=master)](https://travis-ci.org/sensorberg-dev/android-sdk?branch=master)
 [![Join the chat at https://gitter.im/sensorberg-dev/android-sdk](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sensorberg-dev/android-sdk?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-##Warning:
-You are viewing the sources of version 2.0.2. The SDK is released. Feel free to explore it.
+
+#*HTTP caching is 24hrs currently.*
+There were issues found regarding the HTTP cache. This mainly affects the sending of the API key at runtime. The cache was being kept for 24hrs. This of course causes problems when changing the api key in the app. We are in the process of fixing this issue; a fix will be out shortly.
+
+#Warning:
+You are viewing the sources of version 2.0.3. The SDK is released. Feel free to explore it.
 
 #Last stable release
 
-The last stable release was v1.2.0.  It is not recommended to use this as v2.0.2 is the latest. For now you can read the old [samples page](https://github.com/sensorberg-dev/android-sdk-samples) page for all neccesary information.
+The last stable release was v1.2.0.  It is not recommended to use this as v2.0.3 is the latest. For now you can read the old [samples page](https://github.com/sensorberg-dev/android-sdk-samples) page for all neccesary information.
 Please be aware, we are not currently updating the samples. We are in process of updating the sdk and will release better and updated samples in the future. 
 If you have any specific questions, please reach out to us.
 
