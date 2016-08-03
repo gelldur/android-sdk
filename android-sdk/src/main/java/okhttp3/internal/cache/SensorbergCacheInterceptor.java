@@ -18,6 +18,8 @@ package okhttp3.internal.cache;
 
 import java.io.IOException;
 import java.util.Date;
+
+import okhttp3.CacheControl;
 import okhttp3.Headers;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
@@ -96,7 +98,7 @@ public final class SensorbergCacheInterceptor implements Interceptor {
 
         Response networkResponse = null;
         try {
-            networkResponse = chain.proceed(networkRequest);
+            networkResponse = chain.proceed(networkRequest.newBuilder().cacheControl(CacheControl.FORCE_NETWORK).build());
         } finally {
             // If we're crashing on I/O or otherwise, don't leak the cache body.
             if (networkResponse == null && cacheCandidate != null) {
