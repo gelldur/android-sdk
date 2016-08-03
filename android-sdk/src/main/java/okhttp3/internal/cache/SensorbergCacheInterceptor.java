@@ -43,6 +43,7 @@ import okio.Source;
 import okio.Timeout;
 
 import static java.net.HttpURLConnection.HTTP_NOT_MODIFIED;
+import static java.net.HttpURLConnection.HTTP_OK;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static okhttp3.internal.Util.closeQuietly;
 import static okhttp3.internal.Util.discard;
@@ -130,8 +131,8 @@ public final class SensorbergCacheInterceptor implements Interceptor {
                 .cacheResponse(stripBody(cacheResponse))
                 .networkResponse(stripBody(networkResponse))
                 .build();
-
-        if (HttpHeaders.hasBody(response)) {
+        
+        if (response.code() == HTTP_OK) {
             CacheRequest cacheRequest = maybeCache(response, networkResponse.request(), cache);
             response = cacheWritingResponse(cacheRequest, response);
         }
