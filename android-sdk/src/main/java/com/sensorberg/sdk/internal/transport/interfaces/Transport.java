@@ -16,8 +16,6 @@ public interface Transport {
 
     String HEADER_USER_AGENT = "User-Agent";
 
-    String HEADER_AUTHORIZATION = "Authorization";
-
     String HEADER_XAPIKEY = "X-Api-Key";
 
     interface ProximityUUIDUpdateHandler{

@@ -24,10 +24,6 @@ public class AndroidPlatformIdentifier implements PlatformIdentifier {
 
     private static final String SENSORBERG_PREFERENCE_INSTALLATION_IDENTIFIER = "com.sensorberg.preferences.installationUuidIdentifier";
 
-    private final ArrayList<DeviceInstallationIdentifierChangeListener> deviceInstallationIdentifierChangeListener = new ArrayList<>();
-
-    private final ArrayList<AdvertiserIdentifierChangeListener> advertiserIdentifierChangeListener = new ArrayList<>();
-
     private final Context context;
 
     private final SharedPreferences sharedPreferences;
@@ -45,6 +41,7 @@ public class AndroidPlatformIdentifier implements PlatformIdentifier {
         if (sharedPrefs.contains(SharedPreferencesKeys.Network.ADVERTISING_IDENTIFIER)) {
             advertiserIdentifier = sharedPrefs.getString(SharedPreferencesKeys.Network.ADVERTISING_IDENTIFIER, null);
         }
+        deviceInstallationIdentifier = getOrCreateInstallationIdentifier();
     }
 
     @SuppressWarnings({"StringConcatenationInsideStringBufferAppend", "StringBufferReplaceableByString"})
@@ -71,23 +68,7 @@ public class AndroidPlatformIdentifier implements PlatformIdentifier {
 
     @Override
     public String getDeviceInstallationIdentifier() {
-        if (deviceInstallationIdentifier == null) {
-            deviceInstallationIdentifier = getOrCreateInstallationIdentifier();
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    long timeBefore = System.currentTimeMillis();
-
-                    persistInstallationIdentifier(deviceInstallationIdentifier);
-                    for (DeviceInstallationIdentifierChangeListener listener : deviceInstallationIdentifierChangeListener) {
-                        listener.deviceInstallationIdentifierChanged(deviceInstallationIdentifier);
-                    }
-
-                    Logger.log.verbose("Fetching installation ID took " + (System.currentTimeMillis() - timeBefore) + " millis");
-                }
-            }).start();
-        }
 
         return deviceInstallationIdentifier;
     }
@@ -101,24 +82,8 @@ public class AndroidPlatformIdentifier implements PlatformIdentifier {
     public void setAdvertisingIdentifier(String advertisingIdentifier) {
         advertiserIdentifier = advertisingIdentifier;
         persistAdvertiserIdentifier(advertiserIdentifier);
-        notifyAdvertiserIdentifierListeners();
     }
 
-    @Override
-    public void addDeviceInstallationIdentifierChangeListener(DeviceInstallationIdentifierChangeListener listener) {
-        this.deviceInstallationIdentifierChangeListener.add(listener);
-    }
-
-    @Override
-    public void addAdvertiserIdentifierChangeListener(AdvertiserIdentifierChangeListener listener) {
-        this.advertiserIdentifierChangeListener.add(listener);
-    }
-
-    private void notifyAdvertiserIdentifierListeners(){
-        for (AdvertiserIdentifierChangeListener listener : advertiserIdentifierChangeListener) {
-            listener.advertiserIdentifierChanged(advertiserIdentifier);
-        }
-    }
 
     private String getOrCreateInstallationIdentifier() {
         String value;
@@ -128,6 +93,7 @@ public class AndroidPlatformIdentifier implements PlatformIdentifier {
             value = uuidString;
         } else {
             value = uuidWithoutDashesString(UUID.randomUUID());
+            persistInstallationIdentifier(value);
         }
         return value;
     }
