@@ -47,6 +47,10 @@ import static okhttp3.internal.Util.discard;
 
 /** Serves requests from the cache and writes responses to the cache. */
 public final class SensorbergCacheInterceptor implements Interceptor {
+
+    private static final String HEADER = "Should-Always-Try-With-Network";
+    public static final String CACHE_BUST_HEADER_WITH_VALUE = HEADER + ": true";
+
     private static final ResponseBody EMPTY_BODY = new ResponseBody() {
         @Override public MediaType contentType() {
             return null;
@@ -68,6 +72,10 @@ public final class SensorbergCacheInterceptor implements Interceptor {
     }
 
     @Override public Response intercept(Chain chain) throws IOException {
+        if (chain.request().header(HEADER) == null){
+            return chain.proceed(chain.request());
+        }
+
         Response cacheCandidate = cache != null
                 ? cache.get(chain.request())
                 : null;
