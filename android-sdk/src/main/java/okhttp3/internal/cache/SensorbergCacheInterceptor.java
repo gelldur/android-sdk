@@ -94,26 +94,6 @@ public final class SensorbergCacheInterceptor implements Interceptor {
             closeQuietly(cacheCandidate.body()); // The cache candidate wasn't applicable. Close it.
         }
 
-        // If we're forbidden from using the network and the cache is insufficient, fail.
-        if (networkRequest == null && cacheResponse == null) {
-            return new Response.Builder()
-                    .request(chain.request())
-                    .protocol(Protocol.HTTP_1_1)
-                    .code(504)
-                    .message("Unsatisfiable Request (only-if-cached)")
-                    .body(EMPTY_BODY)
-                    .sentRequestAtMillis(-1L)
-                    .receivedResponseAtMillis(System.currentTimeMillis())
-                    .build();
-        }
-
-        // If we don't need the network, we're done.
-        if (networkRequest == null) {
-            return cacheResponse.newBuilder()
-                    .cacheResponse(stripBody(cacheResponse))
-                    .build();
-        }
-
         Response networkResponse = null;
         try {
             networkResponse = chain.proceed(networkRequest);
