@@ -47,7 +47,7 @@ public interface Transport {
 
     void getBeacon(ResolutionConfiguration resolutionConfiguration, BeaconResponseHandler beaconResponseHandler);
 
-    void setApiToken(String apiToken);
+    boolean setApiToken(String apiToken);
 
     void loadSettings(TransportSettingsCallback transportSettingsCallback);
 

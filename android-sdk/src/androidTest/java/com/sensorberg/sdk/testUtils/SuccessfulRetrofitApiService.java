@@ -55,8 +55,8 @@ public class SuccessfulRetrofitApiService extends RetrofitApiServiceImpl {
     }
 
     @Override
-    public void setApiToken(String newToken) {
-        super.setApiToken(newToken);
+    public boolean setApiToken(String newToken) {
+        return super.setApiToken(newToken);
     }
 
     @Override
