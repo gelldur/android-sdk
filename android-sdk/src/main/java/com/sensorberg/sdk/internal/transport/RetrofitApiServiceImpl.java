@@ -1,7 +1,8 @@
 package com.sensorberg.sdk.internal.transport;
 
-import com.google.gson.Gson;
+import android.content.Context;
 
+import com.google.gson.Gson;
 import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
 import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiService;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
@@ -11,19 +12,16 @@ import com.sensorberg.sdk.model.server.BaseResolveResponse;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.utils.Objects;
 
-import android.content.Context;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Cache;
-import okhttp3.SensorbergCacheWrapper;
 import okhttp3.Headers;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.internal.cache.SensorbergCacheInterceptor;
+import okhttp3.SensorbergCacheInterceptor;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Retrofit;

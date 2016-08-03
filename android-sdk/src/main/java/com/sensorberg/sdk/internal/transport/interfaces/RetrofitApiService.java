@@ -5,7 +5,7 @@ import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
 import com.sensorberg.sdk.model.server.BaseResolveResponse;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 
-import okhttp3.internal.cache.SensorbergCacheInterceptor;
+import okhttp3.SensorbergCacheInterceptor;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
