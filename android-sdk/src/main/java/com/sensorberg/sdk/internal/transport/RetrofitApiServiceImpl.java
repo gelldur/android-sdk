@@ -169,8 +169,9 @@ public class RetrofitApiServiceImpl implements PlatformIdentifier.DeviceInstalla
         return getApiService().getSettings(url);
     }
 
-    public void setApiToken(String newToken) {
-        if (!Objects.equals(newToken, mApiToken) && mClient != null){
+    public boolean setApiToken(String newToken) {
+        boolean tokensDiffer = !Objects.equals(newToken, mApiToken);
+        if (tokensDiffer && mClient != null){
             try {
                 mClient.cache().evictAll();
             } catch (IOException e) {
@@ -179,6 +180,7 @@ public class RetrofitApiServiceImpl implements PlatformIdentifier.DeviceInstalla
         }
 
         this.mApiToken = newToken;
+        return tokensDiffer;
     }
 
 

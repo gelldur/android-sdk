@@ -127,8 +127,8 @@ public class RetrofitApiTransport implements Transport {
     }
 
     @Override
-    public void setApiToken(String apiToken) {
-        getApiService().setApiToken(apiToken);
+    public boolean setApiToken(String apiToken) {
+        return getApiService().setApiToken(apiToken);
     }
 
     @Override
