@@ -141,7 +141,7 @@ public final class SensorbergCacheInterceptor implements Interceptor {
 
     private static Response stripBody(Response response) {
         return response != null && response.body() != null
-                ? response.newBuilder().body(null).build()
+                ? response.newBuilder().body(null).cacheResponse(null).networkResponse(null).build()
                 : response;
     }
 
