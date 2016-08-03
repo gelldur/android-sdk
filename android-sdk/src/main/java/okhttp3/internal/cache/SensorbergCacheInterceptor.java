@@ -86,7 +86,6 @@ public final class SensorbergCacheInterceptor implements Interceptor {
         long now = System.currentTimeMillis();
 
         CacheStrategy strategy = new CacheStrategy.Factory(now, chain.request(), cacheCandidate).get();
-        Request networkRequest = strategy.networkRequest;
         Response cacheResponse = strategy.cacheResponse;
 
         if (cache != null) {
@@ -99,7 +98,7 @@ public final class SensorbergCacheInterceptor implements Interceptor {
 
         Response networkResponse = null;
         try {
-            networkResponse = chain.proceed(networkRequest.newBuilder().cacheControl(CacheControl.FORCE_NETWORK).build());
+            networkResponse = chain.proceed(chain.request().newBuilder().cacheControl(CacheControl.FORCE_NETWORK).build());
         } finally {
             // If we're crashing on I/O or otherwise, don't leak the cache body.
             if (networkResponse == null && cacheCandidate != null) {
