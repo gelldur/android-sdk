@@ -146,7 +146,9 @@ public class SensorbergService extends Service {
 
     protected int startSensorbergService(String apiKey) {
         if (bootstrapper == null && (!TextUtils.isEmpty(apiKey))) {
-            bootstrapper = createBootstrapper(apiKey);
+            ResolverConfiguration configuration = new ResolverConfiguration();
+            configuration.setApiToken(apiKey);
+            bootstrapper = createBootstrapper(configuration);
             persistConfiguration(bootstrapper.resolver.configuration);
             bootstrapper.startScanning();
             return START_STICKY;
