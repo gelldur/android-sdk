@@ -93,7 +93,7 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
         assertThat(notSentObjects).hasSize(1);
 
         //persist it, nullify and make new instance
-        tested.saveAllDataBeforeDestroy();
+        tested.saveAllData();
 
         tested = null;
         tested = new BeaconActionHistoryPublisher(testTransportWithMockService, testSettingsManager, clock,
@@ -118,7 +118,7 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
         assertThat(notSentObjects).hasSize(1);
 
         //persist it, nullify and make new instance
-        tested.saveAllDataBeforeDestroy();
+        tested.saveAllData();
         tested = null;
         tested = new BeaconActionHistoryPublisher(testTransportWithMockService, testSettingsManager, clock,
                 testHandlerManager, sharedPreferences, gson);
