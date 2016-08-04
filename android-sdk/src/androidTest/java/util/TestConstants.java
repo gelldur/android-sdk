@@ -57,8 +57,6 @@ public class TestConstants {
 
     public static final int MINOR = 1337;
 
-    public static final Long REVISION = 5L;
-
     public static final BeaconId ANY_BEACON_ID = new BeaconId(BEACON_PROXIMITY_ID, MAJOR, MINOR);
 
     public static final BeaconId ANY_OTHER_BEACON_ID = new BeaconId(BEACON_PROXIMITY_ID, MAJOR + 1, MINOR + 2);
@@ -143,15 +141,7 @@ public class TestConstants {
         SensorbergServiceConfiguration diskConf = new SensorbergServiceConfiguration(new ResolverConfiguration());
         diskConf.resolverConfiguration.setApiToken("123456");
         diskConf.resolverConfiguration.setAdvertisingIdentifier("123456");
-        diskConf.resolverConfiguration.setResolverLayoutURL(new URL("http://resolver-new.sensorberg.com"));
 
         return diskConf;
-    }
-
-    public static Intent getInvalidResolverEndpointIntent(Context ctx) {
-        Intent serviceIntent = SensorbergServiceIntents.getServiceIntentWithMessage(ctx, SensorbergServiceMessage.MSG_TYPE_SET_RESOLVER_ENDPOINT);
-        serviceIntent.putExtra(SensorbergServiceMessage.MSG_SET_RESOLVER_ENDPOINT_ENDPOINT_URL, "this is not a valid url");
-
-        return serviceIntent;
     }
 }

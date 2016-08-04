@@ -124,8 +124,8 @@ public class ParcelTests {
 
             BeaconEvent beaconEvent2 = BeaconEvent.CREATOR.createFromParcel(parcel);
 
-            Assertions.assertThat(beaconEvent2.getAction()).isEqualTo(event.getAction());
-            Assertions.assertThat(beaconEvent2.getAction()).isEqualTo(event.getAction());
+            Assertions.assertThat(beaconEvent2.action).isEqualTo(event.action);
+            Assertions.assertThat(beaconEvent2.action).isEqualTo(event.action);
 
             Assertions.assertThat(beaconEvent2).isEqualTo(event);
         } catch (Exception e) {
@@ -151,8 +151,8 @@ public class ParcelTests {
             reverse.setClassLoader(BeaconId.class.getClassLoader());
             BeaconEvent beaconEvent2 = reverse.getParcelable("some_value");
 
-            Assertions.assertThat(beaconEvent2.getAction()).isEqualTo(event.getAction());
-            Assertions.assertThat(beaconEvent2.getAction()).isEqualTo(event.getAction());
+            Assertions.assertThat(beaconEvent2.action).isEqualTo(event.action);
+            Assertions.assertThat(beaconEvent2.action).isEqualTo(event.action);
 
             Assertions.assertThat(beaconEvent2).isEqualTo(event);
         } catch (Exception e) {

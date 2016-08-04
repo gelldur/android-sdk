@@ -16,7 +16,6 @@ import com.sensorberg.sdk.model.server.ResolveAction;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.sdk.presenter.LocalBroadcastManager;
 import com.sensorberg.sdk.presenter.ManifestParser;
-import com.sensorberg.sdk.resolver.ResolutionConfiguration;
 import com.sensorberg.sdk.resolver.ResolverConfiguration;
 import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 import com.sensorberg.sdk.scanner.ScanEvent;
@@ -160,7 +159,7 @@ public class TheInternalBootstrapperIntegration {
 
         //we should have exactly one notification
         Mockito.verify(spiedTransportWithMockService, Mockito.timeout(5000).times(1))
-                .getBeacon(Mockito.any(ResolutionConfiguration.class), Mockito.any(BeaconResponseHandler.class));
+                .getBeacon(Mockito.any(ScanEvent.class), Mockito.any(BeaconResponseHandler.class));
 
         //TODO this does get called in real code and during debugging, but Mockito says it doesn't
 //        Mockito.verify(spiedTransportWithMockService, Mockito.timeout(5000).times(1))
@@ -194,7 +193,7 @@ public class TheInternalBootstrapperIntegration {
         spiedInternalApplicationBootstrapper.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(0));
 
         Mockito.verify(spiedTransportWithMockService, Mockito.timeout(5000).times(1))
-                .getBeacon(Mockito.any(ResolutionConfiguration.class), Mockito.any(BeaconResponseHandler.class));
+                .getBeacon(Mockito.any(ScanEvent.class), Mockito.any(BeaconResponseHandler.class));
         Mockito.verify(spiedTransportWithMockService, Mockito.timeout(5000).times(1))
                 .updateBeaconLayout();
 

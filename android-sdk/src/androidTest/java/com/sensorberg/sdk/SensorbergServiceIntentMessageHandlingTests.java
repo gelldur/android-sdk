@@ -1,13 +1,11 @@
 package com.sensorberg.sdk;
 
 import com.sensorberg.sdk.di.TestComponent;
-import com.sensorberg.sdk.resolver.ResolutionConfiguration;
 import com.sensorberg.sdk.scanner.ScannerEvent;
 import com.sensorberg.sdk.test.TestGenericBroadcastReceiver;
 import com.sensorberg.sdk.test.TestGenericBroadcastReceiver2;
 
 import org.fest.assertions.api.Assertions;
-import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,8 +16,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-
-import java.net.URL;
 
 import util.TestConstants;
 
@@ -66,11 +62,9 @@ public class SensorbergServiceIntentMessageHandlingTests {
         Mockito.verify(tested.bootstrapper, Mockito.times(0)).updateSettings();
         Mockito.verify(tested.bootstrapper, Mockito.times(0)).uploadHistory();
         Mockito.verify(tested, Mockito.times(0)).presentBeaconEvent(serviceIntent);
-        Mockito.verify(tested.bootstrapper, Mockito.times(0)).retryScanEventResolve(any(ResolutionConfiguration.class));
         Mockito.verify(tested.bootstrapper, Mockito.times(0)).hostApplicationInForeground();
         Mockito.verify(tested.bootstrapper, Mockito.times(0)).hostApplicationInBackground();
         Mockito.verify(tested, Mockito.times(0)).setApiToken(serviceIntent);
-        Mockito.verify(tested, Mockito.times(0)).setResolverEndpoint(serviceIntent);
         Mockito.verify(tested, Mockito.times(0)).registerPresentationDelegate(serviceIntent);
         Mockito.verify(tested, Mockito.times(0)).unregisterPresentationDelegate(serviceIntent);
         Mockito.verify(tested.bootstrapper, Mockito.times(0)).startScanning();
@@ -126,16 +120,6 @@ public class SensorbergServiceIntentMessageHandlingTests {
     }
 
     @Test
-    public void should_handle_intent_with_retry_scan_event_resolve_message() {
-        ResolutionConfiguration configuration = new ResolutionConfiguration();
-        configuration.setScanEvent(TestConstants.BEACON_SCAN_ENTRY_EVENT(DateTime.now().getMillis()));
-
-        tested.handleIntentMessage(SensorbergServiceIntents.getRetryResolveScanEventIntent(InstrumentationRegistry.getContext(), configuration));
-
-        Mockito.verify(tested.bootstrapper, Mockito.times(1)).retryScanEventResolve(configuration);
-    }
-
-    @Test
     public void should_handle_intent_with_app_in_foreground_message() {
         Intent serviceIntent = SensorbergServiceIntents.getAppInForegroundIntent(InstrumentationRegistry.getContext());
 
@@ -160,16 +144,6 @@ public class SensorbergServiceIntentMessageHandlingTests {
         tested.handleIntentMessage(serviceIntent);
 
         Mockito.verify(tested, Mockito.times(1)).setApiToken(serviceIntent);
-    }
-
-    @Test
-    public void should_handle_intent_with_set_resolver_endpoint_message() throws Exception {
-        Intent serviceIntent = SensorbergServiceIntents
-                .getResolverEndpointIntent(InstrumentationRegistry.getContext(), new URL("http://resolver-new.sensorberg.com"));
-
-        tested.handleIntentMessage(serviceIntent);
-
-        Mockito.verify(tested, Mockito.times(1)).setResolverEndpoint(serviceIntent);
     }
 
     @Test

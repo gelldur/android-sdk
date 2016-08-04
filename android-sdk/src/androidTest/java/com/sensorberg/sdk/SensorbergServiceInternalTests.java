@@ -235,29 +235,6 @@ public class SensorbergServiceInternalTests {
     }
 
     @Test
-    public void test_updateDiskConfiguration_creates_new_disk_config_if_null() throws MalformedURLException {
-        URL resolverURL = new URL("http://resolver-new.sensorberg.com");
-        Intent serviceUpdateResolverIntent = SensorbergServiceIntents.getResolverEndpointIntent(InstrumentationRegistry.getContext(), resolverURL);
-
-        tested.updateDiskConfiguration(serviceUpdateResolverIntent);
-
-        Mockito.verify(tested, times(1)).loadOrCreateNewServiceConfiguration(fileManager);
-    }
-
-    @Test
-    public void test_updateDiskConfiguration_persists_new_resolver_endpoint() throws MalformedURLException {
-        URL resolverURL = new URL("http://resolver-new.sensorberg.com");
-        Intent serviceUpdateResolverIntent = SensorbergServiceIntents.getResolverEndpointIntent(InstrumentationRegistry.getContext(), resolverURL);
-
-        tested.updateDiskConfiguration(serviceUpdateResolverIntent);
-
-        SensorbergServiceConfiguration diskConfNew = (SensorbergServiceConfiguration) fileManager.getContentsOfFileOrNull(
-                fileManager.getFile(SensorbergServiceMessage.SERVICE_CONFIGURATION));
-        Assertions.assertThat(diskConfNew.resolverConfiguration.getResolverLayoutURL()).isEqualTo(resolverURL);
-        Assertions.assertThat(URLFactory.getResolveURLString()).isEqualTo(resolverURL.toString());
-    }
-
-    @Test
     public void test_updateDiskConfiguration_persists_new_api_token() {
         String newApiToken = "123456";
         Intent serviceUpdateApiTokenIntent = SensorbergServiceIntents.getApiTokenIntent(InstrumentationRegistry.getContext(), newApiToken);
@@ -300,27 +277,6 @@ public class SensorbergServiceInternalTests {
 
         Mockito.verify(tested, Mockito.times(0)).logError(anyString());
         Mockito.verify(tested.bootstrapper, Mockito.times(1)).presentEventDirectly(any(BeaconEvent.class), anyInt());
-    }
-
-    @Test
-    public void setting_invalid_resolver_endpoint_shouldnt_change_endpoint() {
-        String oldResolverUrl = URLFactory.getResolveURLString();
-        Intent serviceIntent = TestConstants.getInvalidResolverEndpointIntent(InstrumentationRegistry.getContext());
-
-        tested.setResolverEndpoint(serviceIntent);
-
-        Assertions.assertThat(oldResolverUrl).isEqualTo(URLFactory.getResolveURLString());
-    }
-
-    @Test
-    public void setting_valid_resolver_endpoint_should_change_endpoint() throws Exception {
-        String oldResolverUrl = URLFactory.getResolveURLString();
-        Intent serviceIntent = SensorbergServiceIntents.getResolverEndpointIntent(InstrumentationRegistry.getContext(),
-                new URL("http://newresolver.sensorberg.com"));
-
-        tested.setResolverEndpoint(serviceIntent);
-
-        Assertions.assertThat(oldResolverUrl).isNotEqualTo(URLFactory.getResolveURLString());
     }
 
     @Test

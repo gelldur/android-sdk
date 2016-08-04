@@ -1,15 +1,12 @@
 package com.sensorberg.sdk;
 
 import com.sensorberg.sdk.resolver.BeaconEvent;
-import com.sensorberg.sdk.resolver.ResolutionConfiguration;
 import com.sensorberg.sdk.scanner.Scanner;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Messenger;
-
-import java.net.URL;
 
 public class SensorbergServiceIntents {
 
@@ -87,15 +84,6 @@ public class SensorbergServiceIntents {
         return serviceIntent;
     }
 
-    public static Intent getResolverEndpointIntent(Context ctx, URL resolverURL) {
-        Intent serviceIntent = getServiceIntentWithMessage(ctx, SensorbergServiceMessage.MSG_TYPE_SET_RESOLVER_ENDPOINT);
-        if (resolverURL != null) {
-            serviceIntent.putExtra(SensorbergServiceMessage.MSG_SET_RESOLVER_ENDPOINT_ENDPOINT_URL, resolverURL);
-        }
-
-        return serviceIntent;
-    }
-
     public static Intent getBluetoothMessageIntent(Context ctx, boolean state) {
         Intent serviceIntent = getServiceIntentWithMessage(ctx, SensorbergServiceMessage.MSG_BLUETOOTH);
         serviceIntent.putExtra(SensorbergServiceMessage.EXTRA_BLUETOOTH_STATE, state);
@@ -109,12 +97,6 @@ public class SensorbergServiceIntents {
         Intent serviceIntent = getServiceIntentWithMessage(ctx, SensorbergServiceMessage.MSG_SDK_SCANNER_MESSAGE);
         serviceIntent.putExtra(SensorbergServiceMessage.EXTRA_GENERIC_WHAT, bundle);
 
-        return serviceIntent;
-    }
-
-    public static Intent getRetryResolveScanEventIntent(Context ctx, ResolutionConfiguration configuration) {
-        Intent serviceIntent = getServiceIntentWithMessage(ctx, SensorbergServiceMessage.GENERIC_TYPE_RETRY_RESOLVE_SCANEVENT);
-        serviceIntent.putExtra(SensorbergServiceMessage.EXTRA_GENERIC_WHAT, configuration);
         return serviceIntent;
     }
 

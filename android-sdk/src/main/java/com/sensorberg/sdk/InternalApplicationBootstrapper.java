@@ -16,8 +16,6 @@ import com.sensorberg.sdk.receivers.GenericBroadcastReceiver;
 import com.sensorberg.sdk.receivers.NetworkInfoBroadcastReceiver;
 import com.sensorberg.sdk.receivers.ScannerBroadcastReceiver;
 import com.sensorberg.sdk.resolver.BeaconEvent;
-import com.sensorberg.sdk.resolver.Resolution;
-import com.sensorberg.sdk.resolver.ResolutionConfiguration;
 import com.sensorberg.sdk.resolver.Resolver;
 import com.sensorberg.sdk.resolver.ResolverConfiguration;
 import com.sensorberg.sdk.resolver.ResolverListener;
@@ -43,10 +41,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import lombok.Getter;
-
-public class InternalApplicationBootstrapper extends MinimalBootstrapper
-        implements ScannerListener, Transport.BeaconReportHandler, SyncStatusObserver, Transport.ProximityUUIDUpdateHandler {
+public class InternalApplicationBootstrapper extends MinimalBootstrapper implements ScannerListener, SyncStatusObserver, Transport.ProximityUUIDUpdateHandler {
 
     private static final boolean SURVIVE_REBOOT = true;
 
@@ -100,9 +95,10 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper
         scanner = new Scanner(settingsManager, settingsManager.isShouldRestoreBeaconStates(), clock, fileManager, scheduler, handlerManager,
                 btPlatform);
         resolver = new Resolver(resolverConfiguration, handlerManager, transport);
+        resolver.setListener(resolverListener);
 
         scanner.addScannerListener(this);
-        resolver.addResolverListener(resolverListener);
+
 
         serviceScheduler.restorePendingIntents();
 
@@ -147,18 +143,14 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper
             contained = proximityUUIDs.isEmpty() || proximityUUIDs.contains(scanEvent.getBeaconId().getProximityUUIDWithoutDashes());
         }
         if (contained) {
-            ResolutionConfiguration resolutionConfiguration = new ResolutionConfiguration();
-            resolutionConfiguration.setScanEvent(scanEvent);
-            resolutionConfiguration.maxRetries = settingsManager.getMaxRetries();
-            resolutionConfiguration.millisBetweenRetries = settingsManager.getMillisBetweenRetries();
-            Resolution resolution = resolver.createResolution(resolutionConfiguration);
-            resolution.start();
+            resolver.resolve(scanEvent);
+
         }
     }
 
     public void presentBeaconEvent(BeaconEvent beaconEvent) {
-        if (beaconEvent != null && beaconEvent.getAction() != null) {
-            Action beaconEventAction = beaconEvent.getAction();
+        if (beaconEvent != null && beaconEvent.action != null) {
+            Action beaconEventAction = beaconEvent.action;
 
             if (beaconEvent.deliverAt != null) {
                 serviceScheduler.postDeliverAtOrUpdate(beaconEvent.deliverAt, beaconEvent);
@@ -175,12 +167,12 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper
     }
 
     private void presentEventDirectly(BeaconEvent beaconEvent) {
-        if (beaconEvent.getAction() != null) {
+        if (beaconEvent.action != null) {
             beaconEvent.setPresentationTime(clock.now());
             beaconActionHistoryPublisher.onActionPresented(beaconEvent);
             if (presentationDelegate == null) {
                 Intent broadcastIntent = new Intent(ManifestParser.actionString);
-                broadcastIntent.putExtra(Action.INTENT_KEY, beaconEvent.getAction());
+                broadcastIntent.putExtra(Action.INTENT_KEY, beaconEvent.action);
                 LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
             } else {
                 Logger.log.beaconResolveState(beaconEvent, "delegating the display of the beacon event to the application");
@@ -245,10 +237,6 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper
         settingsManager.updateSettingsFromNetwork();
     }
 
-    public void retryScanEventResolve(ResolutionConfiguration retry) {
-        this.resolver.retry(retry);
-    }
-
     public void uploadHistory() {
         if (NetworkInfoBroadcastReceiver.latestNetworkInfo != null) {
             beaconActionHistoryPublisher.publishHistory();
@@ -264,11 +252,6 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper
         } else {
             return true;
         }
-    }
-
-    @Override
-    public void reportImmediately() {
-        beaconActionHistoryPublisher.publishHistory();
     }
 
     public void updateBeaconLayout() {
@@ -295,16 +278,16 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper
     public ListUtils.Filter<BeaconEvent> beaconEventFilter = new ListUtils.Filter<BeaconEvent>() {
         @Override
         public boolean matches(BeaconEvent beaconEvent) {
-            if (beaconEvent.getSuppressionTimeMillis() > 0) {
-                long lastAllowedPresentationTime = clock.now() - beaconEvent.getSuppressionTimeMillis();
-                if (beaconActionHistoryPublisher.actionShouldBeSuppressed(lastAllowedPresentationTime, beaconEvent.getAction().getUuid())) {
+            if (beaconEvent.suppressionTimeMillis > 0) {
+                long lastAllowedPresentationTime = clock.now() - beaconEvent.suppressionTimeMillis;
+                if (beaconActionHistoryPublisher.actionShouldBeSuppressed(lastAllowedPresentationTime, beaconEvent.action.getUuid())) {
                     return false;
                 }
             }
             if (beaconEvent.sendOnlyOnce) {
                 Log.i("this", "sendOnlyOnce");
                 System.out.print("sendOnlyOnce");
-                if (beaconActionHistoryPublisher.actionWasShownBefore(beaconEvent.getAction().getUuid())) {
+                if (beaconActionHistoryPublisher.actionWasShownBefore(beaconEvent.action.getUuid())) {
                     return false;
                 }
             }
@@ -312,11 +295,10 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper
         }
     };
 
-    @Getter
     private ResolverListener resolverListener = new ResolverListener() {
         @Override
-        public void onResolutionFailed(Resolution resolution, Throwable cause) {
-            Logger.log.logError("resolution failed:" + resolution.configuration.getScanEvent().getBeaconId().toTraditionalString(), cause);
+        public void onResolutionFailed(Throwable cause, ScanEvent scanEvent) {
+            Logger.log.logError("resolution failed:" + scanEvent.getBeaconId().toTraditionalString(), cause);
         }
 
         @Override

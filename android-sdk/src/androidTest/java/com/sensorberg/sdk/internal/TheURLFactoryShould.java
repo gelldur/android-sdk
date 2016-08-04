@@ -33,27 +33,12 @@ public class TheURLFactoryShould extends ApplicationTestCase<Application> {
     }
 
     public void test_should_provide_the_correct_settings_endpoint() throws UnsupportedEncodingException {
-        URLAssertion.assertThat(URLFactory.getSettingsURLString(null, apiKey))
+        URLAssertion.assertThat(URLFactory.getSettingsURLString(apiKey))
                 .isHTTPS()
-                .pathBeginsWith("/api/applications/" + apiKey + "/settings/android/" + BuildConfig.SDK_VERSION)
+                .pathBeginsWith("/api/applications/" + apiKey + "/settings/android/")
                 .hasNoGetParameter("revision");
     }
 
-    public void test_should_provide_the_correct_settings_containing_the_android_release_name() throws UnsupportedEncodingException {
-        URLAssertion.assertThat(URLFactory.getSettingsURLString(TestConstants.REVISION, apiKey))
-                .pathContains(Build.VERSION.RELEASE);
-    }
-
-    public void test_should_provide_the_correct_settings_containing_the_information_about_the_model() throws UnsupportedEncodingException {
-        URLAssertion.assertThat(URLFactory.getSettingsURLString(TestConstants.REVISION, apiKey))
-                .pathContains(android.os.Build.MODEL)
-                .pathContains(android.os.Build.PRODUCT);
-    }
-
-    public void test_should_provide_the_correct_settings_containing_name_of_the_sdk_release() throws UnsupportedEncodingException {
-        URLAssertion.assertThat(URLFactory.getSettingsURLString(TestConstants.REVISION, apiKey))
-                .pathContains(Build.VERSION.RELEASE);
-    }
-
-
 }
+
+

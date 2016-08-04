@@ -35,7 +35,7 @@ public class SensorbergTestRunner extends android.support.test.runner.AndroidJUn
         System.setProperty("dexmaker.dexcache", getContext().getCacheDir().getPath());
 
         if (com.sensorberg.sdk.BuildConfig.RESOLVER_URL != null) {
-            URLFactory.setLayoutURL(com.sensorberg.sdk.BuildConfig.RESOLVER_URL);
+            URLFactory.setCustomLayoutURL(com.sensorberg.sdk.BuildConfig.RESOLVER_URL);
         }
         JodaTimeAndroid.init(getContext());
 

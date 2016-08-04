@@ -146,8 +146,6 @@ public class ApiServiceShould {
         Assertions.assertThat(response.raw().request().headers()).isNotNull();
         Assertions.assertThat(response.raw().request().headers().get(Transport.HEADER_XAPIKEY))
                 .isEqualTo(TestConstants.API_TOKEN_DEFAULT);
-        Assertions.assertThat(response.raw().request().headers().get(Transport.HEADER_AUTHORIZATION))
-                .isEqualTo(TestConstants.API_TOKEN_DEFAULT);
     }
 
     @Test
