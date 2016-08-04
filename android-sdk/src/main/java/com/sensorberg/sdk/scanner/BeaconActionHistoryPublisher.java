@@ -114,6 +114,8 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
                 }
                 removeBeaconScansOlderThan(clock.now(), settingsManager.getCacheTtl());
                 removeBeaconActionsOlderThan(clock.now(), settingsManager.getCacheTtl());
+                Logger.log.verbose("published " +internalActions.size() + " actions and " + internalScans.size() + " scans to the resolver sucessfully.");
+                saveAllData();
             }
 
             @Override
@@ -243,20 +245,14 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
         }
     }
 
-    public void saveAllDataBeforeDestroy() {
-        if (beaconActions.size() > 0) {
-            deleteSavedBeaconActionsFromSharedPreferences();
-            String actionsJson = gson.toJson(beaconActions);
-            sharedPreferences.edit().putString(InternalBeaconAction.SHARED_PREFS_TAG, actionsJson).apply();
-            beaconActions = Collections.synchronizedSet(new HashSet<InternalBeaconAction>());
-        }
-
-        if (beaconScans.size() > 0) {
-            deleteSavedBeaconScansFromSharedPreferences();
-            String scansJson = gson.toJson(beaconScans);
-            sharedPreferences.edit().putString(InternalBeaconScan.SHARED_PREFS_TAG, scansJson).apply();
-            beaconScans = Collections.synchronizedSet(new HashSet<InternalBeaconScan>());
-        }
+    public void saveAllData() {
+        String actionsJson = gson.toJson(beaconActions);
+        String scansJson = gson.toJson(beaconScans);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor
+                .putString(InternalBeaconAction.SHARED_PREFS_TAG, actionsJson)
+                .putString(InternalBeaconScan.SHARED_PREFS_TAG, scansJson)
+                .apply();
     }
 
     private void deleteSavedBeaconScansFromSharedPreferences() {

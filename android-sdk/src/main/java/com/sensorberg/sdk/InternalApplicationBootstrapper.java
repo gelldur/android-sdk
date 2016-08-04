@@ -214,7 +214,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper
     }
 
     public void saveAllDataBeforeDestroy() {
-        beaconActionHistoryPublisher.saveAllDataBeforeDestroy();
+        beaconActionHistoryPublisher.saveAllData();
     }
 
     public void hostApplicationInForeground() {
@@ -227,6 +227,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper
 
     public void hostApplicationInBackground() {
         scanner.hostApplicationInBackground();
+        beaconActionHistoryPublisher.publishHistory();
     }
 
     public void setApiToken(String apiToken) {
