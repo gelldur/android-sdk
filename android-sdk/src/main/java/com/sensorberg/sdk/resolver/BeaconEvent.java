@@ -34,7 +34,7 @@ public class BeaconEvent implements Parcelable {
 
     private final Action action;
 
-    private final long resolvedTime;
+    private long resolvedTime;
 
     /**
      * time when the action is beeing actually presented, not used neccesary to be added to the @{Parcel}
@@ -47,7 +47,7 @@ public class BeaconEvent implements Parcelable {
 
     public final Date deliverAt;
 
-    public final int trigger;
+    public int trigger;
 
     private BeaconId beaconId;
 
@@ -117,6 +117,10 @@ public class BeaconEvent implements Parcelable {
         return (resolvedTime);
     }
 
+    public void setResolvedTime(long resolvedTime) {
+        this.resolvedTime = resolvedTime;
+    }
+
     public long getPresentationTime() {
         return presentationTime;
     }
@@ -155,6 +159,10 @@ public class BeaconEvent implements Parcelable {
 
     public BeaconId getBeaconId() {
         return beaconId;
+    }
+
+    public void setTrigger(int trigger) {
+        this.trigger = trigger;
     }
 
     @ToString
@@ -204,10 +212,6 @@ public class BeaconEvent implements Parcelable {
             return this;
         }
 
-        public BeaconEvent build() {
-            return new BeaconEvent(action, resolvedTime, presentationTime, suppressionTime, sendOnlyOnce, deliverAt, trigger, beaconId);
-        }
-
         public Builder withSendOnlyOnce(boolean sentOnlyOnce) {
             this.sendOnlyOnce = sentOnlyOnce;
             return this;
@@ -225,6 +229,10 @@ public class BeaconEvent implements Parcelable {
         public Builder withTrigger(int trigger) {
             this.trigger = trigger;
             return this;
+        }
+
+        public BeaconEvent build() {
+            return new BeaconEvent(action, resolvedTime, presentationTime, suppressionTime, sendOnlyOnce, deliverAt, trigger, beaconId);
         }
     }
 }

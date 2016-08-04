@@ -121,6 +121,8 @@ public class RetrofitApiTransport implements Transport {
         List<BeaconEvent> beaconEvents = map(resolveActions, ResolveAction.BEACON_EVENT_MAPPER);
         for (BeaconEvent beaconEvent : beaconEvents) {
             beaconEvent.setBeaconId(resolutionConfiguration.getScanEvent().getBeaconId());
+            beaconEvent.setTrigger(resolutionConfiguration.getScanEvent().getTrigger());
+            beaconEvent.setResolvedTime(mClock.now());
         }
 
         return new Pair<Boolean, List<BeaconEvent>>(reportImmediately, beaconEvents);
