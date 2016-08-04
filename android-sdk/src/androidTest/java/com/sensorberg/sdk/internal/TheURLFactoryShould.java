@@ -35,7 +35,7 @@ public class TheURLFactoryShould extends ApplicationTestCase<Application> {
     public void test_should_provide_the_correct_settings_endpoint() throws UnsupportedEncodingException {
         URLAssertion.assertThat(URLFactory.getSettingsURLString(apiKey))
                 .isHTTPS()
-                .pathBeginsWith("/api/applications/" + apiKey + "/settings/android/")
+                .pathBeginsWith("/applications/" + apiKey + "/settings/android")
                 .hasNoGetParameter("revision");
     }
 

@@ -60,17 +60,6 @@ public class TheResolverShould {
     }
 
     @Test
-    public void test_should_try_to_resolve_a_beacon() throws Exception {
-        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
-                .thenReturn(Calls.response(new ResolveResponse.Builder().build()));
-
-
-        tested.resolve(TestConstants.BEACON_SCAN_ENTRY_EVENT(0));
-
-        verify(tested).queryServer(TestConstants.BEACON_SCAN_ENTRY_EVENT(0));
-    }
-
-    @Test
     public void test_enter_exit_action() throws Exception {
         ResolveResponse resolveResponse = gson
                 .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.resolve_response_enter_exit_action, InstrumentationRegistry
