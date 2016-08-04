@@ -89,6 +89,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper
         SensorbergSdk.getComponent().inject(this);
 
         this.transport = transport;
+        transport.setApiToken(resolverConfiguration.apiToken);
         settingsManager.setSettingsUpdateCallback(settingsUpdateCallbackListener);
         settingsManager.setMessageDelayWindowLengthListener((MessageDelayWindowLengthListener) scheduler);
         clock = clk;
@@ -99,6 +100,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper
         scanner = new Scanner(settingsManager, settingsManager.isShouldRestoreBeaconStates(), clock, fileManager, scheduler, handlerManager,
                 btPlatform);
         resolver = new Resolver(resolverConfiguration, handlerManager, transport);
+
         scanner.addScannerListener(this);
         resolver.addResolverListener(resolverListener);
 
@@ -295,14 +297,14 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper
         public boolean matches(BeaconEvent beaconEvent) {
             if (beaconEvent.getSuppressionTimeMillis() > 0) {
                 long lastAllowedPresentationTime = clock.now() - beaconEvent.getSuppressionTimeMillis();
-                if (beaconActionHistoryPublisher.getCountForSuppressionTime(lastAllowedPresentationTime, beaconEvent.getAction().getUuid())) {
+                if (beaconActionHistoryPublisher.actionShouldBeSuppressed(lastAllowedPresentationTime, beaconEvent.getAction().getUuid())) {
                     return false;
                 }
             }
             if (beaconEvent.sendOnlyOnce) {
                 Log.i("this", "sendOnlyOnce");
                 System.out.print("sendOnlyOnce");
-                if (beaconActionHistoryPublisher.getCountForShowOnlyOnceSuppression(beaconEvent.getAction().getUuid())) {
+                if (beaconActionHistoryPublisher.actionWasShownBefore(beaconEvent.getAction().getUuid())) {
                     return false;
                 }
             }
