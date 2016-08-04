@@ -9,8 +9,6 @@ import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
 import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
 import com.sensorberg.sdk.internal.transport.model.HistoryBody;
-import com.sensorberg.sdk.model.persistence.InternalBeaconAction;
-import com.sensorberg.sdk.model.persistence.InternalBeaconScan;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.sdk.settings.SettingsManager;
 
@@ -67,7 +65,7 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         testTransportWithMockService = new RetrofitApiTransport(mockRetrofitApiService, clock);
-        tested = new BeaconActionHistoryPublisher(testTransportWithMockService, testSettingsManager, clock,
+        tested = new BeaconActionHistoryPublisher(testTransportWithMockService, clock,
                 testHandlerManager, sharedPreferences, gson);
     }
 
@@ -96,7 +94,7 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
         tested.saveAllData();
 
         tested = null;
-        tested = new BeaconActionHistoryPublisher(testTransportWithMockService, testSettingsManager, clock,
+        tested = new BeaconActionHistoryPublisher(testTransportWithMockService, clock,
                 testHandlerManager, sharedPreferences, gson);
 
         //Make sure the object returned is not null.
@@ -120,7 +118,7 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
         //persist it, nullify and make new instance
         tested.saveAllData();
         tested = null;
-        tested = new BeaconActionHistoryPublisher(testTransportWithMockService, testSettingsManager, clock,
+        tested = new BeaconActionHistoryPublisher(testTransportWithMockService, clock,
                 testHandlerManager, sharedPreferences, gson);
 
         //Make sure the object returned is not null.

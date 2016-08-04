@@ -49,7 +49,7 @@ public class TheBeconHistorySynchronousIntegrationTest {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         testHandlerManager.getCustomClock().setNowInMillis(System.currentTimeMillis());
-        tested = new BeaconActionHistoryPublisher(new DumbSucessTransport(), testSettingsManager,
+        tested = new BeaconActionHistoryPublisher(new DumbSucessTransport(),
                 testHandlerManager.getCustomClock(), testHandlerManager, mSharedPreferences, mGson);
 
         tested.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(100));
