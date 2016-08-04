@@ -285,8 +285,6 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
                 }
             }
             if (beaconEvent.sendOnlyOnce) {
-                Log.i("this", "sendOnlyOnce");
-                System.out.print("sendOnlyOnce");
                 if (beaconActionHistoryPublisher.actionWasShownBefore(beaconEvent.action.getUuid())) {
                     return false;
                 }

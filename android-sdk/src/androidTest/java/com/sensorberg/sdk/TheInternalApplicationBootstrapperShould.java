@@ -1,8 +1,10 @@
 package com.sensorberg.sdk;
 
+import com.google.gson.Gson;
 import com.sensorberg.sdk.action.InAppAction;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
+import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolverConfiguration;
 import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
@@ -25,6 +27,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 @RunWith(AndroidJUnit4.class)
@@ -47,8 +50,6 @@ public class TheInternalApplicationBootstrapperShould {
     @Inject
     SharedPreferences sharedPreferences;
 
-    @Inject
-    @Named("realBeaconActionHistoryPublisher")
     BeaconActionHistoryPublisher beaconActionHistoryPublisher;
 
     InternalApplicationBootstrapper tested;
@@ -57,13 +58,19 @@ public class TheInternalApplicationBootstrapperShould {
 
     private BeaconEvent beaconEventSentOnlyOnce;
 
+    @Inject
+    Gson gson;
+
     @Before
     public void setUp() throws Exception {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
+
+        beaconActionHistoryPublisher = new BeaconActionHistoryPublisher(mock(Transport.class),testHandlerManager.getCustomClock(), testHandlerManager, sharedPreferences, gson);
         beaconActionHistoryPublisher.deleteAllData();
 
-        tested = spy(new InternalApplicationBootstrapper(new DumbSucessTransport(), testServiceScheduler, testHandlerManager,
-                testHandlerManager.getCustomClock(), bluetoothPlatform, new ResolverConfiguration()));
+        tested = new InternalApplicationBootstrapper(new DumbSucessTransport(), testServiceScheduler, testHandlerManager,
+                testHandlerManager.getCustomClock(), bluetoothPlatform, new ResolverConfiguration());
+        tested.beaconActionHistoryPublisher = beaconActionHistoryPublisher;
 
         beaconEventSupressionTime = new BeaconEvent.Builder()
                 .withAction(new InAppAction(UUID, "irrelevant", "irrelevant", null, null, 0))
@@ -86,6 +93,17 @@ public class TheInternalApplicationBootstrapperShould {
 
     @Test
     public void beaconEventFilterShouldHaveEndOfSuppressionTimeEvent() {
+        List<BeaconEvent> events = ListUtils.filter(Arrays.asList(beaconEventSupressionTime), tested.beaconEventFilter);
+        Assertions.assertThat(events.size()).isEqualTo(1);
+
+        testHandlerManager.getCustomClock().setNowInMillis(SUPPRESSION_TIME -1);
+
+        List<BeaconEvent> eventsWithSuppressionEvent = ListUtils.filter(Arrays.asList(beaconEventSupressionTime), tested.beaconEventFilter);
+        Assertions.assertThat(eventsWithSuppressionEvent.size()).isEqualTo(0);
+    }
+
+    @Test
+    public void beacon_should_allow_again_after_suppressiontime_is_over() {
         List<BeaconEvent> events = ListUtils.filter(Arrays.asList(beaconEventSupressionTime), tested.beaconEventFilter);
         Assertions.assertThat(events.size()).isEqualTo(1);
 
