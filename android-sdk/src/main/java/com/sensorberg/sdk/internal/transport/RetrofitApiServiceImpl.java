@@ -48,11 +48,10 @@ public class RetrofitApiServiceImpl {
 
     private String mApiToken;
 
-    private HttpLoggingInterceptor.Level mApiServiceLogLevel = HttpLoggingInterceptor.Level.NONE;
-
-    private RetrofitApiService mApiService;
+    private final RetrofitApiService mApiService;
 
     private OkHttpClient mClient;
+    private HttpLoggingInterceptor httpLoggingInterceptor;
 
     public RetrofitApiServiceImpl(Context ctx, Gson gson, PlatformIdentifier platformId, String baseUrl) {
         mContext = ctx;
@@ -64,23 +63,17 @@ public class RetrofitApiServiceImpl {
         } else {
             mBaseUrl = baseUrl;
         }
+
+        Retrofit restAdapter = new Retrofit.Builder()
+                .baseUrl(mBaseUrl)
+                .client(getOkHttpClient(mContext))
+                .addConverterFactory(GsonConverterFactory.create(mGson))
+                .build();
+
+        mApiService = restAdapter.create(RetrofitApiService.class);
     }
 
-    private RetrofitApiService getApiService() {
-        if (mApiService == null) {
-            Retrofit restAdapter = new Retrofit.Builder()
-                    .baseUrl(mBaseUrl)
-                    .client(getOkHttpClient(mContext))
-                    .addConverterFactory(GsonConverterFactory.create(mGson))
-                    .build();
-
-            mApiService = restAdapter.create(RetrofitApiService.class);
-        }
-
-        return mApiService;
-    }
-
-    private Interceptor headerAuthorizationInterceptor = new Interceptor() {
+    private final Interceptor headerAuthorizationInterceptor = new Interceptor() {
         @Override
         public okhttp3.Response intercept(Chain chain) throws IOException {
             Request request = chain.request();
@@ -109,8 +102,8 @@ public class RetrofitApiServiceImpl {
 
         okClientBuilder.addInterceptor(headerAuthorizationInterceptor);
 
-        HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
-        httpLoggingInterceptor.setLevel(mApiServiceLogLevel);
+        httpLoggingInterceptor = new HttpLoggingInterceptor();
+        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
         okClientBuilder.addInterceptor(httpLoggingInterceptor);
 
         okClientBuilder.retryOnConnectionFailure(true);
@@ -131,29 +124,24 @@ public class RetrofitApiServiceImpl {
 
     public void setLoggingEnabled(boolean enabled) {
         synchronized (mGson) {
-
             if (enabled) {
-                mApiServiceLogLevel = HttpLoggingInterceptor.Level.BODY;
+                httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
             } else {
-                mApiServiceLogLevel = HttpLoggingInterceptor.Level.NONE;
-            }
-
-            if (mApiService != null) {
-                mApiService = null;
+                httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
             }
         }
     }
 
     public Call<BaseResolveResponse> updateBeaconLayout(@Url String beaconLayoutUrl) {
-        return getApiService().updateBeaconLayout(beaconLayoutUrl);
+        return mApiService.updateBeaconLayout(beaconLayoutUrl);
     }
 
     public Call<ResolveResponse> getBeacon(@Url String beaconURLString, @Header("X-pid") String beaconId, @Header("X-qos") String networkInfo) {
-        return getApiService().getBeacon(beaconURLString, beaconId, networkInfo);
+        return mApiService.getBeacon(beaconURLString, beaconId, networkInfo);
     }
 
     public Call<ResolveResponse> publishHistory(@Url String beaconLayoutUrl, @Body HistoryBody body) {
-        return getApiService().publishHistory(beaconLayoutUrl, body);
+        return mApiService.publishHistory(beaconLayoutUrl, body);
     }
 
     public Call<SettingsResponse> getSettings() {
@@ -161,11 +149,11 @@ public class RetrofitApiServiceImpl {
     }
 
     public Call<SettingsResponse> getSettings(@Url String url) {
-        return getApiService().getSettings(url);
+        return mApiService.getSettings(url);
     }
 
     public boolean setApiToken(String newToken) {
-        boolean tokensDiffer = !Objects.equals(newToken, mApiToken);
+        boolean tokensDiffer = mApiToken != null && !Objects.equals(newToken, mApiToken);
         if (tokensDiffer && mClient != null){
             try {
                 mClient.cache().evictAll();
