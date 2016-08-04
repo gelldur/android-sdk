@@ -6,8 +6,6 @@ import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback;
-import com.sensorberg.sdk.model.persistence.InternalBeaconAction;
-import com.sensorberg.sdk.model.persistence.InternalBeaconScan;
 import com.sensorberg.sdk.settings.SettingsManager;
 import com.sensorberg.sdk.testUtils.TestHandlerManager;
 
@@ -57,7 +55,7 @@ public class TheBeaconActionHistoryPublisherShould {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         testHandlerManager.getCustomClock().setNowInMillis(System.currentTimeMillis());
-        tested = new BeaconActionHistoryPublisher(transport, testSettingsManager, testHandlerManager.getCustomClock(), testHandlerManager, sharedPreferences, gson);
+        tested = new BeaconActionHistoryPublisher(transport, testHandlerManager.getCustomClock(), testHandlerManager, sharedPreferences, gson);
         tested.deleteAllData();
         tested = Mockito.spy(tested);
 

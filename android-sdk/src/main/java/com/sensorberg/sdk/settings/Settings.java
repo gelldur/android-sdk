@@ -15,11 +15,6 @@ public class Settings {
 
     @Getter
     @Expose
-    @SerializedName("cache.objectTTL")
-    private long cacheTtl = DefaultSettings.DEFAULT_CACHE_TTL;
-
-    @Getter
-    @Expose
     @SerializedName("network.beaconLayoutUpdateInterval")
     private long layoutUpdateInterval = DefaultSettings.DEFAULT_LAYOUT_UPDATE_INTERVAL;
 
@@ -119,7 +114,6 @@ public class Settings {
                     .getLong(SharedPreferencesKeys.Network.BEACON_LAYOUT_UPDATE_INTERVAL, DefaultSettings.DEFAULT_HISTORY_UPLOAD_INTERVAL);
             shouldRestoreBeaconStates = preferences.getBoolean(SharedPreferencesKeys.Scanner.SHOULD_RESTORE_BEACON_STATES,
                     DefaultSettings.DEFAULT_SHOULD_RESTORE_BEACON_STATE);
-            cacheTtl = preferences.getLong(SharedPreferencesKeys.Platform.CACHE_OBJECT_TIME_TO_LIVE, DefaultSettings.DEFAULT_CACHE_TTL);
         }
     }
 
@@ -133,7 +127,6 @@ public class Settings {
         cleanBeaconMapRestartTimeout = newSettings.getCleanBeaconMapRestartTimeout();
 
         messageDelayWindowLength = newSettings.getMessageDelayWindowLength();
-        cacheTtl = newSettings.getCacheTtl();
         maxRetries = newSettings.getMaxRetries();
         millisBetweenRetries = newSettings.getMillisBetweenRetries();
         shouldRestoreBeaconStates = newSettings.isShouldRestoreBeaconStates();

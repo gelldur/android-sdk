@@ -11,6 +11,7 @@ import lombok.Setter;
 
 public class BeaconAction {
 
+    public static final String SHARED_PREFS_TAG = "com.sensorberg.sdk.InternalBeaconActions";
 
     @Expose
     @Getter

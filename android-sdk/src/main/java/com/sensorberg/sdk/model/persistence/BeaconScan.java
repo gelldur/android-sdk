@@ -11,6 +11,8 @@ import lombok.Setter;
 
 public class BeaconScan {
 
+    public static final String SHARED_PREFS_TAG = "com.sensorberg.sdk.BeaconScan";
+
     @Expose
     @Getter
     @Setter

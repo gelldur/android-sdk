@@ -110,10 +110,6 @@ public class SettingsManager {
         return getSettings().getBackgroundScanTime();
     }
 
-    public long getCacheTtl() {
-        return getSettings().getCacheTtl();
-    }
-
     public boolean isShouldRestoreBeaconStates() {
         return getSettings().isShouldRestoreBeaconStates();
     }

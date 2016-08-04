@@ -47,6 +47,8 @@ public class Logger {
         void logSettingsUpdateState(String state);
 
         void verbose(String message);
+
+        void logBeaconHistoryPublisherState(String s);
     }
 
     public static void enableVerboseLogging() {
@@ -118,6 +120,11 @@ public class Logger {
         public void verbose(String message) {
 
         }
+
+        @Override
+        public void logBeaconHistoryPublisherState(String s) {
+
+        }
     };
 
     static {
@@ -184,6 +191,11 @@ public class Logger {
         @Override
         public void verbose(String message) {
             android.util.Log.v(TAG, message);
+        }
+
+        @Override
+        public void logBeaconHistoryPublisherState(String state) {
+            android.util.Log.d(TAG, "beaconHistoryPublisher state:" + state);
         }
 
         @Override
