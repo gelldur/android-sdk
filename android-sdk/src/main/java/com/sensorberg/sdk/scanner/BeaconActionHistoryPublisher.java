@@ -139,7 +139,8 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
      * @return - A list of notSentBeaconScans.
      */
     public boolean actionShouldBeSuppressed(final long lastAllowedPresentationTime, final UUID actionUUID) {
-        boolean value = suppressionTimeStore.get(actionUUID.toString()) >= lastAllowedPresentationTime;
+        Long lastPresentation = suppressionTimeStore.get(actionUUID.toString());
+        boolean value = lastPresentation == null ? false : lastPresentation >= lastAllowedPresentationTime;
         if (!value) {
             suppressionTimeStore.put(actionUUID.toString(), clock.now());
             runloop.add(runloop.obtainMessage(MSG_SAVE_SUPPRESSION_STORE));
