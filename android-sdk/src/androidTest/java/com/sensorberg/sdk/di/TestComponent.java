@@ -24,7 +24,6 @@ import com.sensorberg.sdk.scanner.TheBackgroundScannerShould;
 import com.sensorberg.sdk.scanner.TheBeaconActionHistoryPublisherIntegrationShould;
 import com.sensorberg.sdk.scanner.TheBeaconActionHistoryPublisherShould;
 import com.sensorberg.sdk.scanner.TheBeaconMapShould;
-import com.sensorberg.sdk.scanner.TheBeconHistorySynchronousIntegrationTest;
 import com.sensorberg.sdk.scanner.TheBluetoothChangesShould;
 import com.sensorberg.sdk.scanner.TheDefaultScannerSetupShould;
 import com.sensorberg.sdk.scanner.TheForegroundScannerShould;
@@ -82,8 +81,6 @@ public interface TestComponent extends Component {
     void inject(TheResolverShould theResolverShould);
 
     void inject(TheBeaconActionHistoryPublisherShould theBeaconActionHistoryPublisherShould);
-
-    void inject(TheBeconHistorySynchronousIntegrationTest theBeconHistorySynchronousIntegrationTest);
 
     void inject(TransportShould transportShould);
 

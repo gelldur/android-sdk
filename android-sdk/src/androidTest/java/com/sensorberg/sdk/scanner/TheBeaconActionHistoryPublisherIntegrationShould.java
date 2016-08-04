@@ -8,6 +8,8 @@ import com.sensorberg.sdk.internal.interfaces.Clock;
 import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
 import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
+import com.sensorberg.sdk.internal.transport.interfaces.Transport;
+import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback;
 import com.sensorberg.sdk.internal.transport.model.HistoryBody;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.sdk.settings.SettingsManager;
@@ -29,9 +31,12 @@ import retrofit2.mock.Calls;
 import util.TestConstants;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static util.Verfier.hasSize;
 
 @RunWith(AndroidJUnit4.class)
 public class TheBeaconActionHistoryPublisherIntegrationShould {
@@ -56,9 +61,11 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
 
     private RetrofitApiServiceImpl mockRetrofitApiService = mock(RetrofitApiServiceImpl.class);
 
-    private RetrofitApiTransport testTransportWithMockService;
+    private Transport transport = mock(Transport.class);
 
     private BeaconActionHistoryPublisher tested;
+
+    private RetrofitApiTransport testTransportWithMockService;
 
     @Before
     public void setUp() throws Exception {
@@ -81,51 +88,14 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
     }
 
     @Test
-    public void should_have_persisted_beacon_actions() throws Exception {
-        //first we delete all previous data
-        tested.deleteAllData();
+    public void test_should_send_no_history_to_the_server_when_nothing_happend() throws Exception {
+        Mockito.when(mockRetrofitApiService.publishHistory(Mockito.anyString(), Mockito.any(HistoryBody.class)))
+                .thenReturn(Calls.response(new ResolveResponse.Builder().build()));
 
-        //add one action in the future
-        tested.onActionPresented(TestConstants.BEACON_EVENT_IN_FUTURE);
-        List<InternalBeaconAction> notSentObjects = tested.notSentBeaconActions();
-        assertThat(notSentObjects).hasSize(1);
+        tested.publishHistory();
 
-        //persist it, nullify and make new instance
-        tested.saveAllData();
-
-        tested = null;
-        tested = new BeaconActionHistoryPublisher(testTransportWithMockService, clock,
-                testHandlerManager, sharedPreferences, gson);
-
-        //Make sure the object returned is not null.
-        assertThat(tested);
-
-        //check that this instance read from local persistence layer
-        List<InternalBeaconAction> notSentObjectsFromPersistence = tested.notSentBeaconActions();
-        assertThat(notSentObjectsFromPersistence).hasSize(1);
+        verify(mockRetrofitApiService, never()).publishHistory(Mockito.anyString(), Mockito.any(HistoryBody.class));
     }
 
-    @Test
-    public void should_have_persisted_beacon_scans() throws Exception {
-        //first we delete all previous data
-        tested.deleteAllData();
 
-        //add one scan
-        tested.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(100));
-        List<InternalBeaconScan> notSentObjects = tested.notSentBeaconScans();
-        assertThat(notSentObjects).hasSize(1);
-
-        //persist it, nullify and make new instance
-        tested.saveAllData();
-        tested = null;
-        tested = new BeaconActionHistoryPublisher(testTransportWithMockService, clock,
-                testHandlerManager, sharedPreferences, gson);
-
-        //Make sure the object returned is not null.
-        assertThat(tested);
-
-        //check that this instance read from local persistence layer
-        List<InternalBeaconScan> notSentObjectsFromPersistence = tested.notSentBeaconScans();
-        assertThat(notSentObjectsFromPersistence).hasSize(1);
-    }
 }

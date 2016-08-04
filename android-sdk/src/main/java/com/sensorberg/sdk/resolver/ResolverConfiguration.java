@@ -13,8 +13,6 @@ public final class ResolverConfiguration implements Serializable {
 
     public String apiToken;
 
-    private URL resolverLayoutURL;
-
     private String advertisingIdentifier;
 
     /**
@@ -26,14 +24,6 @@ public final class ResolverConfiguration implements Serializable {
         boolean changed = this.apiToken != null && !this.apiToken.equals(apiToken);
         this.apiToken = apiToken;
         return changed;
-    }
-
-    public URL getResolverLayoutURL() {
-        return resolverLayoutURL;
-    }
-
-    public void setResolverLayoutURL(URL resolverLayoutURL) {
-        this.resolverLayoutURL = resolverLayoutURL;
     }
 
     public void setAdvertisingIdentifier(String advertisingIdentifier) {

@@ -18,7 +18,6 @@ import com.sensorberg.sdk.model.persistence.BeaconAction;
 import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.sdk.resolver.BeaconEvent;
-import com.sensorberg.sdk.resolver.ResolutionConfiguration;
 import com.sensorberg.sdk.settings.Settings;
 import com.sensorberg.sdk.settings.TimeConstants;
 import com.sensorberg.sdk.testUtils.TestClock;
@@ -86,7 +85,7 @@ public class TransportShould {
         Mockito.when(mockRetrofitApiService.getBeacon(anyString(), anyString(), anyString()))
                 .thenReturn(Calls.response(resolveResponse));
 
-        tested.getBeacon(new ResolutionConfiguration(TestConstants.BEACON_SCAN_ENTRY_EVENT(clock.now())), BeaconResponseHandler.NONE);
+        tested.getBeacon(TestConstants.BEACON_SCAN_ENTRY_EVENT(clock.now()), BeaconResponseHandler.NONE);
         Mockito.verify(mockListener).historyUploadIntervalChanged(1337L * 1000);
     }
 
@@ -121,7 +120,7 @@ public class TransportShould {
         Mockito.when(mockRetrofitApiService.getBeacon(anyString(), anyString(), anyString())).thenReturn(Calls.response(response));
 
         Assertions.assertThat(response).isNotNull();
-        tested.getBeacon(new ResolutionConfiguration(TestConstants.BEACON_SCAN_ENTRY_EVENT(clock.now())), new BeaconResponseHandler() {
+        tested.getBeacon(TestConstants.BEACON_SCAN_ENTRY_EVENT(clock.now()), new BeaconResponseHandler() {
             @Override
             public void onSuccess(List<BeaconEvent> foundBeaconEvents) {
                 Assertions

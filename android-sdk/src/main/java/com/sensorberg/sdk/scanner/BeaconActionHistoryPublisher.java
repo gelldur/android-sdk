@@ -15,17 +15,13 @@ import com.sensorberg.sdk.model.persistence.BeaconAction;
 import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolverListener;
-import com.sensorberg.sdk.settings.SettingsManager;
-import com.sensorberg.utils.ListUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import lombok.Setter;
@@ -51,9 +47,9 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
 
     private final Gson gson;
 
-    private List<BeaconScan> beaconScans = Collections.synchronizedList(new LinkedList<BeaconScan>());
+    List<BeaconScan> beaconScans = Collections.synchronizedList(new LinkedList<BeaconScan>());
 
-    private List<BeaconAction> beaconActions = Collections.synchronizedList(new LinkedList<BeaconAction>());
+    List<BeaconAction> beaconActions = Collections.synchronizedList(new LinkedList<BeaconAction>());
 
     private HashMap<String, Long> suppressionTimeStore = new HashMap<>();
 
@@ -126,6 +122,9 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
 
     public void onActionPresented(BeaconEvent beaconEvent) {
         beaconActions.add(BeaconAction.from(beaconEvent));
+        if (beaconEvent.reportImmediately){
+            publishHistory();
+        }
     }
 
     public void deleteAllObjects() {

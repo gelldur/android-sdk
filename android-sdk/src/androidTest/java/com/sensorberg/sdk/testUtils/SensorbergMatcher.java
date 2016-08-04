@@ -105,7 +105,7 @@ public class SensorbergMatcher {
         @Override
         public boolean matches(Object o) {
             BeaconEvent incoming = (BeaconEvent) o;
-            actual = incoming.getAction().getDelayTime();
+            actual = incoming.action.getDelayTime();
             return actual == delayInMillies;
         }
 

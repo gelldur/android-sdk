@@ -49,9 +49,9 @@ public class BeaconAction {
      */
     public static BeaconAction from(BeaconEvent beaconEvent) {
         BeaconAction value = new BeaconAction();
-        value.setActionId(beaconEvent.getAction().getUuid().toString());
+        value.setActionId(beaconEvent.action.getUuid().toString());
         value.setTimeOfPresentation(beaconEvent.getPresentationTime());
-        value.setTrigger(beaconEvent.trigger);
+        value.setTrigger(beaconEvent.getTrigger());
 
         if (beaconEvent.getBeaconId() != null) {
             value.setPid(beaconEvent.getBeaconId().getPid());
