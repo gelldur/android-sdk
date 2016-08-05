@@ -31,7 +31,7 @@ import static com.sensorberg.utils.ListUtils.map;
 
 public class RetrofitApiTransport implements Transport {
 
-    public static String PRODUCTION_RESOLVER_BASE_URL = "https://resolver.sensorberg.com/";
+    public static String RESOLVER_BASE_URL = "https://resolver.sensorberg.com/";
 
     private final Clock mClock;
 
