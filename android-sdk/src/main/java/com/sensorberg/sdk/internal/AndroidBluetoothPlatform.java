@@ -15,7 +15,7 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
 
     private final CrashCallBackWrapper crashCallBackWrapper;
 
-    private final BluetoothAdapter bluetoothAdapter;
+    private BluetoothAdapter bluetoothAdapter;
 
     private final Context context;
 
@@ -23,10 +23,14 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
 
     private PermissionChecker permissionChecker;
 
-    public AndroidBluetoothPlatform(BluetoothAdapter adapter, Context ctx) {
+    public AndroidBluetoothPlatform(Context ctx) {
         context = ctx;
-        bluetoothAdapter = adapter;
+
         permissionChecker = new PermissionChecker(ctx);
+
+        if (BluetoothAdapter.getDefaultAdapter() != null) {
+            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        }
 
         if (Build.VERSION.SDK_INT >= 18) {
             crashCallBackWrapper = new CrashCallBackWrapper(ctx);

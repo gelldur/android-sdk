@@ -131,20 +131,8 @@ public class ProvidersModule {
     @Provides
     @Named("androidBluetoothPlatform")
     @Singleton
-    public BluetoothPlatform provideAndroidBluetoothPlatform(BluetoothAdapter adapter, Context context) {
-        return new AndroidBluetoothPlatform(adapter, context);
-    }
-
-    @Provides
-    @Singleton
-    public BluetoothAdapter provideBluetoothAdapter(Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
-                && context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
-            return bluetoothManager.getAdapter();
-        } else {
-            return BluetoothAdapter.getDefaultAdapter();
-        }
+    public BluetoothPlatform provideAndroidBluetoothPlatform(Context context) {
+        return new AndroidBluetoothPlatform(context);
     }
 
     @Provides
