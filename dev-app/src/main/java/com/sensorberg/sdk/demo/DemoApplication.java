@@ -59,7 +59,7 @@ public class DemoApplication extends MultiDexApplication {
             @Override
             public void presentBeaconEvent(BeaconEvent beaconEvent) {
                 Log.d(DemoApplication.TAG, "DemoApplication presentBeaconEvent = " + beaconEvent.toString());
-                showAlert(beaconEvent.getAction(), beaconEvent.trigger);
+                showAlert(beaconEvent.getAction(), beaconEvent.getTrigger());
             }
         });
 

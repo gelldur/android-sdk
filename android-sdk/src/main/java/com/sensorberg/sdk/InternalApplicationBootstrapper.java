@@ -31,7 +31,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SyncStatusObserver;
-import android.util.Log;
 
 import java.util.HashSet;
 import java.util.List;
@@ -149,11 +148,11 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     }
 
     public void presentBeaconEvent(BeaconEvent beaconEvent) {
-        if (beaconEvent != null && beaconEvent.action != null) {
-            Action beaconEventAction = beaconEvent.action;
+        if (beaconEvent != null && beaconEvent.getAction() != null) {
+            Action beaconEventAction = beaconEvent.getAction();
 
-            if (beaconEvent.deliverAt != null) {
-                serviceScheduler.postDeliverAtOrUpdate(beaconEvent.deliverAt, beaconEvent);
+            if (beaconEvent.getDeliverAt() != null) {
+                serviceScheduler.postDeliverAtOrUpdate(beaconEvent.getDeliverAt(), beaconEvent);
             } else if (beaconEventAction.getDelayTime() > 0) {
                 serviceScheduler
                         .postToServiceDelayed(beaconEventAction.getDelayTime(), SensorbergServiceMessage.GENERIC_TYPE_BEACON_ACTION, beaconEvent,
@@ -167,12 +166,12 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     }
 
     private void presentEventDirectly(BeaconEvent beaconEvent) {
-        if (beaconEvent.action != null) {
+        if (beaconEvent.getAction() != null) {
             beaconEvent.setPresentationTime(clock.now());
             beaconActionHistoryPublisher.onActionPresented(beaconEvent);
             if (presentationDelegate == null) {
                 Intent broadcastIntent = new Intent(ManifestParser.actionString);
-                broadcastIntent.putExtra(Action.INTENT_KEY, beaconEvent.action);
+                broadcastIntent.putExtra(Action.INTENT_KEY, beaconEvent.getAction());
                 LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
             } else {
                 Logger.log.beaconResolveState(beaconEvent, "delegating the display of the beacon event to the application");
@@ -278,14 +277,14 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     public ListUtils.Filter<BeaconEvent> beaconEventFilter = new ListUtils.Filter<BeaconEvent>() {
         @Override
         public boolean matches(BeaconEvent beaconEvent) {
-            if (beaconEvent.suppressionTimeMillis > 0) {
-                long lastAllowedPresentationTime = clock.now() - beaconEvent.suppressionTimeMillis;
-                if (beaconActionHistoryPublisher.actionShouldBeSuppressed(lastAllowedPresentationTime, beaconEvent.action.getUuid())) {
+            if (beaconEvent.getSuppressionTimeMillis() > 0) {
+                long lastAllowedPresentationTime = clock.now() - beaconEvent.getSuppressionTimeMillis();
+                if (beaconActionHistoryPublisher.actionShouldBeSuppressed(lastAllowedPresentationTime, beaconEvent.getAction().getUuid())) {
                     return false;
                 }
             }
-            if (beaconEvent.sendOnlyOnce) {
-                if (beaconActionHistoryPublisher.actionWasShownBefore(beaconEvent.action.getUuid())) {
+            if (beaconEvent.isSendOnlyOnce()) {
+                if (beaconActionHistoryPublisher.actionWasShownBefore(beaconEvent.getAction().getUuid())) {
                     return false;
                 }
             }

@@ -1,7 +1,6 @@
 package com.sensorberg.sdk.resolver;
 
 import android.os.Message;
-import android.print.PrintAttributes;
 
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.internal.interfaces.BeaconResponseHandler;
@@ -57,7 +56,7 @@ public final class Resolver implements RunLoop.MessageHandlerCallback {
             public void onSuccess(List<BeaconEvent> beaconEvents) {
                 listener.onResolutionsFinished(beaconEvents);
                 for (BeaconEvent beaconEvent : beaconEvents) {
-                    Logger.log.beaconResolveState(scanEvent, "success resolving action:" + beaconEvent.action);
+                    Logger.log.beaconResolveState(scanEvent, "success resolving action:" + beaconEvent.getAction());
                 }
             }
 

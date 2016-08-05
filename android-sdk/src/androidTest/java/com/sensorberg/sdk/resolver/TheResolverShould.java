@@ -127,7 +127,7 @@ public class TheResolverShould {
             @Override
             public boolean matches(Object o) {
                 List<BeaconEvent> list = (List<BeaconEvent>) o;
-                delay = list.get(0).action.getDelayTime();
+                delay = list.get(0).getAction().getDelayTime();
                 return delay == 120000;
             }
 

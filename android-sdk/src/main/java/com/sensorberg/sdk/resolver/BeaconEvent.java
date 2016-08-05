@@ -35,17 +35,20 @@ public class BeaconEvent implements Parcelable {
         }
     };
 
-    public final Action action;
+    @Getter
+    private final Action action;
 
-    public final long suppressionTimeMillis;
+    @Getter
+    private final long suppressionTimeMillis;
 
-    public final boolean sendOnlyOnce;
+    @Getter
+    private final boolean sendOnlyOnce;
 
+    @Getter
+    private final boolean reportImmediately;
 
-    public final boolean reportImmediately;
-
-
-    public final Date deliverAt;
+    @Getter
+    private final Date deliverAt;
 
     @Getter
     @Setter
@@ -132,6 +135,22 @@ public class BeaconEvent implements Parcelable {
     @Override
     public int hashCode() {
         return action != null ? action.hashCode() : 0;
+    }
+
+    public long getSuppressionTimeMillis() {
+        return suppressionTimeMillis;
+    }
+
+    public boolean isSendOnlyOnce() {
+        return sendOnlyOnce;
+    }
+
+    public boolean isReportImmediately() {
+        return reportImmediately;
+    }
+
+    public Date getDeliverAt() {
+        return deliverAt;
     }
 
     @ToString
