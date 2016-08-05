@@ -3,7 +3,6 @@ package com.sensorberg.sdk.model.persistence;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import com.sensorberg.sdk.internal.interfaces.Clock;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 
 import lombok.Getter;
@@ -49,7 +48,7 @@ public class BeaconAction {
      */
     public static BeaconAction from(BeaconEvent beaconEvent) {
         BeaconAction value = new BeaconAction();
-        value.setActionId(beaconEvent.action.getUuid().toString());
+        value.setActionId(beaconEvent.getAction().getUuid().toString());
         value.setTimeOfPresentation(beaconEvent.getPresentationTime());
         value.setTrigger(beaconEvent.getTrigger());
 

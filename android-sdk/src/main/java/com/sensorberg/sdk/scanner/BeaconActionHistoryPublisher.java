@@ -122,7 +122,7 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
 
     public void onActionPresented(BeaconEvent beaconEvent) {
         beaconActions.add(BeaconAction.from(beaconEvent));
-        if (beaconEvent.reportImmediately){
+        if (beaconEvent.isReportImmediately()){
             publishHistory();
         }
     }
