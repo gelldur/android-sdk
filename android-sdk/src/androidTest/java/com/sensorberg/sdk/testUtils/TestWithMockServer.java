@@ -2,21 +2,17 @@ package com.sensorberg.sdk.testUtils;
 
 import android.content.Context;
 
-import com.sensorberg.sdk.internal.URLFactory;
 import com.sensorberg.sdk.internal.http.helper.RawJSONMockResponse;
-import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 
 import org.fest.assertions.api.Assertions;
 import org.json.JSONException;
 import org.junit.After;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;

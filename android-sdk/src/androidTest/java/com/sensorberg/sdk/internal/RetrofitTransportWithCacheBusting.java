@@ -1,22 +1,17 @@
 package com.sensorberg.sdk.internal;
 
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.google.gson.Gson;
 import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.di.TestComponent;
-import com.sensorberg.sdk.internal.http.helper.RawJSONMockResponse;
 import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
 import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
-import com.sensorberg.sdk.internal.transport.interfaces.Transport;
-import com.sensorberg.sdk.model.server.BaseResolveResponse;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.sdk.testUtils.TestWithMockServer;
 
 import org.fest.assertions.api.Assertions;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,9 +21,6 @@ import org.junit.runner.RunWith;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import retrofit2.Call;
 import retrofit2.Response;
 import util.TestConstants;
 
@@ -74,21 +66,18 @@ public class RetrofitTransportWithCacheBusting extends TestWithMockServer {
 
 
         //first request served from network with full body
-        realRetrofitApiService.updateBeaconLayout(getUrl("layout")).execute();
+        realRetrofitApiService.updateBeaconLayout().execute();
         //this should still be served by the network
-        realRetrofitApiService.updateBeaconLayout(getUrl("layout")).execute();
+        realRetrofitApiService.updateBeaconLayout().execute();
 
+        Assertions.assertThat(server.getRequestCount()).isEqualTo(2);
         //let´s expire the cache
         Thread.sleep(2100);
 
         //this response should be the body of 001 but still served from cache
-        Response<ResolveResponse> response = realRetrofitApiService.getBeacon(getUrl("layout"), "irrelevant", "foo").execute();
+        Response<ResolveResponse> response = realRetrofitApiService.getBeacon("irrelevant", "foo").execute();
         Assertions.assertThat(response).isNotNull();
         Assertions.assertThat(response.body().getAccountProximityUUIDs()).hasSize(3);
-
-
-
-
     }
 
     @Test
@@ -98,10 +87,10 @@ public class RetrofitTransportWithCacheBusting extends TestWithMockServer {
 
 
         //first request served from network with full body
-        realRetrofitApiService.updateBeaconLayout(getUrl("layout")).execute();
+        realRetrofitApiService.updateBeaconLayout().execute();
 
         //serve cached response
-        Response<ResolveResponse> responseFromInitialCacheValue = realRetrofitApiService.getBeacon(getUrl("layout"), "irrelevant", "foo").execute();
+        Response<ResolveResponse> responseFromInitialCacheValue = realRetrofitApiService.getBeacon("irrelevant", "foo").execute();
         Assertions.assertThat(responseFromInitialCacheValue).isNotNull();
         Assertions.assertThat(responseFromInitialCacheValue.body().getAccountProximityUUIDs()).hasSize(1);
 
@@ -109,20 +98,14 @@ public class RetrofitTransportWithCacheBusting extends TestWithMockServer {
         Assertions.assertThat(server.getRequestCount()).isEqualTo(1);
 
         //this should still be served by the network, cache should be updated
-        realRetrofitApiService.updateBeaconLayout(getUrl("layout")).execute();
+        realRetrofitApiService.updateBeaconLayout().execute();
 
         //we should have 2 requests to the server now
         Assertions.assertThat(server.getRequestCount()).isEqualTo(2);
 
         //new version, served by cache should contain a different number of proximity UUIDs
-        Response<ResolveResponse> response = realRetrofitApiService.getBeacon(getUrl("layout"), "irrelevant", "foo").execute();
+        Response<ResolveResponse> response = realRetrofitApiService.getBeacon("irrelevant", "foo").execute();
         Assertions.assertThat(response).isNotNull();
         Assertions.assertThat(response.body().getAccountProximityUUIDs()).hasSize(3);
-
-
-
-
-
-
     }
 }

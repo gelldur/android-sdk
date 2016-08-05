@@ -17,7 +17,8 @@ import retrofit2.http.Url;
 
 public interface RetrofitApiService {
 
-    @Headers(SensorbergCacheInterceptor.CACHE_BUST_HEADER_WITH_VALUE)
+//    @Headers(SensorbergCacheInterceptor.CACHE_BUST_HEADER_WITH_VALUE)
+    @Headers("Cache-Control: max-age=0")
     @GET("/layout")
     Call<BaseResolveResponse> updateBeaconLayout();
 

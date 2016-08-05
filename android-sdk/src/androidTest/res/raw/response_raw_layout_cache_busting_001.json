@@ -1,7 +1,7 @@
 {
     "statusCode" : 200,
     "headers": {
-        "Cache-Control": "no-transform,public,max-age=1",
+        "Cache-Control": "no-transform,public,max-age=2",
         "Content-Type": " application/json",
         "Etag": "1416996436511"
     },
