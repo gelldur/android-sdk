@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 
 import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.di.TestComponent;
-import com.sensorberg.sdk.internal.URLFactory;
 import com.sensorberg.sdk.internal.interfaces.BeaconHistoryUploadIntervalListener;
 import com.sensorberg.sdk.internal.interfaces.BeaconResponseHandler;
 import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
@@ -82,7 +81,7 @@ public class TransportShould {
         tested.setBeaconHistoryUploadIntervalListener(mockListener);
 
         ResolveResponse resolveResponse = new ResolveResponse.Builder().withReportTrigger(1337).build();
-        Mockito.when(mockRetrofitApiService.getBeacon(anyString(), anyString(), anyString()))
+        Mockito.when(mockRetrofitApiService.getBeacon(anyString(), anyString()))
                 .thenReturn(Calls.response(resolveResponse));
 
         tested.getBeacon(TestConstants.BEACON_SCAN_ENTRY_EVENT(clock.now()), BeaconResponseHandler.NONE);
@@ -117,7 +116,7 @@ public class TransportShould {
         ResolveResponse response = gson.fromJson(
                 Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.resolve_response_005, InstrumentationRegistry.getContext()),
                 ResolveResponse.class);
-        Mockito.when(mockRetrofitApiService.getBeacon(anyString(), anyString(), anyString())).thenReturn(Calls.response(response));
+        Mockito.when(mockRetrofitApiService.getBeacon(anyString(), anyString())).thenReturn(Calls.response(response));
 
         Assertions.assertThat(response).isNotNull();
         tested.getBeacon(TestConstants.BEACON_SCAN_ENTRY_EVENT(clock.now()), new BeaconResponseHandler() {
@@ -125,9 +124,9 @@ public class TransportShould {
             public void onSuccess(List<BeaconEvent> foundBeaconEvents) {
                 Assertions
                         .assertThat(foundBeaconEvents)
-                        .overridingErrorMessage("There should be 1 action to the Beacon %s at %s there were %d",
-                                TestConstants.BEACON_SCAN_ENTRY_EVENT(clock.now()).getBeaconId().toTraditionalString(),
-                                URLFactory.getResolveURLString(), foundBeaconEvents.size())
+//                        .overridingErrorMessage("There should be 1 action to the Beacon %s at %s there were %d",
+//                                TestConstants.BEACON_SCAN_ENTRY_EVENT(clock.now()).getBeaconId().toTraditionalString(),
+//                                foundBeaconEvents.size())
                         .isNotNull()
                         .hasSize(1);
             }
@@ -170,7 +169,7 @@ public class TransportShould {
         scan1.setCreatedAt(System.currentTimeMillis() - TimeConstants.ONE_HOUR);
         scans.add(scan1);
 
-        Mockito.when(mockRetrofitApiService.publishHistory(anyString(), any(HistoryBody.class)))
+        Mockito.when(mockRetrofitApiService.publishHistory(any(HistoryBody.class)))
                 .thenReturn(Calls.response(new ResolveResponse.Builder().build()));
 
         tested.publishHistory(scans, actions, new TransportHistoryCallback() {

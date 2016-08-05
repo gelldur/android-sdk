@@ -12,7 +12,6 @@ import com.sensorberg.sdk.internal.AndroidPlatformIdentifier;
 import com.sensorberg.sdk.internal.AndroidServiceScheduler;
 import com.sensorberg.sdk.internal.PermissionChecker;
 import com.sensorberg.sdk.internal.PersistentIntegerCounter;
-import com.sensorberg.sdk.internal.URLFactory;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
 import com.sensorberg.sdk.internal.interfaces.Clock;
 import com.sensorberg.sdk.internal.interfaces.FileManager;
@@ -22,6 +21,7 @@ import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
 import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
+import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiService;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.model.ISO8601TypeAdapter;
 import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
@@ -156,8 +156,9 @@ public class ProvidersModule {
     @Provides
     @Named("realBeaconActionHistoryPublisher")
     @Singleton
-    public BeaconActionHistoryPublisher provideBeaconActionHistoryPublisher(Context context, @Named("realTransport") Transport transport,
-            @Named("realSettingsManager") SettingsManager settingsManager, @Named("realClock") Clock clock,
+    public BeaconActionHistoryPublisher provideBeaconActionHistoryPublisher(
+            @Named("realTransport") Transport transport,
+            @Named("realClock") Clock clock,
             @Named("realHandlerManager") HandlerManager handlerManager,
             SharedPreferences sharedPreferences, Gson gson) {
         return new BeaconActionHistoryPublisher(transport, clock, handlerManager, sharedPreferences, gson);
@@ -175,7 +176,7 @@ public class ProvidersModule {
     @Singleton
     public RetrofitApiServiceImpl provideRealRetrofitApiService(Context context, Gson gson,
             @Named("androidPlatformIdentifier") PlatformIdentifier platformIdentifier) {
-        return new RetrofitApiServiceImpl(context, gson, platformIdentifier, URLFactory.getResolveURLString());
+        return new RetrofitApiServiceImpl(context, gson, platformIdentifier, RetrofitApiTransport.PRODUCTION_RESOLVER_BASE_URL);
     }
 
     @Provides

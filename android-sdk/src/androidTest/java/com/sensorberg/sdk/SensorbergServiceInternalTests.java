@@ -1,7 +1,6 @@
 package com.sensorberg.sdk;
 
 import com.sensorberg.sdk.di.TestComponent;
-import com.sensorberg.sdk.internal.URLFactory;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
 import com.sensorberg.sdk.internal.interfaces.Clock;
 import com.sensorberg.sdk.internal.interfaces.FileManager;
@@ -25,9 +24,6 @@ import android.os.Handler;
 import android.os.Messenger;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import javax.inject.Inject;
 import javax.inject.Named;

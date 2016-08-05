@@ -142,11 +142,11 @@ public class TheInternalBootstrapperIntegration {
     @Test
     public void test_an_instant_action_workflow() throws Exception {
         //enqueue the layout with a beacon for report immediately
-        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+        Mockito.when(mockRetrofitApiService.getBeacon( Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(Calls.response(RESOLVE_RESPONSE_WITH_REPORT_IMMEDIATELY));
 
         //enqueue the reporting result
-        Mockito.when(mockRetrofitApiService.publishHistory(Mockito.anyString(), Mockito.any(HistoryBody.class)))
+        Mockito.when(mockRetrofitApiService.publishHistory(Mockito.any(HistoryBody.class)))
                 .thenReturn(Calls.response(PUBLISH_HISTORY_RESPONSE));
 
         System.out.println("TheInternalBootstrapperIntegration start test_an_instant_action_workflow");
@@ -176,11 +176,11 @@ public class TheInternalBootstrapperIntegration {
             BaseResolveResponse updateLayoutResponse = gson
                     .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.response_resolve_precaching,
                             InstrumentationRegistry.getContext()), BaseResolveResponse.class);
-            Mockito.when(mockRetrofitApiService.updateBeaconLayout(Mockito.anyString())).thenReturn(Calls.response(updateLayoutResponse));
+            Mockito.when(mockRetrofitApiService.updateBeaconLayout()).thenReturn(Calls.response(updateLayoutResponse));
 
             ResolveResponse getBeaconResponse = gson.fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.response_resolve_precaching,
                     InstrumentationRegistry.getContext()), ResolveResponse.class);
-            Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+            Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString()))
                     .thenReturn(Calls.response(getBeaconResponse));
         } catch (Exception e) {
             Assertions.fail(e.toString());
@@ -206,7 +206,7 @@ public class TheInternalBootstrapperIntegration {
     public void test_precaching_of_account_proximityUUIDS() throws IOException, JSONException, InterruptedException {
         BaseResolveResponse resolveResponse = gson.fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.response_resolve_precaching,
                 InstrumentationRegistry.getContext()), BaseResolveResponse.class);
-        Mockito.when(mockRetrofitApiService.updateBeaconLayout(Mockito.anyString())).thenReturn(Calls.response(resolveResponse));
+        Mockito.when(mockRetrofitApiService.updateBeaconLayout()).thenReturn(Calls.response(resolveResponse));
 
         Assertions.assertThat(spiedInternalApplicationBootstrapper.proximityUUIDs).hasSize(0);
 
