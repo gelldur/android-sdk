@@ -21,7 +21,6 @@ import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
 import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
-import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiService;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.model.ISO8601TypeAdapter;
 import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
@@ -188,7 +187,7 @@ public class ProvidersModule {
     @Singleton
     public RetrofitApiServiceImpl provideRealRetrofitApiService(Context context, Gson gson,
             @Named("androidPlatformIdentifier") PlatformIdentifier platformIdentifier) {
-        return new RetrofitApiServiceImpl(context, gson, platformIdentifier, RetrofitApiTransport.PRODUCTION_RESOLVER_BASE_URL);
+        return new RetrofitApiServiceImpl(context, gson, platformIdentifier, RetrofitApiTransport.RESOLVER_BASE_URL);
     }
 
     @Provides
