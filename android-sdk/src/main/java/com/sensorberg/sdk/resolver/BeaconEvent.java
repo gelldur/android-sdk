@@ -137,22 +137,6 @@ public class BeaconEvent implements Parcelable {
         return action != null ? action.hashCode() : 0;
     }
 
-    public long getSuppressionTimeMillis() {
-        return suppressionTimeMillis;
-    }
-
-    public boolean isSendOnlyOnce() {
-        return sendOnlyOnce;
-    }
-
-    public boolean isReportImmediately() {
-        return reportImmediately;
-    }
-
-    public Date getDeliverAt() {
-        return deliverAt;
-    }
-
     @ToString
     public static class Builder {
 
