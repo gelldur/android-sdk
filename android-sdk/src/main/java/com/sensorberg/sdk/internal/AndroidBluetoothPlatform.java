@@ -28,9 +28,7 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
 
         permissionChecker = new PermissionChecker(ctx);
 
-        if (BluetoothAdapter.getDefaultAdapter() != null) {
-            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        }
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if (Build.VERSION.SDK_INT >= 18) {
             crashCallBackWrapper = new CrashCallBackWrapper(ctx);
