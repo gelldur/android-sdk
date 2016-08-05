@@ -80,7 +80,7 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(serverBaseUrl);
+        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout();
         Response<BaseResolveResponse> response = call.execute();
 
         Assertions.assertThat(response.raw().request().headers()).isNotNull();
@@ -94,7 +94,7 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(serverBaseUrl);
+        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout();
 
         Assertions.assertThat(realPlatformIdentifier.getAdvertiserIdentifier()).isNull();
         Response<BaseResolveResponse> responseWithAdvertiserId = call.clone().execute();
@@ -109,7 +109,7 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(serverBaseUrl);
+        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout();
         realPlatformIdentifier.setAdvertisingIdentifier("TEST_ADID");
 
         Assertions.assertThat(realPlatformIdentifier.getAdvertiserIdentifier()).isNotNull();
@@ -126,7 +126,7 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(serverBaseUrl);
+        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout();
         Response<BaseResolveResponse> response = call.execute();
 
         Assertions.assertThat(response.raw().request().headers()).isNotNull();
@@ -140,7 +140,7 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(serverBaseUrl);
+        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout();
         Response<BaseResolveResponse> response = call.execute();
 
         Assertions.assertThat(response.raw().request().headers()).isNotNull();
@@ -150,8 +150,7 @@ public class ApiServiceShould {
 
     @Test
     public void apiservice_should_throw_an_unknown_host_exception() throws Exception {
-        SuccessfulRetrofitApiService retrofitApiService = new SuccessfulRetrofitApiService(mContext, gson, realPlatformIdentifier,
-                "http://localhost/");
+        SuccessfulRetrofitApiService retrofitApiService = new SuccessfulRetrofitApiService(mContext, gson, realPlatformIdentifier, "http://localhost/");
         retrofitApiService.getOriginalOkHttpClient().cache().evictAll();
 
         exception.expect(UnknownHostException.class);
@@ -168,11 +167,11 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call1 = realRetrofitApiService.updateBeaconLayout(serverBaseUrl);
+        Call<BaseResolveResponse> call1 = realRetrofitApiService.updateBeaconLayout();
         Response<BaseResolveResponse> response1 = call1.execute();
         Assertions.assertThat(response1.isSuccessful()).isTrue();
 
-        Call<BaseResolveResponse> call2 = realRetrofitApiService.updateBeaconLayout(serverBaseUrl);
+        Call<BaseResolveResponse> call2 = realRetrofitApiService.updateBeaconLayout();
         Response<BaseResolveResponse> response2 = call2.execute();
         Assertions.assertThat(response2.isSuccessful()).isTrue();
 

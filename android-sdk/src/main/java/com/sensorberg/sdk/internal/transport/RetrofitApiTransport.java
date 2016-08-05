@@ -27,10 +27,11 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.sensorberg.sdk.internal.URLFactory.getResolveURLString;
 import static com.sensorberg.utils.ListUtils.map;
 
 public class RetrofitApiTransport implements Transport {
+
+    public static String PRODUCTION_RESOLVER_BASE_URL = "https://resolver.sensorberg.com/";
 
     private final Clock mClock;
 
@@ -64,8 +65,7 @@ public class RetrofitApiTransport implements Transport {
         String networkInfo = NetworkInfoBroadcastReceiver.latestNetworkInfo != null
                 ? NetworkInfoBroadcastReceiver.getNetworkInfoString() : "";
 
-        Call<ResolveResponse> call = getApiService()
-                .getBeacon(getResolveURLString(), scanEvent.getBeaconId().getPid(), networkInfo);
+        Call<ResolveResponse> call = getApiService().getBeacon(scanEvent.getBeaconId().getPid(), networkInfo);
 
         call.enqueue(new Callback<ResolveResponse>() {
             @Override
@@ -149,7 +149,7 @@ public class RetrofitApiTransport implements Transport {
     public void publishHistory(final List<BeaconScan> scans, final List<BeaconAction> actions, final TransportHistoryCallback callback) {
 
         HistoryBody body = new HistoryBody(scans, actions, mClock);
-        Call<ResolveResponse> call = getApiService().publishHistory(getResolveURLString(), body);
+        Call<ResolveResponse> call = getApiService().publishHistory(body);
 
         call.enqueue(new Callback<ResolveResponse>() {
             @Override
@@ -172,7 +172,7 @@ public class RetrofitApiTransport implements Transport {
     @Override
     public void updateBeaconLayout() {
 
-        Call<BaseResolveResponse> call = getApiService().updateBeaconLayout(getResolveURLString());
+        Call<BaseResolveResponse> call = getApiService().updateBeaconLayout();
 
         call.enqueue(new Callback<BaseResolveResponse>() {
             @Override

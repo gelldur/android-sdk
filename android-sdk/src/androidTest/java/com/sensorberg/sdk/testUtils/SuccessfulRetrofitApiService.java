@@ -65,29 +65,24 @@ public class SuccessfulRetrofitApiService extends RetrofitApiServiceImpl {
     }
 
     @Override
-    public Call<BaseResolveResponse> updateBeaconLayout(@Url String beaconLayoutUrl) {
+    public Call<BaseResolveResponse> updateBeaconLayout() {
         //TODO
         ResolveResponse response = new ResolveResponse.Builder().build();
-        return delegate.returningResponse(response).updateBeaconLayout(beaconLayoutUrl);
-    }
-
-    public Call<BaseResolveResponse> updateBeaconLayoutFail(@Url String beaconLayoutUrl) {
-        Response<ResolveResponse> ret = Response.error(404, ResponseBody.create(MediaType.parse("plain/text"), ""));
-        return delegate.returning(Calls.response(ret)).updateBeaconLayout(beaconLayoutUrl);
+        return delegate.returningResponse(response).updateBeaconLayout();
     }
 
     @Override
-    public Call<ResolveResponse> getBeacon(@Url String beaconURLString, @Header("X-pid") String beaconId, @Header("X-qos") String networkInfo) {
+    public Call<ResolveResponse> getBeacon( @Header("X-pid") String beaconId, @Header("X-qos") String networkInfo) {
         //TODO
         ResolveResponse response = new ResolveResponse.Builder().build();
-        return delegate.returningResponse(response).getBeacon(beaconURLString, beaconId, networkInfo);
+        return delegate.returningResponse(response).getBeacon(beaconId, networkInfo);
     }
 
     @Override
-    public Call<ResolveResponse> publishHistory(@Url String beaconLayoutUrl, @Body HistoryBody body) {
+    public Call<ResolveResponse> publishHistory(@Body HistoryBody body) {
         //TODO
         ResolveResponse response = new ResolveResponse.Builder().build();
-        return delegate.returningResponse(response).publishHistory(beaconLayoutUrl, body);
+        return delegate.returningResponse(response).publishHistory(body);
     }
 
     @Override

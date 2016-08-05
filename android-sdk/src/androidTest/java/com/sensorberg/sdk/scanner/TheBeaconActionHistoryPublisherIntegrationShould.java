@@ -78,23 +78,23 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
 
     @Test
     public void test_should_send_history_to_the_server() throws Exception {
-        Mockito.when(mockRetrofitApiService.publishHistory(Mockito.anyString(), Mockito.any(HistoryBody.class)))
+        Mockito.when(mockRetrofitApiService.publishHistory(Mockito.any(HistoryBody.class)))
                 .thenReturn(Calls.response(new ResolveResponse.Builder().build()));
 
         tested.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(100));
         tested.publishHistory();
 
-        verify(mockRetrofitApiService, times(1)).publishHistory(Mockito.anyString(), Mockito.any(HistoryBody.class));
+        verify(mockRetrofitApiService, times(1)).publishHistory(Mockito.any(HistoryBody.class));
     }
 
     @Test
     public void test_should_send_no_history_to_the_server_when_nothing_happend() throws Exception {
-        Mockito.when(mockRetrofitApiService.publishHistory(Mockito.anyString(), Mockito.any(HistoryBody.class)))
+        Mockito.when(mockRetrofitApiService.publishHistory(Mockito.any(HistoryBody.class)))
                 .thenReturn(Calls.response(new ResolveResponse.Builder().build()));
 
         tested.publishHistory();
 
-        verify(mockRetrofitApiService, never()).publishHistory(Mockito.anyString(), Mockito.any(HistoryBody.class));
+        verify(mockRetrofitApiService, never()).publishHistory(Mockito.any(HistoryBody.class));
     }
 
 

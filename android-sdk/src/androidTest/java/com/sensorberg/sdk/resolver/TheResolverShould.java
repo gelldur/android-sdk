@@ -64,7 +64,7 @@ public class TheResolverShould {
         ResolveResponse resolveResponse = gson
                 .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.resolve_response_enter_exit_action, InstrumentationRegistry
                         .getContext()), ResolveResponse.class);
-        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(Calls.response(resolveResponse));
 
         ResolverListener testListener = new ResolverListener() {
@@ -88,7 +88,7 @@ public class TheResolverShould {
         ResolveResponse resolveResponse = gson
                 .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.resolve_response_inapp_action, InstrumentationRegistry
                         .getContext()), ResolveResponse.class);
-        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(Calls.response(resolveResponse));
 
         ResolverListener mockListener = new ResolverListener() {
@@ -113,7 +113,7 @@ public class TheResolverShould {
         ResolveResponse resolveResponse = gson
                 .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.resolve_response_delayed_action, InstrumentationRegistry
                         .getContext()), ResolveResponse.class);
-        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(Calls.response(resolveResponse));
 
         ResolverListener mockListener = mock(ResolverListener.class);

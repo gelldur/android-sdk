@@ -30,8 +30,6 @@ import retrofit2.http.Body;
 import retrofit2.http.Header;
 import retrofit2.http.Url;
 
-import static com.sensorberg.sdk.internal.URLFactory.getSettingsURLString;
-
 public class RetrofitApiServiceImpl {
 
     private static final int CONNECTION_TIMEOUT = 30; //seconds
@@ -43,8 +41,6 @@ public class RetrofitApiServiceImpl {
     private final Gson mGson;
 
     private final PlatformIdentifier mPlatformIdentifier;
-
-    private final String mBaseUrl;
 
     private String mApiToken;
 
@@ -58,14 +54,8 @@ public class RetrofitApiServiceImpl {
         mGson = gson;
         mPlatformIdentifier = platformId;
 
-        if (!baseUrl.endsWith("/")) {
-            mBaseUrl = baseUrl + "/";
-        } else {
-            mBaseUrl = baseUrl;
-        }
-
         Retrofit restAdapter = new Retrofit.Builder()
-                .baseUrl(mBaseUrl)
+                .baseUrl(baseUrl)
                 .client(getOkHttpClient(mContext))
                 .addConverterFactory(GsonConverterFactory.create(mGson))
                 .build();
@@ -132,20 +122,20 @@ public class RetrofitApiServiceImpl {
         }
     }
 
-    public Call<BaseResolveResponse> updateBeaconLayout(@Url String beaconLayoutUrl) {
-        return mApiService.updateBeaconLayout(beaconLayoutUrl);
+    public Call<BaseResolveResponse> updateBeaconLayout() {
+        return mApiService.updateBeaconLayout();
     }
 
-    public Call<ResolveResponse> getBeacon(@Url String beaconURLString, @Header("X-pid") String beaconId, @Header("X-qos") String networkInfo) {
-        return mApiService.getBeacon(beaconURLString, beaconId, networkInfo);
+    public Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo) {
+        return mApiService.getBeacon(beaconId, networkInfo);
     }
 
-    public Call<ResolveResponse> publishHistory(@Url String beaconLayoutUrl, @Body HistoryBody body) {
-        return mApiService.publishHistory(beaconLayoutUrl, body);
+    public Call<ResolveResponse> publishHistory(@Body HistoryBody body) {
+        return mApiService.publishHistory(body);
     }
 
     public Call<SettingsResponse> getSettings() {
-        return getSettings(getSettingsURLString(mApiToken));
+        return getSettings(mApiToken);
     }
 
     public Call<SettingsResponse> getSettings(@Url String url) {
