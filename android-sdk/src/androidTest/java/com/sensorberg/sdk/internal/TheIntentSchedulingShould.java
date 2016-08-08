@@ -35,7 +35,6 @@ public class TheIntentSchedulingShould {
     AlarmManager alarmManager;
 
     @Inject
-    @Named("testClock")
     TestClock androidClock;
 
     @Inject

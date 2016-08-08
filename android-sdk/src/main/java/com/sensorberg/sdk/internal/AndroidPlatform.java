@@ -25,7 +25,6 @@ public class AndroidPlatform implements Platform {
     protected SharedPreferences settingsPreferences;
 
     @Inject
-    @Named("realClock")
     protected Clock clock;
 
     @Inject

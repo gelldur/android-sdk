@@ -46,7 +46,6 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
     HandlerManager testHandlerManager;
 
     @Inject
-    @Named("realClock")
     Clock clock;
 
     @Inject

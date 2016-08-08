@@ -29,7 +29,6 @@ public class ResolveActionTest {
     Gson gson;
 
     @Inject
-    @Named("testClock")
     TestClock testClock;
 
     @Before

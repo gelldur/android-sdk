@@ -2,8 +2,8 @@ package com.sensorberg.sdk.scanner;
 
 import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.di.TestComponent;
-import com.sensorberg.sdk.internal.interfaces.Clock;
 import com.sensorberg.sdk.model.BeaconId;
+import com.sensorberg.sdk.testUtils.NoClock;
 import com.sensorberg.sdk.testUtils.TestFileManager;
 
 import org.fest.assertions.api.Assertions;
@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.util.UUID;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 @RunWith(AndroidJUnit4.class)
 public class TheBeaconMapShould {
@@ -27,8 +26,7 @@ public class TheBeaconMapShould {
     TestFileManager testFileManager;
 
     @Inject
-    @Named("noClock")
-    Clock clock;
+    NoClock noClock;
 
     BeaconMap tested;
 
@@ -86,7 +84,7 @@ public class TheBeaconMapShould {
         File file = getTempFile();
         BeaconMap first = new BeaconMap(testFileManager, file);
 
-        first.put(getNewBeaconId(), new EventEntry(clock.now(), ScanEventType.ENTRY.getMask()));
+        first.put(getNewBeaconId(), new EventEntry(noClock.now(), ScanEventType.ENTRY.getMask()));
 
         long originalSize = file.length();
 
@@ -133,7 +131,7 @@ public class TheBeaconMapShould {
     public void should_be_readable_right_after_writing() throws Exception {
         File tempFile = getTempFile();
         tested = new BeaconMap(testFileManager, tempFile);
-        tested.put(getNewBeaconId(), new EventEntry(clock.now(), ScanEventType.ENTRY.getMask()));
+        tested.put(getNewBeaconId(), new EventEntry(noClock.now(), ScanEventType.ENTRY.getMask()));
 
         BeaconMap otherFile = new BeaconMap(testFileManager, tempFile);
         Assertions.assertThat(otherFile).isNotNull();

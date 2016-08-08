@@ -75,7 +75,6 @@ public class ProvidersModule {
     }
 
     @Provides
-    @Named("realClock")
     @Singleton
     public Clock provideRealClock() {
         return new AndroidClock();
@@ -107,7 +106,7 @@ public class ProvidersModule {
 
     @Provides
     @Singleton
-    public ServiceScheduler provideIntentScheduler(Context context, AlarmManager alarmManager, @Named("realClock") Clock clock,
+    public ServiceScheduler provideIntentScheduler(Context context, AlarmManager alarmManager, Clock clock,
             PersistentIntegerCounter persistentIntegerCounter) {
         return new AndroidServiceScheduler(context, alarmManager, clock, persistentIntegerCounter,
                 DefaultSettings.DEFAULT_MESSAGE_DELAY_WINDOW_LENGTH);
@@ -137,8 +136,7 @@ public class ProvidersModule {
     @Provides
     @Named("realTransport")
     @Singleton
-    public Transport provideRealTransport(@Named("realRetrofitApiService") RetrofitApiServiceImpl retrofitApiService,
-            @Named("realClock") Clock clock) {
+    public Transport provideRealTransport(@Named("realRetrofitApiService") RetrofitApiServiceImpl retrofitApiService, Clock clock) {
         return new RetrofitApiTransport(retrofitApiService, clock);
     }
 
@@ -157,7 +155,7 @@ public class ProvidersModule {
     @Singleton
     public BeaconActionHistoryPublisher provideBeaconActionHistoryPublisher(
             @Named("realTransport") Transport transport,
-            @Named("realClock") Clock clock,
+            Clock clock,
             @Named("realHandlerManager") HandlerManager handlerManager,
             SharedPreferences sharedPreferences, Gson gson) {
         return new BeaconActionHistoryPublisher(transport, clock, handlerManager, sharedPreferences, gson);
@@ -175,7 +173,7 @@ public class ProvidersModule {
     @Singleton
     public RetrofitApiServiceImpl provideRealRetrofitApiService(Context context, Gson gson,
             @Named("androidPlatformIdentifier") PlatformIdentifier platformIdentifier) {
-        return new RetrofitApiServiceImpl(context, gson, platformIdentifier, RetrofitApiTransport.RESOLVER_BASE_URL);
+        return new RetrofitApiServiceImpl(context.getCacheDir(), gson, platformIdentifier, RetrofitApiTransport.RESOLVER_BASE_URL);
     }
 
     @Provides

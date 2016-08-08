@@ -15,8 +15,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
+
+import java.io.File;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -38,6 +41,9 @@ public class HttpStackShouldCacheTheSettings {
 
     MockWebServer server;
 
+    @Inject
+    Context context;
+
     @Before
     public void setUp() throws Exception {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
@@ -58,7 +64,7 @@ public class HttpStackShouldCacheTheSettings {
 
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        RetrofitApiServiceImpl realRetrofitApiService = new RetrofitApiServiceImpl(InstrumentationRegistry.getContext(), gson, platformIdentifier, baseUrl);
+        RetrofitApiServiceImpl realRetrofitApiService = new RetrofitApiServiceImpl(context.getCacheDir(), gson, platformIdentifier, baseUrl);
         Call<SettingsResponse> call = realRetrofitApiService.getSettings(baseUrl);
 
         Response response1 = call.execute();

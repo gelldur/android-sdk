@@ -54,11 +54,10 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 public class TransportShould {
 
     @Inject
-    @Named("testClock")
-    TestClock clock;
+    Gson gson;
 
     @Inject
-    Gson gson;
+    TestClock clock;
 
     private Transport tested;
 

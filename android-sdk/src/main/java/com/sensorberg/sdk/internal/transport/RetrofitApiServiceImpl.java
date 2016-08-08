@@ -36,8 +36,6 @@ public class RetrofitApiServiceImpl {
 
     private static final long HTTP_RESPONSE_DISK_CACHE_MAX_SIZE = 5 * 1024L * 1024L; //5MB
 
-    protected final Context mContext;
-
     private final Gson mGson;
 
     private final PlatformIdentifier mPlatformIdentifier;
@@ -49,14 +47,13 @@ public class RetrofitApiServiceImpl {
     private OkHttpClient mClient;
     private HttpLoggingInterceptor httpLoggingInterceptor;
 
-    public RetrofitApiServiceImpl(Context ctx, Gson gson, PlatformIdentifier platformId, String baseUrl) {
-        mContext = ctx;
+    public RetrofitApiServiceImpl(File cacheFolder, Gson gson, PlatformIdentifier platformId, String baseUrl) {
         mGson = gson;
         mPlatformIdentifier = platformId;
 
         Retrofit restAdapter = new Retrofit.Builder()
                 .baseUrl(baseUrl)
-                .client(getOkHttpClient(mContext))
+                .client(getOkHttpClient(cacheFolder))
                 .addConverterFactory(GsonConverterFactory.create(mGson))
                 .build();
 
@@ -87,7 +84,7 @@ public class RetrofitApiServiceImpl {
         }
     };
 
-    protected OkHttpClient getOkHttpClient(Context context) {
+    private OkHttpClient getOkHttpClient(File baseDir) {
         OkHttpClient.Builder okClientBuilder = new OkHttpClient.Builder();
 
         okClientBuilder.addInterceptor(headerAuthorizationInterceptor);
@@ -98,7 +95,6 @@ public class RetrofitApiServiceImpl {
 
         okClientBuilder.retryOnConnectionFailure(true);
 
-        final File baseDir = context.getCacheDir();
         if (baseDir != null) {
             final File cacheDir = new File(baseDir, "HttpResponseCache");
             okClientBuilder.cache(new Cache(cacheDir, HTTP_RESPONSE_DISK_CACHE_MAX_SIZE));

@@ -18,7 +18,8 @@ import com.sensorberg.sdk.model.persistence.TheBeaconScanShould;
 import com.sensorberg.sdk.model.server.ResolveActionTest;
 import com.sensorberg.sdk.model.server.TheResolveResponse;
 import com.sensorberg.sdk.resolver.TheResolveResponseShould;
-import com.sensorberg.sdk.resolver.TheResolverShould;
+import com.sensorberg.sdk.resolver.TheResolverWithMockApiShould;
+import com.sensorberg.sdk.resolver.TheResolverWithRealApiShould;
 import com.sensorberg.sdk.scanner.ScannerWithLongScanTime;
 import com.sensorberg.sdk.scanner.TheBackgroundScannerShould;
 import com.sensorberg.sdk.scanner.TheBeaconActionHistoryPublisherIntegrationShould;
@@ -78,7 +79,7 @@ public interface TestComponent extends Component {
 
     void inject(TheBeaconActionHistoryPublisherIntegrationShould theBeaconActionHistoryPublisherIntegrationShould);
 
-    void inject(TheResolverShould theResolverShould);
+    void inject(TheResolverWithMockApiShould theResolverWithMockApiShould);
 
     void inject(TheBeaconActionHistoryPublisherShould theBeaconActionHistoryPublisherShould);
 
@@ -107,6 +108,8 @@ public interface TestComponent extends Component {
     void inject(TheBeaconActionShould theBeaconActionShould);
 
     void inject(TheBeaconScanShould theBeaconrScanShould);
+
+    void inject(TheResolverWithRealApiShould theResolverWithRealApiShould);
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     final class Initializer {

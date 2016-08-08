@@ -53,7 +53,6 @@ public class SensorbergServiceInternalTests {
     HandlerManager handlerManager;
 
     @Inject
-    @Named("realClock")
     Clock clock;
 
     @Inject

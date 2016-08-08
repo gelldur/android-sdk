@@ -36,7 +36,6 @@ public class TheIntentSchedulingBeUpdateable {
     AlarmManager alarmManager;
 
     @Inject
-    @Named("testClock")
     TestClock androidClock;
 
     @Inject

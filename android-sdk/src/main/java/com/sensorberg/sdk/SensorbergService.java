@@ -49,7 +49,6 @@ public class SensorbergService extends Service {
     protected HandlerManager handlerManager;
 
     @Inject
-    @Named("realClock")
     protected Clock clock;
 
     @Inject

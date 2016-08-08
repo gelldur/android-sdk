@@ -1,4 +1,4 @@
-package com.sensorberg.sdk.internal.http;
+package com.sensorberg.sdk.internal.transport;
 
 import com.google.gson.Gson;
 
@@ -9,7 +9,6 @@ import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
 import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.model.server.BaseResolveResponse;
-import com.sensorberg.sdk.testUtils.SuccessfulRetrofitApiService;
 
 import org.fest.assertions.api.Assertions;
 import org.junit.After;
@@ -64,7 +63,7 @@ public class ApiServiceShould {
         server = new MockWebServer();
         server.start();
         serverBaseUrl = server.url("/").toString();
-        realRetrofitApiService = new RetrofitApiServiceImpl(InstrumentationRegistry.getContext(), gson, realPlatformIdentifier, serverBaseUrl);
+        realRetrofitApiService = new RetrofitApiServiceImpl(mContext.getCacheDir(), gson, realPlatformIdentifier, serverBaseUrl);
         realRetrofitApiService.setApiToken(TestConstants.API_TOKEN_DEFAULT);
     }
 
@@ -150,7 +149,7 @@ public class ApiServiceShould {
 
     @Test
     public void apiservice_should_throw_an_unknown_host_exception() throws Exception {
-        SuccessfulRetrofitApiService retrofitApiService = new SuccessfulRetrofitApiService(mContext, gson, realPlatformIdentifier, "http://localhost/");
+        SuccessfulRetrofitApiService retrofitApiService = new SuccessfulRetrofitApiService(mContext.getCacheDir(), gson, realPlatformIdentifier, "http://localhost/");
         retrofitApiService.getOriginalOkHttpClient().cache().evictAll();
 
         exception.expect(UnknownHostException.class);
