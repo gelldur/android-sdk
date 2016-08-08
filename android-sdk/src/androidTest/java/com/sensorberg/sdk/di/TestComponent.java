@@ -10,9 +10,10 @@ import com.sensorberg.sdk.TheInternalApplicationBootstrapperShould;
 import com.sensorberg.sdk.TheInternalBootstrapperIntegration;
 import com.sensorberg.sdk.internal.TheIntentSchedulingBeUpdateable;
 import com.sensorberg.sdk.internal.TheIntentSchedulingShould;
-import com.sensorberg.sdk.internal.http.ApiServiceShould;
 import com.sensorberg.sdk.internal.http.HttpStackShouldCacheTheSettings;
 import com.sensorberg.sdk.internal.http.TransportShould;
+import com.sensorberg.sdk.internal.transport.ApiServiceInGeneralShould;
+import com.sensorberg.sdk.internal.transport.ApiServiceShould;
 import com.sensorberg.sdk.model.persistence.TheBeaconActionShould;
 import com.sensorberg.sdk.model.persistence.TheBeaconScanShould;
 import com.sensorberg.sdk.model.server.ResolveActionTest;
@@ -95,7 +96,6 @@ public interface TestComponent extends Component {
 
     void inject(TheResolveResponseShould theResolveResponseShould);
 
-    void inject(ApiServiceShould apiServiceShould);
 
     void inject(SensorbergServiceStartTests sensorbergServiceStartTests);
 
@@ -110,6 +110,10 @@ public interface TestComponent extends Component {
     void inject(TheBeaconScanShould theBeaconrScanShould);
 
     void inject(TheResolverWithRealApiShould theResolverWithRealApiShould);
+
+    void inject(ApiServiceShould apiServiceShould);
+
+    void inject(ApiServiceInGeneralShould apiServiceInGeneralShould);
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     final class Initializer {

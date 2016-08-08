@@ -28,6 +28,8 @@ public final class Resolver implements RunLoop.MessageHandlerCallback {
         this.configuration = configuration;
         runLoop = handlerManager.getResolverRunLoop(this);
         this.transport = transport;
+        transport.setApiToken(configuration.apiToken);
+
     }
 
     @Override

@@ -83,7 +83,6 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
         SensorbergSdk.getComponent().inject(this);
 
         this.transport = transport;
-        transport.setApiToken(resolverConfiguration.apiToken);
         settingsManager.setSettingsUpdateCallback(settingsUpdateCallbackListener);
         settingsManager.setMessageDelayWindowLengthListener((MessageDelayWindowLengthListener) scheduler);
         clock = clk;
