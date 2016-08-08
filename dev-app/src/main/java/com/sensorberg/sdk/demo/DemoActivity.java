@@ -111,7 +111,6 @@ public class DemoActivity extends Activity {
 
         textView = new TextView(this);
         StringBuilder infoText = new StringBuilder("This is an app that exposes some SDK APIs to the user").append('\n');
-        infoText.append('\n').append("sentToServerTimestamp2: ").append(list2.get(0).getSentToServerTimestamp2());
 
         if (Build.VERSION.SDK_INT < 18){
             infoText.append('\n').append("BLE NOT SUPPORTED, NO BEACONS WILL BE SCANNED").append('\n');
@@ -137,7 +136,7 @@ public class DemoActivity extends Activity {
                                     5, TimeUnit.MINUTES);
                             StringBuilder beaconIds = new StringBuilder("got these from the other process: ");
                             for (BeaconId beacon : beacons) {
-                                beaconIds.append(beacon.getBid()).append(",");
+                                beaconIds.append(beacon.getPid()).append(",");
                             }
                             beaconIds.append(" beacons");
                             beaconIds.append(" took ").append(System.currentTimeMillis() - before).append("ms");
@@ -148,7 +147,7 @@ public class DemoActivity extends Activity {
                             Collection<BeaconId> beacons = getLatestBeaconsInMyProcess(5, TimeUnit.MINUTES);
                             StringBuilder beaconIds = new StringBuilder("got these in my process: ");
                             for (BeaconId beacon : beacons) {
-                                beaconIds.append(beacon.getBid()).append(",");
+                                beaconIds.append(beacon.getPid()).append(",");
                             }
                             beaconIds.append(" beacons");
                             beaconIds.append(" took ").append(System.currentTimeMillis() - before).append("ms");
@@ -214,7 +213,6 @@ public class DemoActivity extends Activity {
         }
     }
 
-    //TODO here.
     /**
      * this method is only here for a speed reference.
      */

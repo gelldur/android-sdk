@@ -42,6 +42,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import static com.sensorberg.utils.ListUtils.map;
+import static com.sensorberg.utils.ListUtils.distinct;
 
 @SuppressWarnings({"WeakerAccess", "pmd:TooManyMethods", "squid:S1200"})
 public class SensorbergService extends Service {
@@ -274,7 +275,6 @@ public class SensorbergService extends Service {
                     final Messenger messenger = intent.getParcelableExtra(SensorbergServiceMessage.MSG_LIST_OF_BEACONS_MESSENGER);
                     final long milliseconds = intent.getLongExtra(SensorbergServiceMessage.MSG_LIST_OF_BEACONS_MILLIS, -1);
 
-                    //TODO get beacons with sugar.
                     ArrayList<BeaconId> beaconIds = map(BeaconActionHistoryPublisher.latestEnterEvents(clock.now() - milliseconds), BeaconId.FROM_BEACON_SCAN);
                     if (bootstrapper != null) {
                         beaconIds.addAll(bootstrapper.scanner.getCurrentBeacons());
@@ -285,7 +285,7 @@ public class SensorbergService extends Service {
                     message.what = SensorbergServiceMessage.MSG_LIST_OF_BEACONS;
 
                     Bundle bundle = new Bundle();
-                   // bundle.putParcelableArrayList(SensorbergServiceMessage.MSG_LIST_OF_BEACONS_BEACON_IDS, distinct(beaconIds));
+                    bundle.putParcelableArrayList(SensorbergServiceMessage.MSG_LIST_OF_BEACONS_BEACON_IDS, distinct(beaconIds));
                     message.setData(bundle);
 
                     try {

@@ -33,6 +33,22 @@ public class BeaconScan {
     @Setter
     private long sentToServerTimestamp;
 
+    @Getter
+    @Setter
+    private String proximityUUID;
+
+    @Getter
+    @Setter
+    private int proximityMajor;
+
+    @Getter
+    @Setter
+    private int proximityMinor;
+
+    @Getter
+    @Setter
+    private boolean isEntry;
+
     @Expose
     @Getter
     @Setter
