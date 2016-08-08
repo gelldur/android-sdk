@@ -43,16 +43,7 @@ public class DemoActivity extends Activity {
 
     private static final String EXTRA_ACTION = "com.sensorberg.demoActivity.extras.ACTION";
 
-    public static final UUID BEACON_PROXIMITY_ID = UUID.fromString("192E463C-9B8E-4590-A23F-D32007299EF5");
-
     private static final int MY_PERMISSION_REQUEST_LOCATION_SERVICES = 1;
-
-    private Clock clock;
-
-    private UUID uuid = UUID.fromString("6133172D-935F-437F-B932-A901265C24B0");
-
-    private TextView textView;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,37 +82,6 @@ public class DemoActivity extends Activity {
             }
         }
 
-        BeaconEvent beaconEvent = new BeaconEvent.Builder()
-                .withAction(new InAppAction(uuid, null, null, null, null, 0))
-                .withPresentationTime(1337)
-                .withTrigger(ScanEventType.ENTRY.getMask())
-                .build();
-        beaconEvent.setBeaconId(new BeaconId(BEACON_PROXIMITY_ID, 1337, 1337));
-        clock = new Clock() {
-            @Override
-            public long now() {
-                return 0;
-            }
-
-            @Override
-            public long elapsedRealtime() {
-                return 0;
-            }
-        };
-
-        textView = new TextView(this);
-        StringBuilder infoText = new StringBuilder("This is an app that exposes some SDK APIs to the user").append('\n');
-
-        if (Build.VERSION.SDK_INT < 18){
-            infoText.append('\n').append("BLE NOT SUPPORTED, NO BEACONS WILL BE SCANNED").append('\n');
-        }
-
-        infoText.append('\n').append("API Key: ").append(DemoApplication.API_KEY);
-        infoText.append('\n').append("SDK Version: ").append(com.sensorberg.sdk.BuildConfig.VERSION_NAME);
-        infoText.append('\n').append("Demo Version: ").append(BuildConfig.VERSION_NAME);
-        textView.setText(infoText.toString());
-
-
         Button button = new Button(this);
         button.setText("click me");
         button.setOnClickListener(new View.OnClickListener() {
@@ -134,20 +94,9 @@ public class DemoActivity extends Activity {
                             long before = System.currentTimeMillis();
                             Collection<BeaconId> beacons = LatestBeacons.getLatestBeacons(getApplicationContext(),
                                     5, TimeUnit.MINUTES);
-                            StringBuilder beaconIds = new StringBuilder("got these from the other process: ");
+                            StringBuilder beaconIds = new StringBuilder("My latest beacons!: ");
                             for (BeaconId beacon : beacons) {
-                                beaconIds.append(beacon.getPid()).append(",");
-                            }
-                            beaconIds.append(" beacons");
-                            beaconIds.append(" took ").append(System.currentTimeMillis() - before).append("ms");
-                            Logger.log.verbose(beaconIds.toString());
-                        }
-                        {
-                            long before = System.currentTimeMillis();
-                            Collection<BeaconId> beacons = getLatestBeaconsInMyProcess(5, TimeUnit.MINUTES);
-                            StringBuilder beaconIds = new StringBuilder("got these in my process: ");
-                            for (BeaconId beacon : beacons) {
-                                beaconIds.append(beacon.getPid()).append(",");
+                                beaconIds.append(beacon.getUuid()).append(", \n");
                             }
                             beaconIds.append(" beacons");
                             beaconIds.append(" took ").append(System.currentTimeMillis() - before).append("ms");
@@ -211,15 +160,5 @@ public class DemoActivity extends Activity {
                 }
             }
         }
-    }
-
-    /**
-     * this method is only here for a speed reference.
-     */
-    public static Collection<BeaconId> getLatestBeaconsInMyProcess(long duration, TimeUnit unit){
-        long now = System.currentTimeMillis() - unit.toMillis(duration);
-        return  distinct(map(
-                BeaconActionHistoryPublisher.latestEnterEvents(now),
-                BeaconId.FROM_BEACON_SCAN));
     }
 }

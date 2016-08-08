@@ -25,7 +25,6 @@ public class BeaconId implements Parcelable, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    //TODO here.
     public static final ListUtils.Mapper<BeaconScan, BeaconId> FROM_BEACON_SCAN = new ListUtils.Mapper<BeaconScan, BeaconId>() {
         @Override
         public BeaconId map(BeaconScan beaconScan) {

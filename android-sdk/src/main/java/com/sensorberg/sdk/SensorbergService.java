@@ -88,8 +88,7 @@ public class SensorbergService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        //we need to init this because SensorbergServiceMessenges can be started outside of SensorbergSdk constructor
-        //(like for example when called from BroadcastReceiver)
+        
         SensorbergSdk.init(getBaseContext());
         SensorbergSdk.getComponent().inject(this);
 

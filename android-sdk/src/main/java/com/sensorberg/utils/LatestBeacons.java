@@ -21,11 +21,6 @@ import com.sensorberg.sdk.SensorbergService;
 import com.sensorberg.sdk.SensorbergServiceMessage;
 import com.sensorberg.sdk.model.BeaconId;
 
-/**
- * + * @author skraynick
- * + * @date 16-07-11
- * +
- */
 public class LatestBeacons {
 
     static class LooperThread extends HandlerThread {
@@ -88,7 +83,6 @@ public class LatestBeacons {
         intent.putExtra(SensorbergServiceMessage.MSG_LIST_OF_BEACONS_MESSENGER, messenger);
         intent.putExtra(SensorbergServiceMessage.MSG_LIST_OF_BEACONS_MILLIS, timeUnit.toMillis(duration));
         intent.putExtra(SensorbergServiceMessage.EXTRA_GENERIC_TYPE, SensorbergServiceMessage.MSG_LIST_OF_BEACONS);
-
 
         context.startService(intent);
         try {
