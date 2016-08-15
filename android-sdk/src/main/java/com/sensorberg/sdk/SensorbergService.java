@@ -119,7 +119,8 @@ public class SensorbergService extends Service {
         Logger.log.serviceHandlesMessage(
                 SensorbergServiceMessage.stringFrom(intent.getIntExtra(SensorbergServiceMessage.EXTRA_GENERIC_TYPE, -1)));
 
-        handleDebuggingIntent(intent, this, true);
+        //need to take out true.
+        handleDebuggingIntent(intent, this);
 
         if (handleIntentEvenIfNoBootstrapperPresent(intent)) {
             return stopSensorbergService();
@@ -172,12 +173,12 @@ public class SensorbergService extends Service {
         return START_NOT_STICKY;
     }
 
-    protected void handleDebuggingIntent(Intent intent, Context context, boolean showMessage) {
+    protected void handleDebuggingIntent(Intent intent, Context context) {
         switch (intent.getIntExtra(SensorbergServiceMessage.EXTRA_GENERIC_TYPE, -1)) {
             case SensorbergServiceMessage.MSG_TYPE_DISABLE_LOGGING: {
                 Logger.log = Logger.QUIET_LOG;
                 transport.setLoggingEnabled(false);
-                if (showMessage) {
+                if (intent.getBooleanExtra(SensorbergServiceMessage.EXTRA_SHOW_MESSAGE, false)) {
                     Toast.makeText(context, "Log disabled " + context.getPackageName(), Toast.LENGTH_SHORT).show();
                 }
                 break;
@@ -185,7 +186,7 @@ public class SensorbergService extends Service {
             case SensorbergServiceMessage.MSG_TYPE_ENABLE_LOGGING: {
                 Logger.enableVerboseLogging();
                 transport.setLoggingEnabled(true);
-                if (showMessage) {
+                if (intent.getBooleanExtra(SensorbergServiceMessage.EXTRA_SHOW_MESSAGE, true)) {
                     Toast.makeText(context, "Log enabled " + context.getPackageName(), Toast.LENGTH_SHORT).show();
                 }
                 break;
