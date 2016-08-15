@@ -119,7 +119,6 @@ public class SensorbergService extends Service {
         Logger.log.serviceHandlesMessage(
                 SensorbergServiceMessage.stringFrom(intent.getIntExtra(SensorbergServiceMessage.EXTRA_GENERIC_TYPE, -1)));
 
-        //need to take out true.
         handleDebuggingIntent(intent, this);
 
         if (handleIntentEvenIfNoBootstrapperPresent(intent)) {
