@@ -24,8 +24,6 @@ import util.Utils;
 import static com.sensorberg.sdk.testUtils.SensorbergMatcher.hasBeaconId;
 import static com.sensorberg.sdk.testUtils.SensorbergMatcher.isEntryEvent;
 import static com.sensorberg.sdk.testUtils.SensorbergMatcher.isExitEvent;
-import static com.sensorberg.sdk.testUtils.SensorbergMatcher.isNotEntryEvent;
-import static com.sensorberg.sdk.testUtils.SensorbergMatcher.isNotExitEvent;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -80,7 +78,6 @@ public class TheScannerWithoutPausesShould {
         this.testHandlerManager.getCustomClock().setNowInMillis(Utils.EXIT_TIME_HAS_PASSED);
 
         verify(mockListener).onScanEventDetected(isExitEvent());
-        verify(mockListener).onScanEventDetected(isNotEntryEvent());
         verify(mockListener).onScanEventDetected(hasBeaconId(TestBluetoothPlatform.EXPECTED_BEACON_1));
     }
 
@@ -124,7 +121,7 @@ public class TheScannerWithoutPausesShould {
         bluetoothPlatform.fakeIBeaconSighting(TestBluetoothPlatform.BYTES_FOR_BEACON_1);
 
         verify(mockListener).onScanEventDetected(isEntryEvent());
-        verify(mockListener).onScanEventDetected(isNotExitEvent());
+        +++
         verify(mockListener).onScanEventDetected(hasBeaconId(TestBluetoothPlatform.EXPECTED_BEACON_1));
     }
 }

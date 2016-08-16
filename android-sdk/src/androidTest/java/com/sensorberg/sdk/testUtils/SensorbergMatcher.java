@@ -13,19 +13,11 @@ import static org.mockito.Matchers.argThat;
 public class SensorbergMatcher {
 
     public static ScanEvent isEntryEvent() {
-        return argThat(new IsKindOfEntryEvent(ScanEventType.ENTRY, true));
+        return argThat(new IsKindOfEntryEvent(true));
     }
 
     public static ScanEvent isExitEvent() {
-        return argThat(new IsKindOfEntryEvent(ScanEventType.EXIT, true));
-    }
-
-    public static ScanEvent isNotEntryEvent() {
-        return argThat(new IsKindOfEntryEvent(ScanEventType.ENTRY, false));
-    }
-
-    public static ScanEvent isNotExitEvent() {
-        return argThat(new IsKindOfEntryEvent(ScanEventType.EXIT, false));
+        return argThat(new IsKindOfEntryEvent(false));
     }
 
     public static BeaconEvent hasDelay(int delayInMillies) {
@@ -38,29 +30,29 @@ public class SensorbergMatcher {
 
     private static class IsKindOfEntryEvent extends BaseMatcher<ScanEvent> {
 
-        private ScanEventType scanEventType;
-        private boolean checkForEquality;
+        private final boolean isEntry;
         private ScanEvent actual;
 
-        public IsKindOfEntryEvent(ScanEventType entry, boolean checkForEquality) {
-            this.scanEventType = entry;
-            this.checkForEquality = checkForEquality;
+        public IsKindOfEntryEvent(boolean isEntry) {
+            this.isEntry = isEntry;
         }
 
         @Override
         public boolean matches(Object o) {
             actual = (ScanEvent) o;
-            return (actual.getEventMask() == scanEventType.getMask()) == checkForEquality;
+            return (actual.isEntry() == isEntry);
         }
 
         @Override
         public void describeTo(Description description) {
             if (actual == null) {
                 description.appendText("There was no event to evaluate");
-            } else if (checkForEquality) {
-                description.appendText(String.format("Entry event \"%s\" did not match with \"%s\" but matching was required.", scanEventType.getMask(), actual.getEventMask()));
             } else {
-                description.appendText(String.format("Entry event \"%s\" did match with \"%s\" but difference was required.", scanEventType.getMask(), actual.getEventMask()));
+                if (isEntry){
+                    description.appendText("It was an Exit Event");
+                } else {
+                    description.appendText("It was an Enter Event");
+                }
             }
         }
     }
