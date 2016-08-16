@@ -2,21 +2,12 @@
 [![Join the chat at https://gitter.im/sensorberg-dev/android-sdk](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sensorberg-dev/android-sdk?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
-#*HTTP caching is 24hrs currently.*
-There were issues found regarding the HTTP cache. This mainly affects the sending of the API key at runtime. The cache was being kept for 24hrs. This of course causes problems when changing the api key in the app. We are in the process of fixing this issue; a fix will be out shortly.
-
-#Warning:
-You are viewing the sources of version 2.0.3. The SDK is released. Feel free to explore it.
-
-#Last stable release
-
-The last stable release was v1.2.0.  It is not recommended to use this as v2.0.3 is the latest. For now you can read the old [samples page](https://github.com/sensorberg-dev/android-sdk-samples) page for all neccesary information.
-Please be aware, we are not currently updating the samples. We are in process of updating the sdk and will release better and updated samples in the future. 
-If you have any specific questions, please reach out to us.
 
 #Integration
 
 For Integration instructions please visit our developer hub Android SDK page and [developer.sensorberg.com/android](https://developer.sensorberg.com/android)
+
+You are viewing the sources of the 2.x Version of the SDK, the documenation on developer.sensorberg.com will be updated in the coming days, feel free to explore the [bundled app](https://github.com/sensorberg-dev/android-sdk/tree/master/dev-app) inside the SDK. The integration has changed slightly from the 1.x version.
 
 #Build,Test,Deploy
 
