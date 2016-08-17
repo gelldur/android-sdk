@@ -121,7 +121,6 @@ public class TheScannerWithoutPausesShould {
         bluetoothPlatform.fakeIBeaconSighting(TestBluetoothPlatform.BYTES_FOR_BEACON_1);
 
         verify(mockListener).onScanEventDetected(isEntryEvent());
-        +++
         verify(mockListener).onScanEventDetected(hasBeaconId(TestBluetoothPlatform.EXPECTED_BEACON_1));
     }
 }

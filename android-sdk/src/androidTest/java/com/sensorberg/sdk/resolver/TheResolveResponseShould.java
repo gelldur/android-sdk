@@ -38,17 +38,17 @@ public class TheResolveResponseShould {
 
     static final ScanEvent RESOLVABLE_ENTRY_EVENT_WITH_ID_1 = new ScanEvent.Builder()
             .withBeaconId(TestConstants.LEET_BEACON_ID_1)
-            .withEventMask(ScanEventType.ENTRY.getMask())
+            .withEntry(true)
             .build();
 
     static final ScanEvent RESOLVABLE_EXIT_EVENT_WITH_ID_4 = new ScanEvent.Builder()
             .withBeaconId(TestConstants.LEET_BEACON_ID_4)
-            .withEventMask(ScanEventType.EXIT.getMask())
+            .withEntry(false)
             .build();
 
     static final ScanEvent NON_RESOLVABLE_ENTRY_EVENT_WITH_ID_4 = new ScanEvent.Builder()
             .withBeaconId(TestConstants.LEET_BEACON_ID_4)
-            .withEventMask(ScanEventType.ENTRY.getMask())
+            .withEntry(true)
             .build();
 
     private static final int OCLOCK = 1;

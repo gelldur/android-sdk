@@ -47,12 +47,12 @@ public class TheResolverShould {
 
     private static final ScanEvent RESOLVABLE_ENTRY_EVENT_WITH_ID_3 = new ScanEvent.Builder()
             .withBeaconId(TestConstants.LEET_BEACON_ID_3)
-            .withEventMask(ScanEventType.ENTRY.getMask())
+            .withEntry(true)
             .build();
 
     private static final ScanEvent RESOLVABLE_ENTRY_EVENT_WITH_INAPP_ACTIONS = new ScanEvent.Builder()
             .withBeaconId(TestConstants.IN_APP_BEACON_ID)
-            .withEventMask(ScanEventType.ENTRY.getMask())
+            .withEntry(true)
             .build();
 
     @Inject

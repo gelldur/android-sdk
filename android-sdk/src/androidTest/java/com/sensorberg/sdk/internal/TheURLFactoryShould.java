@@ -32,7 +32,7 @@ public class TheURLFactoryShould extends ApplicationTestCase<Application>{
         createApplication();
         scanEvent = new ScanEvent.Builder()
                 .withBeaconId(new BeaconId(TestConstants.BEACON_PROXIMITY_ID, TestConstants.MAJOR, TestConstants.MINOR))
-                .withEventMask(ScanEventType.ENTRY.getMask())
+                .withEntry(true)
                 .build();
     }
 

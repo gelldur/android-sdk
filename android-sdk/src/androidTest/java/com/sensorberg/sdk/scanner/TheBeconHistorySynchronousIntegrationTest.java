@@ -54,7 +54,7 @@ public class TheBeconHistorySynchronousIntegrationTest {
                 testHandlerManager.getCustomClock(), testHandlerManager, mSharedPreferences, mGson);
 
         tested.onScanEventDetected(new ScanEvent.Builder()
-                .withEventMask(ScanEventType.ENTRY.getMask())
+                .withEntry(true)
                 .withBeaconId(TestConstants.ANY_BEACON_ID)
                 .withEventTime(100)
                 .build());

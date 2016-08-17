@@ -86,7 +86,7 @@ public class TransportShould {
 
         scanEvent = new ScanEvent.Builder()
                 .withBeaconId(new BeaconId(BEACON_ID, MAJOR, MINOR))
-                .withEventMask(ScanEventType.ENTRY.getMask())
+                .withEntry(true)
                 .withEventTime(clock.now())
                 .build();
 
@@ -186,11 +186,8 @@ public class TransportShould {
 
         BeaconScan scan1 = new BeaconScan();
         scan1.setCreatedAt(System.currentTimeMillis() - TimeConstants.ONE_HOUR);
-        scan1.setEntry(true);
-        scan1.setProximityUUID(TestConstants.ANY_BEACON_ID.getUuid().toString());
-        scan1.setProximityMajor(TestConstants.ANY_BEACON_ID.getMajorId());
-        scan1.setProximityMinor(TestConstants.ANY_BEACON_ID.getMinorId());
-        scan1.setEventTime(scan1.getCreatedAt());
+        scan1.setPid("test34563Pid");
+        scan1.setCreatedAt(scan1.getCreatedAt());
 
         scans.add(scan1);
 

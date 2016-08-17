@@ -100,7 +100,6 @@ public class ParcelTests {
             ScanEvent scanEvent2 = reverse.getParcelable("some_value");
 
             Assertions.assertThat(scanEvent.getBeaconId()).isEqualTo(scanEvent2.getBeaconId());
-            Assertions.assertThat(scanEvent.getEventMask()).isEqualTo(scanEvent2.getEventMask());
             Assertions.assertThat(scanEvent.getEventTime()).isEqualTo(scanEvent2.getEventTime());
 
             Assertions.assertThat(scanEvent2).isEqualTo(scanEvent);
