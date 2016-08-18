@@ -12,9 +12,9 @@ public class SensorbergCodeReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Intent loggingIntent = new Intent(context, SensorbergService.class);
         if (intent.getData().getAuthority().endsWith("73676723741")) {
-            loggingIntent = SensorbergServiceIntents.getServiceLoggingIntent(context, true, true);
+            loggingIntent = SensorbergServiceIntents.getServiceLoggingIntent(context, true);
         } else if (intent.getData().getAuthority().endsWith("73676723740")) {
-            loggingIntent = SensorbergServiceIntents.getServiceLoggingIntent(context, false, true);
+            loggingIntent = SensorbergServiceIntents.getServiceLoggingIntent(context, false);
         }
         context.startService(loggingIntent);
     }

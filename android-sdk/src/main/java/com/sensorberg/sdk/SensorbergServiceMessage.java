@@ -67,8 +67,6 @@ public class SensorbergServiceMessage {
 
     public static final String EXTRA_LOCATION_PERMISSION = "com.sensorberg.android.sdk.intent.permissionState";
 
-    public static final String EXTRA_SHOW_MESSAGE = "com.sensorberg.android.sdk.intent.showmessage";
-
     private SensorbergServiceMessage() {
         throw new IllegalAccessError("Utility class");
     }

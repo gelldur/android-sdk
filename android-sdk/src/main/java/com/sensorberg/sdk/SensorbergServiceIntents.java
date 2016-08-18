@@ -33,13 +33,6 @@ public class SensorbergServiceIntents {
         return intent;
     }
 
-    public static Intent getServiceIntentLoggingMessage(Context context, int message, boolean showMessage) {
-        Intent intent = getBasicServiceIntent(context);
-        intent.putExtra(SensorbergServiceMessage.EXTRA_GENERIC_TYPE, message);
-        intent.putExtra(SensorbergServiceMessage.EXTRA_SHOW_MESSAGE, showMessage);
-        return intent;
-    }
-
     public static Intent getShutdownServiceIntent(Context ctx) {
         return getServiceIntentWithMessage(ctx, SensorbergServiceMessage.MSG_SHUTDOWN);
     }
@@ -107,9 +100,9 @@ public class SensorbergServiceIntents {
         return serviceIntent;
     }
 
-    public static Intent getServiceLoggingIntent(Context ctx, boolean enableLogging, boolean showMessage) {
+    public static Intent getServiceLoggingIntent(Context ctx, boolean enableLogging) {
         int message = enableLogging ? SensorbergServiceMessage.MSG_TYPE_ENABLE_LOGGING : SensorbergServiceMessage.MSG_TYPE_DISABLE_LOGGING;
-        return getServiceIntentLoggingMessage(ctx, message, showMessage);
+        return getServiceIntentWithMessage(ctx, message);
     }
 
     public static Intent getIntentWithReplyToMessenger(Context ctx, int messageType, Messenger messenger) {

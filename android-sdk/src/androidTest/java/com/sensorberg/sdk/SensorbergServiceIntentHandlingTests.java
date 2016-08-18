@@ -44,7 +44,7 @@ public class SensorbergServiceIntentHandlingTests {
         Assertions.assertThat(handleIntentResult).isEqualTo(SensorbergService.START_STICKY);
         Assertions.assertThat(tested.bootstrapper).isNull();
 
-        Mockito.verify(tested, Mockito.times(1)).handleDebuggingIntent(sensorbergServiceStartIntent, tested);
+        Mockito.verify(tested, Mockito.times(1)).handleDebuggingIntent(sensorbergServiceStartIntent);
         Mockito.verify(tested, Mockito.times(1)).handleIntentEvenIfNoBootstrapperPresent(sensorbergServiceStartIntent);
         Mockito.verify(tested, Mockito.times(1)).updateDiskConfiguration(sensorbergServiceStartIntent);
 
@@ -60,7 +60,7 @@ public class SensorbergServiceIntentHandlingTests {
         int handleIntentResult = tested.handleIntent(sensorbergServiceShutdownIntent);
 
         Assertions.assertThat(handleIntentResult).isEqualTo(SensorbergService.START_NOT_STICKY);
-        Mockito.verify(tested, Mockito.times(1)).handleDebuggingIntent(sensorbergServiceShutdownIntent, tested);
+        Mockito.verify(tested, Mockito.times(1)).handleDebuggingIntent(sensorbergServiceShutdownIntent);
         Mockito.verify(tested, Mockito.times(1)).handleIntentEvenIfNoBootstrapperPresent(sensorbergServiceShutdownIntent);
         Mockito.verify(tested, Mockito.times(1)).stopSensorbergService();
 
@@ -77,7 +77,7 @@ public class SensorbergServiceIntentHandlingTests {
         int handleIntentResult = tested.handleIntent(sensorbergServiceStartIntent);
 
         Assertions.assertThat(handleIntentResult).isEqualTo(SensorbergService.START_STICKY);
-        Mockito.verify(tested, Mockito.times(1)).handleDebuggingIntent(sensorbergServiceStartIntent, tested);
+        Mockito.verify(tested, Mockito.times(1)).handleDebuggingIntent(sensorbergServiceStartIntent);
         Mockito.verify(tested, Mockito.times(1)).handleIntentEvenIfNoBootstrapperPresent(sensorbergServiceStartIntent);
         Mockito.verify(tested, Mockito.times(1)).updateDiskConfiguration(sensorbergServiceStartIntent);
         Mockito.verify(tested, Mockito.times(1)).startSensorbergService(TestConstants.API_TOKEN_DEFAULT);
@@ -96,7 +96,7 @@ public class SensorbergServiceIntentHandlingTests {
         Assertions.assertThat(handleIntentResult).isEqualTo(SensorbergService.START_STICKY);
         Assertions.assertThat(tested.bootstrapper).isNotNull();
 
-        Mockito.verify(tested, Mockito.times(1)).handleDebuggingIntent(sensorbergServiceStartIntent, tested);
+        Mockito.verify(tested, Mockito.times(1)).handleDebuggingIntent(sensorbergServiceStartIntent);
         Mockito.verify(tested, Mockito.times(1)).handleIntentEvenIfNoBootstrapperPresent(sensorbergServiceStartIntent);
         Mockito.verify(tested, Mockito.times(1)).updateDiskConfiguration(sensorbergServiceStartIntent);
         Mockito.verify(tested, Mockito.times(1)).handleIntentMessage(sensorbergServiceStartIntent);
