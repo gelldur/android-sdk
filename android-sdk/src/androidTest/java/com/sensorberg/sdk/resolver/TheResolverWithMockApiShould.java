@@ -9,7 +9,6 @@ import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.sdk.scanner.ScanEvent;
-import com.sensorberg.sdk.scanner.ScanEventType;
 import com.sensorberg.sdk.testUtils.TestHandlerManager;
 
 import org.fest.assertions.api.Assertions;
@@ -39,21 +38,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 @RunWith(AndroidJUnit4.class)
-public class TheResolverShould {
-
-    private static final ScanEvent SCANEVENT_1 = new ScanEvent.Builder()
-            .withBeaconId(TestConstants.REGULAR_BEACON_ID)
-            .build();
-
-    private static final ScanEvent RESOLVABLE_ENTRY_EVENT_WITH_ID_3 = new ScanEvent.Builder()
-            .withBeaconId(TestConstants.LEET_BEACON_ID_3)
-            .withEventMask(ScanEventType.ENTRY.getMask())
-            .build();
-
-    private static final ScanEvent RESOLVABLE_ENTRY_EVENT_WITH_INAPP_ACTIONS = new ScanEvent.Builder()
-            .withBeaconId(TestConstants.IN_APP_BEACON_ID)
-            .withEventMask(ScanEventType.ENTRY.getMask())
-            .build();
+public class TheResolverWithMockApiShould {
 
     @Inject
     Gson gson;
@@ -63,9 +48,6 @@ public class TheResolverShould {
     RetrofitApiServiceImpl mockRetrofitApiService = mock(RetrofitApiServiceImpl.class);
 
     TestHandlerManager testHandlerManager = new TestHandlerManager();
-
-    private ResolutionConfiguration resolutionConfiguration;
-
     @Before
     public void setUp() throws Exception {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
@@ -75,21 +57,6 @@ public class TheResolverShould {
         Transport testTransportWithMockService = new RetrofitApiTransport(mockRetrofitApiService, testHandlerManager.getCustomClock());
 
         tested = new Resolver(resolverConfiguration, testHandlerManager, testTransportWithMockService);
-
-        resolutionConfiguration = new ResolutionConfiguration();
-    }
-
-    @Test
-    public void test_should_try_to_resolve_a_beacon() throws Exception {
-        resolutionConfiguration.setScanEvent(SCANEVENT_1);
-        Resolution resolution = tested.createResolution(resolutionConfiguration);
-        Resolution spyResolution = spy(resolution);
-        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
-                .thenReturn(Calls.response(new ResolveResponse.Builder().build()));
-
-        tested.startResolution(spyResolution);
-
-        verify(spyResolution).queryServer();
     }
 
     @Test
@@ -97,12 +64,12 @@ public class TheResolverShould {
         ResolveResponse resolveResponse = gson
                 .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.resolve_response_enter_exit_action, InstrumentationRegistry
                         .getContext()), ResolveResponse.class);
-        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(Calls.response(resolveResponse));
 
         ResolverListener testListener = new ResolverListener() {
             @Override
-            public void onResolutionFailed(Resolution resolution, Throwable cause) {
+            public void onResolutionFailed(Throwable cause, ScanEvent scanEvent) {
                 Assert.fail(cause.getMessage());
             }
 
@@ -112,11 +79,8 @@ public class TheResolverShould {
             }
         };
 
-        tested.addResolverListener(testListener);
-        resolutionConfiguration.setScanEvent(RESOLVABLE_ENTRY_EVENT_WITH_ID_3);
-        Resolution resolution = tested.createResolution(resolutionConfiguration);
-
-        resolution.start();
+        tested.setListener(testListener);
+        tested.resolve(TestConstants.RESOLVABLE_ENTRY_EVENT_WITH_ID_3);
     }
 
     @Test
@@ -124,13 +88,13 @@ public class TheResolverShould {
         ResolveResponse resolveResponse = gson
                 .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.resolve_response_inapp_action, InstrumentationRegistry
                         .getContext()), ResolveResponse.class);
-        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(Calls.response(resolveResponse));
 
         ResolverListener mockListener = new ResolverListener() {
             @Override
-            public void onResolutionFailed(Resolution resolution, Throwable cause) {
-                Assert.fail(cause.getMessage() + resolution.toString());
+            public void onResolutionFailed(Throwable cause, ScanEvent scanEvent) {
+                Assert.fail(cause.getMessage());
             }
 
             @Override
@@ -140,10 +104,8 @@ public class TheResolverShould {
 
         };
 
-        tested.addResolverListener(mockListener);
-        resolutionConfiguration.setScanEvent(RESOLVABLE_ENTRY_EVENT_WITH_INAPP_ACTIONS);
-        Resolution resolution = tested.createResolution(resolutionConfiguration);
-        resolution.start();
+        tested.setListener(mockListener);
+        tested.resolve(TestConstants.RESOLVABLE_ENTRY_EVENT_WITH_INAPP_ACTIONS);
     }
 
     @Test
@@ -151,14 +113,13 @@ public class TheResolverShould {
         ResolveResponse resolveResponse = gson
                 .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.resolve_response_delayed_action, InstrumentationRegistry
                         .getContext()), ResolveResponse.class);
-        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(Calls.response(resolveResponse));
 
         ResolverListener mockListener = mock(ResolverListener.class);
-        tested.addResolverListener(mockListener);
-        resolutionConfiguration.setScanEvent(RESOLVABLE_ENTRY_EVENT_WITH_ID_3);
-        Resolution resolution = tested.createResolution(resolutionConfiguration);
-        resolution.start();
+        tested.setListener(mockListener);
+
+        tested.resolve(TestConstants.RESOLVABLE_ENTRY_EVENT_WITH_ID_3);
 
         verify(mockListener).onResolutionsFinished(argThat(new BaseMatcher<List<BeaconEvent>>() {
             public long delay;

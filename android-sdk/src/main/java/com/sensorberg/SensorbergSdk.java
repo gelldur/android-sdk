@@ -156,10 +156,6 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
         }
     }
 
-    public void setResolverBaseURL(URL resolverBaseURL) {
-        context.startService(SensorbergServiceIntents.getResolverEndpointIntent(context, resolverBaseURL));
-    }
-
     public void enableService(Context context, String apiKey) {
         ScannerBroadcastReceiver.setManifestReceiverEnabled(true, context);
         activateService(apiKey);

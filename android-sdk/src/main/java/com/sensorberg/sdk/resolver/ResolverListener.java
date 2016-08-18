@@ -1,12 +1,14 @@
 package com.sensorberg.sdk.resolver;
 
+import com.sensorberg.sdk.scanner.ScanEvent;
+
 import java.util.List;
 
 public interface ResolverListener {
 
     ResolverListener NONE = new ResolverListener() {
         @Override
-        public void onResolutionFailed(Resolution resolution, Throwable cause) {
+        public void onResolutionFailed(Throwable cause, ScanEvent scanEvent) {
 
         }
 
@@ -16,7 +18,7 @@ public interface ResolverListener {
         }
     };
 
-    void onResolutionFailed(Resolution resolution, Throwable cause);
+    void onResolutionFailed(Throwable cause, ScanEvent scanEvent);
 
     void onResolutionsFinished(List<BeaconEvent> events);
 }

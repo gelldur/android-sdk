@@ -1,15 +1,19 @@
-package com.sensorberg.sdk.internal.http;
+package com.sensorberg.sdk.internal.transport;
+
+import android.content.Context;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
 
 import com.google.gson.Gson;
-
 import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.internal.http.helper.RawJSONMockResponse;
+import com.sensorberg.sdk.internal.interfaces.Clock;
 import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
-import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
+import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
 import com.sensorberg.sdk.model.server.BaseResolveResponse;
-import com.sensorberg.sdk.testUtils.SuccessfulRetrofitApiService;
+import com.sensorberg.sdk.testUtils.NoClock;
 
 import org.fest.assertions.api.Assertions;
 import org.junit.After;
@@ -19,10 +23,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
-
+import java.io.File;
+import java.io.SyncFailedException;
 import java.net.UnknownHostException;
 
 import javax.inject.Inject;
@@ -56,15 +58,17 @@ public class ApiServiceShould {
 
     private MockWebServer server;
 
-    private String serverBaseUrl;
+    @Inject
+    Clock clock;
 
     @Before
     public void setUp() throws Exception {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
         server = new MockWebServer();
         server.start();
-        serverBaseUrl = server.url("/").toString();
-        realRetrofitApiService = new RetrofitApiServiceImpl(InstrumentationRegistry.getContext(), gson, realPlatformIdentifier, serverBaseUrl);
+        String serverBaseUrl = server.url("/").toString();
+        File cacheDir = new File(mContext.getCacheDir(), "testrun" + clock.now());
+        realRetrofitApiService = new RetrofitApiServiceImpl(cacheDir, gson, realPlatformIdentifier, serverBaseUrl);
         realRetrofitApiService.setApiToken(TestConstants.API_TOKEN_DEFAULT);
     }
 
@@ -80,7 +84,7 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(serverBaseUrl);
+        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout();
         Response<BaseResolveResponse> response = call.execute();
 
         Assertions.assertThat(response.raw().request().headers()).isNotNull();
@@ -94,7 +98,7 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(serverBaseUrl);
+        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout();
 
         Assertions.assertThat(realPlatformIdentifier.getAdvertiserIdentifier()).isNull();
         Response<BaseResolveResponse> responseWithAdvertiserId = call.clone().execute();
@@ -109,7 +113,7 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(serverBaseUrl);
+        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout();
         realPlatformIdentifier.setAdvertisingIdentifier("TEST_ADID");
 
         Assertions.assertThat(realPlatformIdentifier.getAdvertiserIdentifier()).isNotNull();
@@ -126,7 +130,7 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(serverBaseUrl);
+        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout();
         Response<BaseResolveResponse> response = call.execute();
 
         Assertions.assertThat(response.raw().request().headers()).isNotNull();
@@ -140,28 +144,12 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(serverBaseUrl);
+        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout();
         Response<BaseResolveResponse> response = call.execute();
 
         Assertions.assertThat(response.raw().request().headers()).isNotNull();
         Assertions.assertThat(response.raw().request().headers().get(Transport.HEADER_XAPIKEY))
                 .isEqualTo(TestConstants.API_TOKEN_DEFAULT);
-        Assertions.assertThat(response.raw().request().headers().get(Transport.HEADER_AUTHORIZATION))
-                .isEqualTo(TestConstants.API_TOKEN_DEFAULT);
-    }
-
-    @Test
-    public void apiservice_should_throw_an_unknown_host_exception() throws Exception {
-        SuccessfulRetrofitApiService retrofitApiService = new SuccessfulRetrofitApiService(mContext, gson, realPlatformIdentifier,
-                "http://localhost/");
-        retrofitApiService.getOriginalOkHttpClient().cache().evictAll();
-
-        exception.expect(UnknownHostException.class);
-
-        OkHttpClient client = retrofitApiService.getOriginalOkHttpClient();
-        okhttp3.Response okHttpResponse = client.newCall(new Request.Builder().url("https://test.comxxx").get().build())
-                .execute();
-        Assertions.assertThat(okHttpResponse).isNotNull();
     }
 
     @Test
@@ -170,12 +158,12 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call1 = realRetrofitApiService.updateBeaconLayout(serverBaseUrl);
-        Response<BaseResolveResponse> response1 = call1.execute();
+        Call<SettingsResponse> call1 = realRetrofitApiService.getSettings();
+        Response<SettingsResponse> response1 = call1.execute();
         Assertions.assertThat(response1.isSuccessful()).isTrue();
 
-        Call<BaseResolveResponse> call2 = realRetrofitApiService.updateBeaconLayout(serverBaseUrl);
-        Response<BaseResolveResponse> response2 = call2.execute();
+        Call<SettingsResponse> call2 = realRetrofitApiService.getSettings();
+        Response<SettingsResponse> response2 = call2.execute();
         Assertions.assertThat(response2.isSuccessful()).isTrue();
 
         Assertions.assertThat(response2.raw().cacheResponse()).isNotNull();

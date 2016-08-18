@@ -33,7 +33,7 @@ public class DemoApplication extends MultiDexApplication {
 
     public static final String TAG = "DemoApplication";
 
-    public static final String API_KEY = "e33f35cae664e7ae50250f6f62296762936eb84200a2aa4522f0b22599959cbe";
+    public static final String API_KEY = "8961ee72ea4834053b376ad54007ea277cba4305db12188b74d104351ca8bf8a";
 
     private SensorbergSdk boot;
 
@@ -54,12 +54,12 @@ public class DemoApplication extends MultiDexApplication {
         Log.d(TAG, "onCreate application");
 
         boot = new SensorbergSdk(this, API_KEY);
-        boot.setLogging(BuildConfig.DEBUG);
+        boot.setLogging(true);
         boot.registerEventListener(new SensorbergSdkEventListener() {
             @Override
             public void presentBeaconEvent(BeaconEvent beaconEvent) {
                 Log.d(DemoApplication.TAG, "DemoApplication presentBeaconEvent = " + beaconEvent.toString());
-                showAlert(beaconEvent.getAction(), beaconEvent.trigger);
+                showAlert(beaconEvent.getAction(), beaconEvent.getTrigger());
             }
         });
 

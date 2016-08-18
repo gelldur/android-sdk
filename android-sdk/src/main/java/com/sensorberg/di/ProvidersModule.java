@@ -12,7 +12,6 @@ import com.sensorberg.sdk.internal.AndroidPlatformIdentifier;
 import com.sensorberg.sdk.internal.AndroidServiceScheduler;
 import com.sensorberg.sdk.internal.PermissionChecker;
 import com.sensorberg.sdk.internal.PersistentIntegerCounter;
-import com.sensorberg.sdk.internal.URLFactory;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
 import com.sensorberg.sdk.internal.interfaces.Clock;
 import com.sensorberg.sdk.internal.interfaces.FileManager;
@@ -76,7 +75,6 @@ public class ProvidersModule {
     }
 
     @Provides
-    @Named("realClock")
     @Singleton
     public Clock provideRealClock() {
         return new AndroidClock();
@@ -108,7 +106,7 @@ public class ProvidersModule {
 
     @Provides
     @Singleton
-    public ServiceScheduler provideIntentScheduler(Context context, AlarmManager alarmManager, @Named("realClock") Clock clock,
+    public ServiceScheduler provideIntentScheduler(Context context, AlarmManager alarmManager, Clock clock,
             PersistentIntegerCounter persistentIntegerCounter) {
         return new AndroidServiceScheduler(context, alarmManager, clock, persistentIntegerCounter,
                 DefaultSettings.DEFAULT_MESSAGE_DELAY_WINDOW_LENGTH);
@@ -138,8 +136,7 @@ public class ProvidersModule {
     @Provides
     @Named("realTransport")
     @Singleton
-    public Transport provideRealTransport(@Named("realRetrofitApiService") RetrofitApiServiceImpl retrofitApiService,
-            @Named("realClock") Clock clock) {
+    public Transport provideRealTransport(@Named("realRetrofitApiService") RetrofitApiServiceImpl retrofitApiService, Clock clock) {
         return new RetrofitApiTransport(retrofitApiService, clock);
     }
 
@@ -156,11 +153,12 @@ public class ProvidersModule {
     @Provides
     @Named("realBeaconActionHistoryPublisher")
     @Singleton
-    public BeaconActionHistoryPublisher provideBeaconActionHistoryPublisher(Context context, @Named("realTransport") Transport transport,
-            @Named("realSettingsManager") SettingsManager settingsManager, @Named("realClock") Clock clock,
+    public BeaconActionHistoryPublisher provideBeaconActionHistoryPublisher(
+            @Named("realTransport") Transport transport,
+            Clock clock,
             @Named("realHandlerManager") HandlerManager handlerManager,
             SharedPreferences sharedPreferences, Gson gson) {
-        return new BeaconActionHistoryPublisher(context, transport, settingsManager, clock, handlerManager, sharedPreferences, gson);
+        return new BeaconActionHistoryPublisher(transport, clock, handlerManager, sharedPreferences, gson);
     }
 
     @Provides
@@ -175,7 +173,7 @@ public class ProvidersModule {
     @Singleton
     public RetrofitApiServiceImpl provideRealRetrofitApiService(Context context, Gson gson,
             @Named("androidPlatformIdentifier") PlatformIdentifier platformIdentifier) {
-        return new RetrofitApiServiceImpl(context, gson, platformIdentifier, URLFactory.getResolveURLString());
+        return new RetrofitApiServiceImpl(context.getCacheDir(), gson, platformIdentifier, RetrofitApiTransport.RESOLVER_BASE_URL);
     }
 
     @Provides

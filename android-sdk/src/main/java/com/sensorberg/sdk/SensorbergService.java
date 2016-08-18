@@ -1,7 +1,6 @@
 package com.sensorberg.sdk;
 
 import com.sensorberg.SensorbergSdk;
-import com.sensorberg.sdk.internal.URLFactory;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
 import com.sensorberg.sdk.internal.interfaces.Clock;
 import com.sensorberg.sdk.internal.interfaces.FileManager;
@@ -13,7 +12,6 @@ import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.receivers.GenericBroadcastReceiver;
 import com.sensorberg.sdk.receivers.ScannerBroadcastReceiver;
 import com.sensorberg.sdk.resolver.BeaconEvent;
-import com.sensorberg.sdk.resolver.ResolutionConfiguration;
 import com.sensorberg.sdk.resolver.ResolverConfiguration;
 
 import android.annotation.TargetApi;
@@ -31,7 +29,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -52,7 +49,6 @@ public class SensorbergService extends Service {
     protected HandlerManager handlerManager;
 
     @Inject
-    @Named("realClock")
     protected Clock clock;
 
     @Inject
@@ -146,7 +142,9 @@ public class SensorbergService extends Service {
 
     protected int startSensorbergService(String apiKey) {
         if (bootstrapper == null && (!TextUtils.isEmpty(apiKey))) {
-            bootstrapper = createBootstrapper(apiKey);
+            ResolverConfiguration configuration = new ResolverConfiguration();
+            configuration.setApiToken(apiKey);
+            bootstrapper = createBootstrapper(configuration);
             persistConfiguration(bootstrapper.resolver.configuration);
             bootstrapper.startScanning();
             return START_STICKY;
@@ -215,14 +213,6 @@ public class SensorbergService extends Service {
             Logger.log.serviceHandlesMessage(SensorbergServiceMessage.stringFrom(type));
 
             switch (type) {
-                case SensorbergServiceMessage.MSG_TYPE_SET_RESOLVER_ENDPOINT: {
-                    if (intent.hasExtra(SensorbergServiceMessage.MSG_SET_RESOLVER_ENDPOINT_ENDPOINT_URL)) {
-                        URL resolverURL = (URL) intent.getSerializableExtra(SensorbergServiceMessage.MSG_SET_RESOLVER_ENDPOINT_ENDPOINT_URL);
-                        diskConf.resolverConfiguration.setResolverLayoutURL(resolverURL);
-                        URLFactory.setLayoutURL(diskConf.resolverConfiguration.getResolverLayoutURL().toString());
-                    }
-                    break;
-                }
                 case SensorbergServiceMessage.MSG_SET_API_TOKEN: {
                     if (intent.hasExtra(SensorbergServiceMessage.MSG_SET_API_TOKEN_TOKEN)) {
                         String apiToken = intent.getStringExtra(SensorbergServiceMessage.MSG_SET_API_TOKEN_TOKEN);
@@ -271,13 +261,8 @@ public class SensorbergService extends Service {
 
         try {
             SensorbergServiceConfiguration diskConf = SensorbergServiceConfiguration.loadFromDisk(fileManager);
-
-            //first case is when the service gets started outside of bootstrapper. we're not creating a bootstrapper in that case
-            if (diskConf != null && diskConf.resolverConfiguration.getResolverLayoutURL() != null) {
-                URLFactory.setLayoutURL(diskConf.resolverConfiguration.getResolverLayoutURL().toString());
-            }
             if (diskConf != null && diskConf.isComplete()) {
-                newBootstrapper = createBootstrapper(diskConf.resolverConfiguration.apiToken);
+                newBootstrapper = createBootstrapper(diskConf.resolverConfiguration);
             } else {
                 logError("configuration from disk could not be loaded or is not complete");
             }
@@ -288,11 +273,9 @@ public class SensorbergService extends Service {
         return newBootstrapper;
     }
 
-    private InternalApplicationBootstrapper createBootstrapper(String apikey) {
+    private InternalApplicationBootstrapper createBootstrapper(ResolverConfiguration resolverConfiguration) {
         InternalApplicationBootstrapper newBootstrapper = new InternalApplicationBootstrapper(transport, serviceScheduler, handlerManager, clock,
-                bluetoothPlatform);
-        newBootstrapper.setApiToken(apikey);
-
+                bluetoothPlatform, resolverConfiguration);
         return newBootstrapper;
     }
 
@@ -328,11 +311,6 @@ public class SensorbergService extends Service {
                 presentBeaconEvent(intent);
                 break;
             }
-            case SensorbergServiceMessage.GENERIC_TYPE_RETRY_RESOLVE_SCANEVENT: {
-                ResolutionConfiguration configuration = intent.getParcelableExtra(SensorbergServiceMessage.EXTRA_GENERIC_WHAT);
-                bootstrapper.retryScanEventResolve(configuration);
-                break;
-            }
             case SensorbergServiceMessage.MSG_APPLICATION_IN_FOREGROUND: {
                 bootstrapper.hostApplicationInForeground();
                 break;
@@ -343,10 +321,6 @@ public class SensorbergService extends Service {
             }
             case SensorbergServiceMessage.MSG_SET_API_TOKEN: {
                 setApiToken(intent);
-                break;
-            }
-            case SensorbergServiceMessage.MSG_TYPE_SET_RESOLVER_ENDPOINT: {
-                setResolverEndpoint(intent);
                 break;
             }
             case SensorbergServiceMessage.MSG_REGISTER_PRESENTATION_DELEGATE: {
@@ -409,17 +383,6 @@ public class SensorbergService extends Service {
         }
     }
 
-    protected void setResolverEndpoint(Intent intent) {
-        if (intent.hasExtra(SensorbergServiceMessage.MSG_SET_RESOLVER_ENDPOINT_ENDPOINT_URL)) {
-            try {
-                URL resolverURL = (URL) intent.getSerializableExtra(SensorbergServiceMessage.MSG_SET_RESOLVER_ENDPOINT_ENDPOINT_URL);
-                URLFactory.setLayoutURL(resolverURL.toString());
-            } catch (Exception e) {
-                logError("Could not parse the extra " + SensorbergServiceMessage.MSG_SET_RESOLVER_ENDPOINT_ENDPOINT_URL, e);
-            }
-        }
-    }
-
     protected void registerPresentationDelegate(Intent intent) {
         if (intent.hasExtra(SensorbergServiceMessage.EXTRA_MESSENGER)) {
             Messenger messenger = intent.getParcelableExtra(SensorbergServiceMessage.EXTRA_MESSENGER);
@@ -464,7 +427,7 @@ public class SensorbergService extends Service {
         Logger.log.logServiceState("onDestroy");
         if (bootstrapper != null) {
             bootstrapper.stopScanning();
-            bootstrapper.saveAllData();
+            bootstrapper.saveAllDataBeforeDestroy();
         }
         super.onDestroy();
     }
@@ -472,8 +435,9 @@ public class SensorbergService extends Service {
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     @Override
     public void onTaskRemoved(Intent rootIntent) {
-        super.onTaskRemoved(rootIntent);
+        bootstrapper.saveAllDataBeforeDestroy();
         Logger.log.logServiceState("onTaskRemoved");
+        super.onTaskRemoved(rootIntent);
     }
 
     @Override

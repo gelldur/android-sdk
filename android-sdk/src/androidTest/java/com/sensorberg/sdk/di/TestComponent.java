@@ -10,21 +10,22 @@ import com.sensorberg.sdk.TheInternalApplicationBootstrapperShould;
 import com.sensorberg.sdk.TheInternalBootstrapperIntegration;
 import com.sensorberg.sdk.internal.TheIntentSchedulingBeUpdateable;
 import com.sensorberg.sdk.internal.TheIntentSchedulingShould;
-import com.sensorberg.sdk.internal.http.ApiServiceShould;
 import com.sensorberg.sdk.internal.http.HttpStackShouldCacheTheSettings;
 import com.sensorberg.sdk.internal.http.TransportShould;
+import com.sensorberg.sdk.internal.transport.ApiServiceInGeneralShould;
+import com.sensorberg.sdk.internal.transport.ApiServiceShould;
 import com.sensorberg.sdk.model.persistence.TheBeaconActionShould;
 import com.sensorberg.sdk.model.persistence.TheBeaconScanShould;
 import com.sensorberg.sdk.model.server.ResolveActionTest;
 import com.sensorberg.sdk.model.server.TheResolveResponse;
 import com.sensorberg.sdk.resolver.TheResolveResponseShould;
-import com.sensorberg.sdk.resolver.TheResolverShould;
+import com.sensorberg.sdk.resolver.TheResolverWithMockApiShould;
+import com.sensorberg.sdk.resolver.TheResolverWithRealApiShould;
 import com.sensorberg.sdk.scanner.ScannerWithLongScanTime;
 import com.sensorberg.sdk.scanner.TheBackgroundScannerShould;
 import com.sensorberg.sdk.scanner.TheBeaconActionHistoryPublisherIntegrationShould;
 import com.sensorberg.sdk.scanner.TheBeaconActionHistoryPublisherShould;
 import com.sensorberg.sdk.scanner.TheBeaconMapShould;
-import com.sensorberg.sdk.scanner.TheBeconHistorySynchronousIntegrationTest;
 import com.sensorberg.sdk.scanner.TheBluetoothChangesShould;
 import com.sensorberg.sdk.scanner.TheDefaultScannerSetupShould;
 import com.sensorberg.sdk.scanner.TheForegroundScannerShould;
@@ -79,11 +80,9 @@ public interface TestComponent extends Component {
 
     void inject(TheBeaconActionHistoryPublisherIntegrationShould theBeaconActionHistoryPublisherIntegrationShould);
 
-    void inject(TheResolverShould theResolverShould);
+    void inject(TheResolverWithMockApiShould theResolverWithMockApiShould);
 
     void inject(TheBeaconActionHistoryPublisherShould theBeaconActionHistoryPublisherShould);
-
-    void inject(TheBeconHistorySynchronousIntegrationTest theBeconHistorySynchronousIntegrationTest);
 
     void inject(TransportShould transportShould);
 
@@ -97,7 +96,6 @@ public interface TestComponent extends Component {
 
     void inject(TheResolveResponseShould theResolveResponseShould);
 
-    void inject(ApiServiceShould apiServiceShould);
 
     void inject(SensorbergServiceStartTests sensorbergServiceStartTests);
 
@@ -110,6 +108,12 @@ public interface TestComponent extends Component {
     void inject(TheBeaconActionShould theBeaconActionShould);
 
     void inject(TheBeaconScanShould theBeaconrScanShould);
+
+    void inject(TheResolverWithRealApiShould theResolverWithRealApiShould);
+
+    void inject(ApiServiceShould apiServiceShould);
+
+    void inject(ApiServiceInGeneralShould apiServiceInGeneralShould);
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     final class Initializer {

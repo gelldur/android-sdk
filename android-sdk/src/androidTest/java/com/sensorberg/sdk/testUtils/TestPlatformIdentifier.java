@@ -29,12 +29,4 @@ public class TestPlatformIdentifier implements PlatformIdentifier {
     public void setAdvertisingIdentifier(String advertisingIdentifier) {
         googleAdertiserIdentifier = advertisingIdentifier;
     }
-
-    @Override
-    public void addDeviceInstallationIdentifierChangeListener(DeviceInstallationIdentifierChangeListener listener) {
-    }
-
-    @Override
-    public void addAdvertiserIdentifierChangeListener(AdvertiserIdentifierChangeListener listener) {
-    }
 }

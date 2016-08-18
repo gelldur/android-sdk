@@ -1,7 +1,7 @@
 package com.sensorberg.sdk.test;
 
 import com.sensorberg.sdk.SensorbergTestApplication;
-import com.sensorberg.sdk.internal.URLFactory;
+import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -35,7 +35,7 @@ public class SensorbergTestRunner extends android.support.test.runner.AndroidJUn
         System.setProperty("dexmaker.dexcache", getContext().getCacheDir().getPath());
 
         if (com.sensorberg.sdk.BuildConfig.RESOLVER_URL != null) {
-            URLFactory.setLayoutURL(com.sensorberg.sdk.BuildConfig.RESOLVER_URL);
+            RetrofitApiTransport.RESOLVER_BASE_URL = com.sensorberg.sdk.BuildConfig.RESOLVER_URL;
         }
         JodaTimeAndroid.init(getContext());
 

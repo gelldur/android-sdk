@@ -3,5 +3,4 @@ build
 /.idea/
 *.iml
 /local.properties
-
-bintray.properties
+/bintray.properties

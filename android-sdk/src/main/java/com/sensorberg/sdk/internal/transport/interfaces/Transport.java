@@ -4,7 +4,7 @@ import com.sensorberg.sdk.internal.interfaces.BeaconHistoryUploadIntervalListene
 import com.sensorberg.sdk.internal.interfaces.BeaconResponseHandler;
 import com.sensorberg.sdk.model.persistence.BeaconAction;
 import com.sensorberg.sdk.model.persistence.BeaconScan;
-import com.sensorberg.sdk.resolver.ResolutionConfiguration;
+import com.sensorberg.sdk.scanner.ScanEvent;
 
 import java.util.List;
 
@@ -15,8 +15,6 @@ public interface Transport {
     String HEADER_ADVERTISER_IDENTIFIER = "X-aid";
 
     String HEADER_USER_AGENT = "User-Agent";
-
-    String HEADER_AUTHORIZATION = "Authorization";
 
     String HEADER_XAPIKEY = "X-Api-Key";
 
@@ -31,23 +29,11 @@ public interface Transport {
         void proximityUUIDListUpdated(List<String> proximityUUIDs);
     }
 
-    interface BeaconReportHandler {
-        BeaconReportHandler NONE = new BeaconReportHandler() {
-            @Override
-            public void reportImmediately() {
-
-            }
-        };
-
-        void reportImmediately();
-    }
-    void setBeaconReportHandler(BeaconReportHandler beaconReportHandler);
-
     void setProximityUUIDUpdateHandler(ProximityUUIDUpdateHandler proximityUUIDUpdateHandler);
 
-    void getBeacon(ResolutionConfiguration resolutionConfiguration, BeaconResponseHandler beaconResponseHandler);
+    void getBeacon(ScanEvent scanEvent, BeaconResponseHandler beaconResponseHandler);
 
-    void setApiToken(String apiToken);
+    boolean setApiToken(String apiToken);
 
     void loadSettings(TransportSettingsCallback transportSettingsCallback);
 

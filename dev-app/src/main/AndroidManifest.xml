@@ -34,6 +34,9 @@
                 <action android:name="com.sensorberg.android.PRESENT_ACTION" />
             </intent-filter>
         </receiver>
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
         <!-- Do not use this in production. It´s only used so you can debug easier-->
 
         <service android:name="com.sensorberg.sdk.SensorbergService"
@@ -50,9 +53,6 @@
         <receiver android:name="com.sensorberg.sdk.receivers.SensorbergCodeReceiver"
             tools:replace="android:process"
             android:process=""/>
-        <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
         <!-- //Do not use this in production. It´s only used so you can debug easier-->
 
     </application>

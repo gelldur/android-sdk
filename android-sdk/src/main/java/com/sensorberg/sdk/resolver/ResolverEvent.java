@@ -4,7 +4,6 @@ import android.os.Message;
 
 final class ResolverEvent {
 
-
     public static final int RESOLUTION_START_REQUESTED = 1;
 
     public static Message asMessage(int type, Object data0){

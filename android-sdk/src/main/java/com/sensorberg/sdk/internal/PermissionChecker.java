@@ -46,16 +46,11 @@ public class PermissionChecker {
      * @return returnValue - true|false
      */
     public boolean hasScanPermissionCheckAndroid6() {
-        boolean returnValue = false;
-
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-            returnValue = true;
+            return true;
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && hasLocationPermission()) {
-            returnValue = true;
-        } else {
-            returnValue = false;
+            return true;
         }
-
-        return returnValue;
+        return false;
     }
 }

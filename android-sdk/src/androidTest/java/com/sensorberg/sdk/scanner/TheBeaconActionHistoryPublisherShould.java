@@ -6,8 +6,7 @@ import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback;
-import com.sensorberg.sdk.model.persistence.BeaconAction;
-import com.sensorberg.sdk.model.persistence.BeaconScan;
+import com.sensorberg.sdk.internal.transport.model.HistoryBody;
 import com.sensorberg.sdk.settings.SettingsManager;
 import com.sensorberg.sdk.testUtils.TestHandlerManager;
 
@@ -17,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
 import android.content.SharedPreferences;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import java.util.List;
@@ -30,6 +28,7 @@ import util.TestConstants;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static util.Verfier.hasSize;
 
@@ -58,30 +57,63 @@ public class TheBeaconActionHistoryPublisherShould {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         testHandlerManager.getCustomClock().setNowInMillis(System.currentTimeMillis());
-        tested = new BeaconActionHistoryPublisher(InstrumentationRegistry.getContext(), transport, testSettingsManager,
-                testHandlerManager.getCustomClock(), testHandlerManager, sharedPreferences, gson);
+            tested = new BeaconActionHistoryPublisher(transport, testHandlerManager.getCustomClock(), testHandlerManager, sharedPreferences, gson);
         tested.deleteAllData();
         tested = Mockito.spy(tested);
-
-        tested.onScanEventDetected(TestConstants.REGULAR_BEACON_SCAN_EVENT(100));
-        tested.onActionPresented(TestConstants.BEACON_EVENT_IN_FUTURE);
     }
 
-    @Test
-    public void test_should_persist_scans_that_need_queing() throws Exception {
-        List<BeaconScan> notSentObjects = tested.notSentBeaconScans();
-        assertThat(notSentObjects).hasSize(1);
-    }
-
-    @Test
-    public void test_should_persist_actions_that_need_queing() throws Exception {
-        List<BeaconAction> notSentObjects = tested.notSentBeaconActions();
-        assertThat(notSentObjects).hasSize(1);
-    }
 
     @Test
     public void test_should_schedule_the_sending_of_one_the_unsent_objects() throws Exception {
+        tested.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(100));
+        tested.onActionPresented(TestConstants.BEACON_EVENT_IN_FUTURE);
         tested.publishHistory();
         verify(transport).publishHistory(hasSize(1), hasSize(1), any(TransportHistoryCallback.class));
+    }
+
+    @Test
+    public void should_have_persisted_beacon_actions() throws Exception {
+        //add one action in the future
+        tested.onActionPresented(TestConstants.BEACON_EVENT_IN_FUTURE);
+
+        tested.publishHistory();
+        verify(transport).publishHistory(hasSize(0), hasSize(1), any(TransportHistoryCallback.class));
+        Mockito.reset(transport);
+
+        //persist it, nullify and make new instance
+        tested.saveAllData();
+
+        tested = null;
+        tested = new BeaconActionHistoryPublisher(transport, testHandlerManager.getCustomClock(), testHandlerManager, sharedPreferences, gson);
+
+        //Make sure the object returned is not null.
+        assertThat(tested);
+
+        //check that this instance read from local persistence layer
+        tested.publishHistory();
+        verify(transport).publishHistory(hasSize(0), hasSize(1), any(TransportHistoryCallback.class));
+    }
+
+    @Test
+    public void should_have_persisted_beacon_scans() throws Exception {
+        //add one action in the future
+        tested.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(100));
+
+        tested.publishHistory();
+        verify(transport).publishHistory(hasSize(1), hasSize(0), any(TransportHistoryCallback.class));
+        Mockito.reset(transport);
+
+        //persist it, nullify and make new instance
+        tested.saveAllData();
+
+        tested = null;
+        tested = new BeaconActionHistoryPublisher(transport, testHandlerManager.getCustomClock(), testHandlerManager, sharedPreferences, gson);
+
+        //Make sure the object returned is not null.
+        assertThat(tested);
+
+        //check that this instance read from local persistence layer
+        tested.publishHistory();
+        verify(transport).publishHistory(hasSize(1), hasSize(0), any(TransportHistoryCallback.class));
     }
 }

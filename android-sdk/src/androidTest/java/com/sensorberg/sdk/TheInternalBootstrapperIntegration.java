@@ -16,7 +16,7 @@ import com.sensorberg.sdk.model.server.ResolveAction;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.sdk.presenter.LocalBroadcastManager;
 import com.sensorberg.sdk.presenter.ManifestParser;
-import com.sensorberg.sdk.resolver.ResolutionConfiguration;
+import com.sensorberg.sdk.resolver.ResolverConfiguration;
 import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 import com.sensorberg.sdk.scanner.ScanEvent;
 import com.sensorberg.sdk.scanner.ScanEventType;
@@ -129,7 +129,7 @@ public class TheInternalBootstrapperIntegration {
 
         spiedTransportWithMockService = Mockito.spy(new RetrofitApiTransport(mockRetrofitApiService, testHandlerManager.getCustomClock()));
         spiedInternalApplicationBootstrapper = Mockito.spy(new InternalApplicationBootstrapper(spiedTransportWithMockService, testServiceScheduler,
-                testHandlerManager, testHandlerManager.getCustomClock(), bluetoothPlatform));
+                testHandlerManager, testHandlerManager.getCustomClock(), bluetoothPlatform, new ResolverConfiguration()));
 
         TestGenericBroadcastReceiver broadcastReceiver = new TestGenericBroadcastReceiver();
         LocalBroadcastManager.getInstance(InstrumentationRegistry.getContext()).registerReceiver(broadcastReceiver,
@@ -142,11 +142,11 @@ public class TheInternalBootstrapperIntegration {
     @Test
     public void test_an_instant_action_workflow() throws Exception {
         //enqueue the layout with a beacon for report immediately
-        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+        Mockito.when(mockRetrofitApiService.getBeacon( Mockito.anyString(), Mockito.anyString()))
                 .thenReturn(Calls.response(RESOLVE_RESPONSE_WITH_REPORT_IMMEDIATELY));
 
         //enqueue the reporting result
-        Mockito.when(mockRetrofitApiService.publishHistory(Mockito.anyString(), Mockito.any(HistoryBody.class)))
+        Mockito.when(mockRetrofitApiService.publishHistory(Mockito.any(HistoryBody.class)))
                 .thenReturn(Calls.response(PUBLISH_HISTORY_RESPONSE));
 
         System.out.println("TheInternalBootstrapperIntegration start test_an_instant_action_workflow");
@@ -154,12 +154,12 @@ public class TheInternalBootstrapperIntegration {
         //simulate the entry
         spiedInternalApplicationBootstrapper.onScanEventDetected(new ScanEvent.Builder()
                 .withBeaconId(TestConstants.ANY_BEACON_ID)
-                .withEventMask(ScanEventType.ENTRY.getMask())
+                .withEntry(true)
                 .build());
 
         //we should have exactly one notification
         Mockito.verify(spiedTransportWithMockService, Mockito.timeout(5000).times(1))
-                .getBeacon(Mockito.any(ResolutionConfiguration.class), Mockito.any(BeaconResponseHandler.class));
+                .getBeacon(Mockito.any(ScanEvent.class), Mockito.any(BeaconResponseHandler.class));
 
         //TODO this does get called in real code and during debugging, but Mockito says it doesn't
 //        Mockito.verify(spiedTransportWithMockService, Mockito.timeout(5000).times(1))
@@ -176,11 +176,11 @@ public class TheInternalBootstrapperIntegration {
             BaseResolveResponse updateLayoutResponse = gson
                     .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.response_resolve_precaching,
                             InstrumentationRegistry.getContext()), BaseResolveResponse.class);
-            Mockito.when(mockRetrofitApiService.updateBeaconLayout(Mockito.anyString())).thenReturn(Calls.response(updateLayoutResponse));
+            Mockito.when(mockRetrofitApiService.updateBeaconLayout()).thenReturn(Calls.response(updateLayoutResponse));
 
             ResolveResponse getBeaconResponse = gson.fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.response_resolve_precaching,
                     InstrumentationRegistry.getContext()), ResolveResponse.class);
-            Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+            Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString()))
                     .thenReturn(Calls.response(getBeaconResponse));
         } catch (Exception e) {
             Assertions.fail(e.toString());
@@ -190,14 +190,10 @@ public class TheInternalBootstrapperIntegration {
         spiedInternalApplicationBootstrapper.updateBeaconLayout();
 
         //simulate the entry
-        spiedInternalApplicationBootstrapper.onScanEventDetected(new ScanEvent.Builder()
-                        .withBeaconId(TestConstants.ANY_BEACON_ID)
-                        .withEventMask(ScanEventType.ENTRY.getMask())
-                        .build()
-        );
+        spiedInternalApplicationBootstrapper.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(0));
 
         Mockito.verify(spiedTransportWithMockService, Mockito.timeout(5000).times(1))
-                .getBeacon(Mockito.any(ResolutionConfiguration.class), Mockito.any(BeaconResponseHandler.class));
+                .getBeacon(Mockito.any(ScanEvent.class), Mockito.any(BeaconResponseHandler.class));
         Mockito.verify(spiedTransportWithMockService, Mockito.timeout(5000).times(1))
                 .updateBeaconLayout();
 
@@ -210,7 +206,7 @@ public class TheInternalBootstrapperIntegration {
     public void test_precaching_of_account_proximityUUIDS() throws IOException, JSONException, InterruptedException {
         BaseResolveResponse resolveResponse = gson.fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.response_resolve_precaching,
                 InstrumentationRegistry.getContext()), BaseResolveResponse.class);
-        Mockito.when(mockRetrofitApiService.updateBeaconLayout(Mockito.anyString())).thenReturn(Calls.response(resolveResponse));
+        Mockito.when(mockRetrofitApiService.updateBeaconLayout()).thenReturn(Calls.response(resolveResponse));
 
         Assertions.assertThat(spiedInternalApplicationBootstrapper.proximityUUIDs).hasSize(0);
 

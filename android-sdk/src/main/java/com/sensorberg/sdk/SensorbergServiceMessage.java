@@ -28,8 +28,6 @@ public class SensorbergServiceMessage {
 
     public static final int GENERIC_TYPE_BEACON_ACTION = 1001;
 
-    public static final int GENERIC_TYPE_RETRY_RESOLVE_SCANEVENT = 1002;
-
     public static final int MSG_REGISTER_PRESENTATION_DELEGATE = 100;
 
     public static final int MSG_UNREGISTER_PRESENTATION_DELEGATE = 101;
@@ -40,15 +38,11 @@ public class SensorbergServiceMessage {
 
     public static final int MSG_TYPE_ENABLE_LOGGING = 104;
 
-    public static final int MSG_TYPE_SET_RESOLVER_ENDPOINT = 105;
-
     public static final int MSG_LOCATION_NOT_SET_WHEN_NEEDED = 106;
 
     public static final int MSG_LOCATION_SET = 107;
 
     public static final String MSG_SET_API_TOKEN_TOKEN = "com.sensorberg.android.sdk.message.setApiToken.apiTokenString";
-
-    public static final String MSG_SET_RESOLVER_ENDPOINT_ENDPOINT_URL = "com.sensorberg.android.sdk.intent.recolverEndpoint";
 
     public static final String MSG_PRESENT_ACTION_BEACONEVENT = "com.sensorberg.android.sdk.message.presentBeaconEvent.beaconEvent";
 
@@ -102,8 +96,6 @@ public class SensorbergServiceMessage {
                 return "MSG_SETTINGS_UPDATE";
             case GENERIC_TYPE_BEACON_ACTION:
                 return "GENERIC_TYPE_BEACON_ACTION";
-            case GENERIC_TYPE_RETRY_RESOLVE_SCANEVENT:
-                return "GENERIC_TYPE_RETRY_RESOLVE_SCANEVENT";
             case MSG_TYPE_DISABLE_LOGGING:
                 return "MSG_TYPE_DISABLE_LOGGING";
             case MSG_TYPE_ENABLE_LOGGING:
@@ -114,8 +106,6 @@ public class SensorbergServiceMessage {
                 return "MSG_UPLOAD_HISTORY";
             case MSG_BEACON_LAYOUT_UPDATE:
                 return "MSG_BEACON_LAYOUT_UPDATE";
-            case MSG_TYPE_SET_RESOLVER_ENDPOINT:
-                return "MSG_TYPE_SET_RESOLVER_ENDPOINT";
             case MSG_SET_API_ADVERTISING_IDENTIFIER:
                 return "MSG_SET_API_ADVERTISING_IDENTIFIER";
             case MSG_LOCATION_SERVICES_IS_SET:

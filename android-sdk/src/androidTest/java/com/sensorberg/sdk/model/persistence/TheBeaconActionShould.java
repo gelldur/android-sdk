@@ -39,7 +39,6 @@ public class TheBeaconActionShould {
 
     private UUID uuid = UUID.fromString("6133172D-935F-437F-B932-A901265C24B0");
 
-    private Clock clock;
 
     @Before
     public void setUp() throws Exception {
@@ -52,8 +51,7 @@ public class TheBeaconActionShould {
 
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
-        clock = NoClock.CLOCK;
-        tested = BeaconAction.from(beaconEvent, clock);
+        tested = BeaconAction.from(beaconEvent);
     }
 
     @Test

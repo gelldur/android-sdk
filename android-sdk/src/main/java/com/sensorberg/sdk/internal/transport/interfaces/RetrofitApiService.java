@@ -9,20 +9,23 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
+import retrofit2.http.Headers;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 import retrofit2.http.Url;
 
 public interface RetrofitApiService {
 
-    @GET
-    Call<BaseResolveResponse> updateBeaconLayout(@Url String beaconLayoutUrl);
+    @GET("/layout")
+    @Headers("Cache-Control: max-age=0")
+    Call<BaseResolveResponse> updateBeaconLayout();
 
-    @GET
-    Call<ResolveResponse> getBeacon(@Url String beaconURLString, @Header("X-pid") String beaconId, @Header("X-qos") String networkInfo);
+    @GET("/layout")
+    Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo);
 
-    @POST
-    Call<ResolveResponse> publishHistory(@Url String beaconLayoutUrl, @Body HistoryBody body);
+    @POST("/layout")
+    Call<ResolveResponse> publishHistory(@Body HistoryBody body);
 
-    @GET
-    Call<SettingsResponse> getSettings(@Url String settingsUrl);
+    @GET("/applications/{apiKey}/settings/android")
+    Call<SettingsResponse> getSettings(@Path("apiKey") String apiKey);
 }

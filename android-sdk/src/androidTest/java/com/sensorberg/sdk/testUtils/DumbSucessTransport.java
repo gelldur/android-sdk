@@ -7,7 +7,7 @@ import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback
 import com.sensorberg.sdk.internal.transport.interfaces.TransportSettingsCallback;
 import com.sensorberg.sdk.model.persistence.BeaconAction;
 import com.sensorberg.sdk.model.persistence.BeaconScan;
-import com.sensorberg.sdk.resolver.ResolutionConfiguration;
+import com.sensorberg.sdk.scanner.ScanEvent;
 
 import java.util.List;
 
@@ -29,23 +29,18 @@ public class DumbSucessTransport implements Transport {
     }
 
     @Override
-    public void setBeaconReportHandler(BeaconReportHandler beaconReportHandler) {
-
-    }
-
-    @Override
     public void setProximityUUIDUpdateHandler(ProximityUUIDUpdateHandler proximityUUIDUpdateHandler) {
 
     }
 
     @Override
-    public void getBeacon(ResolutionConfiguration resolutionConfiguration, BeaconResponseHandler beaconResponseHandler) {
+    public void getBeacon(ScanEvent scanEvent, BeaconResponseHandler beaconResponseHandler) {
         beaconResponseHandler.onFailure(new IllegalArgumentException("this transport is dumb"));
     }
 
     @Override
-    public void setApiToken(String apiToken) {
-
+    public boolean setApiToken(String apiToken) {
+        return false;
     }
 
     @Override

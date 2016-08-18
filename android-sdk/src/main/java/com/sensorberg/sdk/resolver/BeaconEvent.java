@@ -2,6 +2,7 @@ package com.sensorberg.sdk.resolver;
 
 import com.sensorberg.sdk.action.Action;
 import com.sensorberg.sdk.model.BeaconId;
+import com.sensorberg.sdk.model.server.ResolveAction;
 import com.sensorberg.sdk.scanner.ScanEvent;
 import com.sensorberg.utils.Objects;
 
@@ -10,6 +11,8 @@ import android.os.Parcelable;
 
 import java.util.Date;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -32,27 +35,39 @@ public class BeaconEvent implements Parcelable {
         }
     };
 
+    @Getter
     private final Action action;
 
-    private final long resolvedTime;
-
-    /**
-     * time when the action is beeing actually presented, not used neccesary to be added to the @{Parcel}
-     */
-    private long presentationTime;
-
+    @Getter
     private final long suppressionTimeMillis;
 
-    public final boolean sendOnlyOnce;
+    @Getter
+    private final boolean sendOnlyOnce;
 
-    public final Date deliverAt;
+    @Getter
+    private final boolean reportImmediately;
 
-    public final int trigger;
+    @Getter
+    private final Date deliverAt;
 
+    @Getter
+    @Setter
+    private long resolvedTime;
+
+    @Getter
+    @Setter
+    private int trigger;
+
+    @Getter
+    @Setter
     private BeaconId beaconId;
 
+    @Getter
+    @Setter
+    private long presentationTime;
+
     private BeaconEvent(Action action, long resolvedTime, long presentationTime, long suppressionTime, boolean sendOnlyOnce, Date deliverAt,
-            int trigger, BeaconId beaconId) {
+                        int trigger, BeaconId beaconId, boolean reportImmediately) {
         this.action = action;
         this.resolvedTime = resolvedTime;
         this.presentationTime = presentationTime;
@@ -61,6 +76,7 @@ public class BeaconEvent implements Parcelable {
         this.deliverAt = deliverAt;
         this.trigger = trigger;
         this.beaconId = beaconId;
+        this.reportImmediately = reportImmediately;
     }
 
     private BeaconEvent(Parcel source) {
@@ -76,6 +92,7 @@ public class BeaconEvent implements Parcelable {
         }
         trigger = source.readInt();
         beaconId = source.readParcelable(BeaconId.class.getClassLoader());
+        reportImmediately = source.readInt() == 1;
     }
 
     @Override
@@ -97,36 +114,7 @@ public class BeaconEvent implements Parcelable {
         }
         destination.writeInt(trigger);
         destination.writeParcelable(beaconId, flags);
-    }
-
-    /**
-     * Returns the {@link Action} to be triggered by the {@link BeaconEvent}.
-     *
-     * @return the {@link Action} to be triggered by the {@link BeaconEvent}
-     */
-    public Action getAction() {
-        return (action);
-    }
-
-    /**
-     * Returns the time the {@link BeaconEvent} was resolved.
-     *
-     * @return the time the {@link BeaconEvent} was resolved
-     */
-    public long getResolvedTime() {
-        return (resolvedTime);
-    }
-
-    public long getPresentationTime() {
-        return presentationTime;
-    }
-
-    public void setPresentationTime(long presentationTime) {
-        this.presentationTime = presentationTime;
-    }
-
-    public long getSuppressionTimeMillis() {
-        return suppressionTimeMillis;
+        destination.writeInt(reportImmediately ? 1 : 0);
     }
 
     @Override
@@ -149,14 +137,6 @@ public class BeaconEvent implements Parcelable {
         return action != null ? action.hashCode() : 0;
     }
 
-    public void setBeaconId(BeaconId beaconId) {
-        this.beaconId = beaconId;
-    }
-
-    public BeaconId getBeaconId() {
-        return beaconId;
-    }
-
     @ToString
     public static class Builder {
 
@@ -175,6 +155,7 @@ public class BeaconEvent implements Parcelable {
         private int trigger;
 
         private BeaconId beaconId;
+        private boolean reportImmediately;
 
         public Builder() {
         }
@@ -204,10 +185,6 @@ public class BeaconEvent implements Parcelable {
             return this;
         }
 
-        public BeaconEvent build() {
-            return new BeaconEvent(action, resolvedTime, presentationTime, suppressionTime, sendOnlyOnce, deliverAt, trigger, beaconId);
-        }
-
         public Builder withSendOnlyOnce(boolean sentOnlyOnce) {
             this.sendOnlyOnce = sentOnlyOnce;
             return this;
@@ -225,6 +202,15 @@ public class BeaconEvent implements Parcelable {
         public Builder withTrigger(int trigger) {
             this.trigger = trigger;
             return this;
+        }
+
+        public Builder withReportImmediately(boolean reportImmediately) {
+            this.reportImmediately = reportImmediately;
+            return this;
+        }
+
+        public BeaconEvent build() {
+            return new BeaconEvent(action, resolvedTime, presentationTime, suppressionTime, sendOnlyOnce, deliverAt, trigger, beaconId, reportImmediately);
         }
     }
 }

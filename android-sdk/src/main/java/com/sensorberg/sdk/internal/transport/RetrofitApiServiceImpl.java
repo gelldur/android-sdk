@@ -30,61 +30,37 @@ import retrofit2.http.Body;
 import retrofit2.http.Header;
 import retrofit2.http.Url;
 
-import static com.sensorberg.sdk.internal.URLFactory.getSettingsURLString;
-
-public class RetrofitApiServiceImpl implements PlatformIdentifier.DeviceInstallationIdentifierChangeListener,
-        PlatformIdentifier.AdvertiserIdentifierChangeListener {
+public class RetrofitApiServiceImpl {
 
     private static final int CONNECTION_TIMEOUT = 30; //seconds
 
     private static final long HTTP_RESPONSE_DISK_CACHE_MAX_SIZE = 5 * 1024L * 1024L; //5MB
 
-    protected final Context mContext;
-
     private final Gson mGson;
 
     private final PlatformIdentifier mPlatformIdentifier;
 
-    private final String mBaseUrl;
-
     private String mApiToken;
 
-    private HttpLoggingInterceptor.Level mApiServiceLogLevel = HttpLoggingInterceptor.Level.NONE;
-
-    private RetrofitApiService mApiService;
+    private final RetrofitApiService mApiService;
 
     private OkHttpClient mClient;
+    private HttpLoggingInterceptor httpLoggingInterceptor;
 
-    public RetrofitApiServiceImpl(Context ctx, Gson gson, PlatformIdentifier platformId, String baseUrl) {
-        mContext = ctx;
+    public RetrofitApiServiceImpl(File cacheFolder, Gson gson, PlatformIdentifier platformId, String baseUrl) {
         mGson = gson;
         mPlatformIdentifier = platformId;
 
-        if (!baseUrl.endsWith("/")) {
-            mBaseUrl = baseUrl + "/";
-        } else {
-            mBaseUrl = baseUrl;
-        }
+        Retrofit restAdapter = new Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .client(getOkHttpClient(cacheFolder))
+                .addConverterFactory(GsonConverterFactory.create(mGson))
+                .build();
 
-        platformId.addAdvertiserIdentifierChangeListener(this);
-        platformId.addDeviceInstallationIdentifierChangeListener(this);
+        mApiService = restAdapter.create(RetrofitApiService.class);
     }
 
-    private RetrofitApiService getApiService() {
-        if (mApiService == null) {
-            Retrofit restAdapter = new Retrofit.Builder()
-                    .baseUrl(mBaseUrl)
-                    .client(getOkHttpClient(mContext))
-                    .addConverterFactory(GsonConverterFactory.create(mGson))
-                    .build();
-
-            mApiService = restAdapter.create(RetrofitApiService.class);
-        }
-
-        return mApiService;
-    }
-
-    private Interceptor headerAuthorizationInterceptor = new Interceptor() {
+    private final Interceptor headerAuthorizationInterceptor = new Interceptor() {
         @Override
         public okhttp3.Response intercept(Chain chain) throws IOException {
             Request request = chain.request();
@@ -100,7 +76,6 @@ public class RetrofitApiServiceImpl implements PlatformIdentifier.DeviceInstalla
 
             if (mApiToken != null) {
                 headersBuilder
-                        .add(Transport.HEADER_AUTHORIZATION, mApiToken)
                         .add(Transport.HEADER_XAPIKEY, mApiToken);
             }
 
@@ -109,18 +84,17 @@ public class RetrofitApiServiceImpl implements PlatformIdentifier.DeviceInstalla
         }
     };
 
-    protected OkHttpClient getOkHttpClient(Context context) {
+    private OkHttpClient getOkHttpClient(File baseDir) {
         OkHttpClient.Builder okClientBuilder = new OkHttpClient.Builder();
 
         okClientBuilder.addInterceptor(headerAuthorizationInterceptor);
 
-        HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
-        httpLoggingInterceptor.setLevel(mApiServiceLogLevel);
+        httpLoggingInterceptor = new HttpLoggingInterceptor();
+        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
         okClientBuilder.addInterceptor(httpLoggingInterceptor);
 
         okClientBuilder.retryOnConnectionFailure(true);
 
-        final File baseDir = context.getCacheDir();
         if (baseDir != null) {
             final File cacheDir = new File(baseDir, "HttpResponseCache");
             okClientBuilder.cache(new Cache(cacheDir, HTTP_RESPONSE_DISK_CACHE_MAX_SIZE));
@@ -136,41 +110,37 @@ public class RetrofitApiServiceImpl implements PlatformIdentifier.DeviceInstalla
 
     public void setLoggingEnabled(boolean enabled) {
         synchronized (mGson) {
-
             if (enabled) {
-                mApiServiceLogLevel = HttpLoggingInterceptor.Level.BODY;
+                httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
             } else {
-                mApiServiceLogLevel = HttpLoggingInterceptor.Level.NONE;
-            }
-
-            if (mApiService != null) {
-                mApiService = null;
+                httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
             }
         }
     }
 
-    public Call<BaseResolveResponse> updateBeaconLayout(@Url String beaconLayoutUrl) {
-        return getApiService().updateBeaconLayout(beaconLayoutUrl);
+    public Call<BaseResolveResponse> updateBeaconLayout() {
+        return mApiService.updateBeaconLayout();
     }
 
-    public Call<ResolveResponse> getBeacon(@Url String beaconURLString, @Header("X-pid") String beaconId, @Header("X-qos") String networkInfo) {
-        return getApiService().getBeacon(beaconURLString, beaconId, networkInfo);
+    public Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo) {
+        return mApiService.getBeacon(beaconId, networkInfo);
     }
 
-    public Call<ResolveResponse> publishHistory(@Url String beaconLayoutUrl, @Body HistoryBody body) {
-        return getApiService().publishHistory(beaconLayoutUrl, body);
+    public Call<ResolveResponse> publishHistory(@Body HistoryBody body) {
+        return mApiService.publishHistory(body);
     }
 
     public Call<SettingsResponse> getSettings() {
-        return getSettings(getSettingsURLString(mApiToken));
+        return getSettings(mApiToken);
     }
 
     public Call<SettingsResponse> getSettings(@Url String url) {
-        return getApiService().getSettings(url);
+        return mApiService.getSettings(url);
     }
 
-    public void setApiToken(String newToken) {
-        if (!Objects.equals(newToken, mApiToken) && mClient != null){
+    public boolean setApiToken(String newToken) {
+        boolean tokensDiffer = mApiToken != null && !Objects.equals(newToken, mApiToken);
+        if (tokensDiffer && mClient != null){
             try {
                 mClient.cache().evictAll();
             } catch (IOException e) {
@@ -179,16 +149,6 @@ public class RetrofitApiServiceImpl implements PlatformIdentifier.DeviceInstalla
         }
 
         this.mApiToken = newToken;
-    }
-
-
-    @Override
-    public void advertiserIdentifierChanged(String advertiserIdentifier) {
-        //we don't care, it's always dynamic now
-    }
-
-    @Override
-    public void deviceInstallationIdentifierChanged(String deviceInstallationIdentifier) {
-        //we don't care, it's always dynamic now
+        return tokensDiffer;
     }
 }

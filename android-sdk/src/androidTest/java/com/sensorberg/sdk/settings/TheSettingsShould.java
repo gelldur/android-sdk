@@ -35,7 +35,6 @@ import util.Utils;
 public class TheSettingsShould {
 
     @Inject
-    @Named("realClock")
     Clock clock;
 
     @Inject

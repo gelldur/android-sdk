@@ -42,6 +42,7 @@ public class ResolveAction implements Serializable {
                         .withSendOnlyOnce(resolveAction.sendOnlyOnce)
                         .withDeliverAtDate(resolveAction.deliverAt)
                         .withTrigger(resolveAction.trigger)
+                        .withReportImmediately(resolveAction.reportImmediately)
                         .build();
             } catch (JSONException e) {
                 return null;
@@ -89,7 +90,7 @@ public class ResolveAction implements Serializable {
 
     @SuppressWarnings("WeakerAccess")
     public ResolveAction(String uuid, int trigger, int type, String name, List<String> beacons, long suppressionTime, long delay,
-            boolean reportImmediately, JsonObject content, Date deliverAt) {
+            boolean     reportImmediately, JsonObject content, Date deliverAt) {
         this.eid = uuid;
         this.trigger = trigger;
         this.type = type;

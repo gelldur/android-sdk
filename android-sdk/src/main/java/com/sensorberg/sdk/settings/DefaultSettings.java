@@ -26,7 +26,5 @@ public class DefaultSettings {
 
     public static final long DEFAULT_MILLIS_BEETWEEN_RETRIES = 5 * TimeConstants.ONE_SECOND;
 
-    public static final long DEFAULT_CACHE_TTL = 30 * TimeConstants.ONE_DAY;
-
     public static final int DEFAULT_MAX_RETRIES = 3;
 }

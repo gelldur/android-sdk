@@ -15,9 +15,7 @@ import com.sensorberg.sdk.model.persistence.BeaconAction;
 import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.receivers.NetworkInfoBroadcastReceiver;
 import com.sensorberg.sdk.resolver.BeaconEvent;
-import com.sensorberg.sdk.resolver.ResolutionConfiguration;
-
-import android.util.Pair;
+import com.sensorberg.sdk.scanner.ScanEvent;
 
 import java.net.HttpURLConnection;
 import java.util.Collections;
@@ -29,10 +27,11 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.sensorberg.sdk.internal.URLFactory.getResolveURLString;
 import static com.sensorberg.utils.ListUtils.map;
 
 public class RetrofitApiTransport implements Transport {
+
+    public static String RESOLVER_BASE_URL = "https://resolver.sensorberg.com/";
 
     private final Clock mClock;
 
@@ -43,8 +42,6 @@ public class RetrofitApiTransport implements Transport {
 
     private ProximityUUIDUpdateHandler mProximityUUIDUpdateHandler = ProximityUUIDUpdateHandler.NONE;
 
-    private BeaconReportHandler mBeaconReportHandler;
-
     public RetrofitApiTransport(RetrofitApiServiceImpl retrofitApiService, Clock clk) {
         apiService = retrofitApiService;
         mClock = clk;
@@ -52,11 +49,6 @@ public class RetrofitApiTransport implements Transport {
 
     private RetrofitApiServiceImpl getApiService() {
         return apiService;
-    }
-
-    @Override
-    public void setBeaconReportHandler(BeaconReportHandler beaconReportHandler) {
-        mBeaconReportHandler = beaconReportHandler;
     }
 
     @Override
@@ -69,20 +61,19 @@ public class RetrofitApiTransport implements Transport {
     }
 
     @Override
-    public void getBeacon(final ResolutionConfiguration resolutionConfiguration, final BeaconResponseHandler beaconResponseHandler) {
+    public void getBeacon(final ScanEvent scanEvent, final BeaconResponseHandler beaconResponseHandler) {
         String networkInfo = NetworkInfoBroadcastReceiver.latestNetworkInfo != null
                 ? NetworkInfoBroadcastReceiver.getNetworkInfoString() : "";
 
-        Call<ResolveResponse> call = getApiService()
-                .getBeacon(getResolveURLString(), resolutionConfiguration.getScanEvent().getBeaconId().getPid(), networkInfo);
+        Call<ResolveResponse> call = getApiService().getBeacon(scanEvent.getBeaconId().getPid(), networkInfo);
 
         call.enqueue(new Callback<ResolveResponse>() {
             @Override
             public void onResponse(Call<ResolveResponse> call, Response<ResolveResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    Pair<Boolean, List<BeaconEvent>> beaconEventPair = checkSuccessfulBeaconResponse(resolutionConfiguration, response.body());
-                    beaconResponseHandler.onSuccess(beaconEventPair.second);
-                    checkShouldCallBeaconResponseHandlers(beaconEventPair.first, response.body());
+                    List<BeaconEvent> beaconEvents = checkSuccessfulBeaconResponse(scanEvent, response.body());
+                    beaconResponseHandler.onSuccess(beaconEvents);
+                    checkShouldCallBeaconResponseHandlers(response.body());
                 } else {
                     beaconResponseHandler.onFailure(new Throwable("No Content, Invalid Api Key"));
                 }
@@ -95,11 +86,7 @@ public class RetrofitApiTransport implements Transport {
         });
     }
 
-    private void checkShouldCallBeaconResponseHandlers(boolean shouldReportImmediately, ResolveResponse successfulResponse) {
-        if (shouldReportImmediately && mBeaconReportHandler != null) {
-            mBeaconReportHandler.reportImmediately();
-        }
-
+    private void checkShouldCallBeaconResponseHandlers(ResolveResponse successfulResponse) {
         mProximityUUIDUpdateHandler.proximityUUIDListUpdated(successfulResponse.getAccountProximityUUIDs());
 
         if (successfulResponse.reportTriggerSeconds != null) {
@@ -108,27 +95,25 @@ public class RetrofitApiTransport implements Transport {
         }
     }
 
-    private Pair<Boolean, List<BeaconEvent>> checkSuccessfulBeaconResponse(ResolutionConfiguration resolutionConfiguration,
-            ResolveResponse successfulResponse) {
+    private List<BeaconEvent> checkSuccessfulBeaconResponse(ScanEvent scanEvent,
+                                                            ResolveResponse successfulResponse) {
 
-        boolean reportImmediately = false;
 
-        List<ResolveAction> resolveActions = successfulResponse.resolve(resolutionConfiguration.getScanEvent(), mClock.now());
-        for (ResolveAction resolveAction : resolveActions) {
-            reportImmediately |= resolveAction.isReportImmediately();
-        }
+        List<ResolveAction> resolveActions = successfulResponse.resolve(scanEvent, mClock.now());
 
         List<BeaconEvent> beaconEvents = map(resolveActions, ResolveAction.BEACON_EVENT_MAPPER);
         for (BeaconEvent beaconEvent : beaconEvents) {
-            beaconEvent.setBeaconId(resolutionConfiguration.getScanEvent().getBeaconId());
+            beaconEvent.setBeaconId(scanEvent.getBeaconId());
+            beaconEvent.setTrigger(scanEvent.getTrigger());
+            beaconEvent.setResolvedTime(mClock.now());
         }
 
-        return new Pair<Boolean, List<BeaconEvent>>(reportImmediately, beaconEvents);
+        return beaconEvents;
     }
 
     @Override
-    public void setApiToken(String apiToken) {
-        getApiService().setApiToken(apiToken);
+    public boolean setApiToken(String apiToken) {
+        return getApiService().setApiToken(apiToken);
     }
 
     @Override
@@ -164,7 +149,7 @@ public class RetrofitApiTransport implements Transport {
     public void publishHistory(final List<BeaconScan> scans, final List<BeaconAction> actions, final TransportHistoryCallback callback) {
 
         HistoryBody body = new HistoryBody(scans, actions, mClock);
-        Call<ResolveResponse> call = getApiService().publishHistory(getResolveURLString(), body);
+        Call<ResolveResponse> call = getApiService().publishHistory(body);
 
         call.enqueue(new Callback<ResolveResponse>() {
             @Override
@@ -187,7 +172,7 @@ public class RetrofitApiTransport implements Transport {
     @Override
     public void updateBeaconLayout() {
 
-        Call<BaseResolveResponse> call = getApiService().updateBeaconLayout(getResolveURLString());
+        Call<BaseResolveResponse> call = getApiService().updateBeaconLayout();
 
         call.enqueue(new Callback<BaseResolveResponse>() {
             @Override
