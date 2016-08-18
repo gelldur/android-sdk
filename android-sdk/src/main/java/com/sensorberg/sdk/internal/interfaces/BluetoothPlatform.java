@@ -21,9 +21,9 @@ public interface BluetoothPlatform {
     boolean isBluetoothLowEnergySupported();
 
     /**
-     * Returns a flag indication whether location services are enabled. Location is needed
+     * Returns a flag indicating whether location services are enabled. Location is needed
      * in order for scanning to work. Will leave here for now, if we do more location
-     * based functionality, let's pull it out into its own interface.
+     * based functionality, let's pull it out into its own interface class.
      *
      * @return - A flag for whether location services are enabled.
      */
