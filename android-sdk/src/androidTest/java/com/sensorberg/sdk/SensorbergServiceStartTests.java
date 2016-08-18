@@ -53,6 +53,24 @@ public class SensorbergServiceStartTests {
     }
 
     @Test
+    public void should_not_start_if_BLE_is_not_turned_on() throws Exception {
+        Mockito.when(tested.bluetoothPlatform.isBluetoothLowEnergyDeviceTurnedOn()).thenReturn(false);
+
+        tested.onStartCommand(sensorbergServiceStartIntent, -1, -1);
+
+        Mockito.verify(tested, Mockito.times(1)).stopSensorbergService();
+    }
+
+    @Test
+    public void should_not_start_if_location_is_not_turned_on() throws Exception {
+        Mockito.when(tested.bluetoothPlatform.isLocationServicesEnabled()).thenReturn(false);
+
+        tested.onStartCommand(sensorbergServiceStartIntent, -1, -1);
+
+        Mockito.verify(tested, Mockito.times(1)).stopSensorbergService();
+    }
+
+    @Test
     public void should_not_start_if_no_broadcast_receivers_registered() throws Exception {
         Mockito.when(tested.platform.registerBroadcastReceiver()).thenReturn(false);
 

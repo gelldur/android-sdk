@@ -36,5 +36,4 @@ public interface BluetoothPlatform {
     void stopLeScan();
 
     boolean isLeScanRunning();
-
 }
