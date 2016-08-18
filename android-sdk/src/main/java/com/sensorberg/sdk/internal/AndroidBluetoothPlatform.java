@@ -1,6 +1,5 @@
 package com.sensorberg.sdk.internal;
 
-import com.google.gson.annotations.Expose;
 import com.sensorberg.bluetooth.CrashCallBackWrapper;
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
@@ -112,7 +111,7 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
                     || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
                 isLocationServicesEnabled = true;
             }
-            Logger.log.logError("Location services not set. Makes sure to get users to enable location for scanning to work properly.");
+            Logger.log.logError("Location services not set. Users need to have location enabled for beacon scanning to work properly.");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
