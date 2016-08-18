@@ -54,7 +54,6 @@ public class DemoApplication extends MultiDexApplication {
         Log.d(TAG, "onCreate application");
 
         boot = new SensorbergSdk(this, API_KEY);
-        boot.setLogging(true);
         boot.setLogging(true, true);
         boot.registerEventListener(new SensorbergSdkEventListener() {
             @Override
