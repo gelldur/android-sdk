@@ -173,7 +173,7 @@ public class SensorbergServiceInternalTests {
     public void should_turn_debugging_on_in_transport_from_intent() {
         Intent serviceDebuggingOnIntent = SensorbergServiceIntents.getServiceLoggingIntent(InstrumentationRegistry.getContext(), true);
 
-        tested.handleDebuggingIntent(serviceDebuggingOnIntent, InstrumentationRegistry.getContext(), false);
+        tested.handleDebuggingIntent(serviceDebuggingOnIntent);
 
         Mockito.verify(tested.transport, times(1)).setLoggingEnabled(true);
         Assertions.assertThat(Logger.log).isInstanceOf(Logger.VerboseLogger.class);
@@ -183,7 +183,7 @@ public class SensorbergServiceInternalTests {
     public void should_turn_debugging_off_in_transport_from_intent() {
         Intent serviceDebuggingOffIntent = SensorbergServiceIntents.getServiceLoggingIntent(InstrumentationRegistry.getContext(), false);
 
-        tested.handleDebuggingIntent(serviceDebuggingOffIntent, InstrumentationRegistry.getContext(), false);
+        tested.handleDebuggingIntent(serviceDebuggingOffIntent);
 
         Mockito.verify(tested.transport, times(1)).setLoggingEnabled(false);
         Assertions.assertThat(Logger.log).isEqualTo(Logger.QUIET_LOG);

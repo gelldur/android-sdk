@@ -198,6 +198,11 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
         context.startService(service);
     }
 
+    /**
+     * To set the logging and whether to show a message notifying the user logging is enabled or not.
+     *
+     * @param enableLogging - true|false if to enable logging or not.
+     */
     public void setLogging(boolean enableLogging) {
         context.startService(SensorbergServiceIntents.getServiceLoggingIntent(context, enableLogging));
     }
