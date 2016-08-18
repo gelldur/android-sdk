@@ -1,5 +1,6 @@
 package com.sensorberg.sdk.internal;
 
+import com.google.gson.annotations.Expose;
 import com.sensorberg.bluetooth.CrashCallBackWrapper;
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
@@ -8,6 +9,7 @@ import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Build;
 import android.util.Log;
 
@@ -64,7 +66,8 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     public void startLeScan(BluetoothAdapter.LeScanCallback scanCallback) {
-        if (isBluetoothLowEnergySupported() && crashCallBackWrapper != null) {
+        if (isBluetoothLowEnergySupported() && crashCallBackWrapper != null
+                && isLocationServicesEnabled()) {
             if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_ON
                     && permissionChecker.hasScanPermissionCheckAndroid6()) {
                 Log.i("bluetooth adapter", Integer.toString(bluetoothAdapter.getState()));
@@ -79,7 +82,8 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     public void stopLeScan() {
-        if (isBluetoothLowEnergySupported() && crashCallBackWrapper != null) {
+        if (isBluetoothLowEnergySupported() && crashCallBackWrapper != null
+                && isLocationServicesEnabled()) {
             try {
                 //noinspection deprecation old API compatability
                 bluetoothAdapter.stopLeScan(crashCallBackWrapper);
@@ -95,5 +99,24 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
     @Override
     public boolean isLeScanRunning() {
         return leScanRunning;
+    }
+
+    @Override
+    public boolean isLocationServicesEnabled() {
+        boolean isLocationServicesEnabled = false;
+
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+
+        try {
+            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                    || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
+                isLocationServicesEnabled = true;
+            }
+            Logger.log.logError("Location services not set. Makes sure to get users to enable location for scanning to work properly.");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return  isLocationServicesEnabled;
     }
 }

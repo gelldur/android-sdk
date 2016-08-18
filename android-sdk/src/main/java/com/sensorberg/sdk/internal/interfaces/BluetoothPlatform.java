@@ -20,6 +20,15 @@ public interface BluetoothPlatform {
      */
     boolean isBluetoothLowEnergySupported();
 
+    /**
+     * Returns a flag indication whether location services are enabled. Location is needed
+     * in order for scanning to work. Will leave here for now, if we do more location
+     * based functionality, let's pull it out into its own interface.
+     *
+     * @return - A flag for whether location services are enabled.
+     */
+    boolean isLocationServicesEnabled();
+
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     void startLeScan(BluetoothAdapter.LeScanCallback scanCallback);
 

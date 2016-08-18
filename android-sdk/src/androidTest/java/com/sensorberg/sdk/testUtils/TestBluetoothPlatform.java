@@ -124,4 +124,7 @@ public class TestBluetoothPlatform implements BluetoothPlatform {
             this.scanCallback.onLeScan(null, -100, wrapWithZeroBytes(bytesForFakeScan, 62));
         }
     }
+
+    @Override
+    public boolean isLocationServicesEnabled() { return true; }
 }
