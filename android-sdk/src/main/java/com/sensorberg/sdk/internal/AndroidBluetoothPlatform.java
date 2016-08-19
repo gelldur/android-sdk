@@ -5,6 +5,7 @@ import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
 
 import android.annotation.TargetApi;
+
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -110,8 +111,10 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
             if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
                     || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
                 isLocationServicesEnabled = true;
+                Logger.log.verbose("Location services are set.");
+            } else {
+                Logger.log.logError("Location services not set. Users need to have location enabled for beacon scanning to work properly.");
             }
-            Logger.log.logError("Location services not set. Users need to have location enabled for beacon scanning to work properly.");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
