@@ -83,7 +83,7 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
             try {
                 //noinspection deprecation old API compatability
                 bluetoothAdapter.stopLeScan(crashCallBackWrapper);
-            } catch (NullPointerException sentBySysteminternally) {
+            } catch (Exception sentBySysteminternally) {
                 Logger.log.logError("System bug throwing a NullPointerException internally.", sentBySysteminternally);
             } finally {
                 leScanRunning = false;
