@@ -67,7 +67,6 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
         if (isBluetoothLowEnergySupported() && crashCallBackWrapper != null) {
             if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_ON
                     && permissionChecker.hasScanPermissionCheckAndroid6()) {
-                Log.i("bluetooth adapter", Integer.toString(bluetoothAdapter.getState()));
                 //noinspection deprecation old API compatability
                 bluetoothAdapter.startLeScan(crashCallBackWrapper);
                 crashCallBackWrapper.setCallback(scanCallback);
