@@ -122,7 +122,7 @@ public class RetrofitApiServiceImpl {
         return mApiService.updateBeaconLayout();
     }
 
-    public Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo) {
+    public Call<ResolveResponse> getBeacon(String beaconId,String networkInfo) {
         return mApiService.getBeacon(beaconId, networkInfo);
     }
 
@@ -134,8 +134,8 @@ public class RetrofitApiServiceImpl {
         return getSettings(mApiToken);
     }
 
-    public Call<SettingsResponse> getSettings(@Url String url) {
-        return mApiService.getSettings(url);
+    public Call<SettingsResponse> getSettings(@Url String apiKey) {
+        return mApiService.getSettings(apiKey);
     }
 
     public boolean setApiToken(String newToken) {

@@ -17,10 +17,6 @@ public class PermissionChecker {
         this.context = context;
     }
 
-    public boolean hasVibratePermission() {
-        return checkForPermission(Manifest.permission.VIBRATE);
-    }
-
     public boolean hasReadSyncSettingsPermissions() {
         return checkForPermission(Manifest.permission.READ_SYNC_SETTINGS);
     }
@@ -30,13 +26,21 @@ public class PermissionChecker {
     }
 
     private boolean checkForPermission(String permissionIdentifier){
+        if (runtimePermissions()){
+            return getPermissionUncached(permissionIdentifier);
+        }
         if (permissionCache.get(permissionIdentifier) != null){
             return permissionCache.get(permissionIdentifier);
         }
-        int res = context.checkCallingOrSelfPermission(permissionIdentifier);
-        boolean value = (res == PackageManager.PERMISSION_GRANTED);
+
+        boolean value = getPermissionUncached(permissionIdentifier);
         permissionCache.put(permissionIdentifier, value);
         return value;
+    }
+
+    private boolean getPermissionUncached(String permissionIdentifier) {
+        int res = context.checkCallingOrSelfPermission(permissionIdentifier);
+        return  res == PackageManager.PERMISSION_GRANTED;
     }
 
     /**
@@ -46,11 +50,15 @@ public class PermissionChecker {
      * @return returnValue - true|false
      */
     public boolean hasScanPermissionCheckAndroid6() {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return true;
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && hasLocationPermission()) {
+        } else if (runtimePermissions() && hasLocationPermission()) {
             return true;
         }
         return false;
+    }
+
+    private boolean runtimePermissions() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }
 }

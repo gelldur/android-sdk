@@ -31,6 +31,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SyncStatusObserver;
+import android.util.Log;
 
 import java.util.HashSet;
 import java.util.List;
@@ -193,11 +194,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     public void startScanning() {
         if (bluetoothPlatform.isBluetoothLowEnergySupported()
                 && bluetoothPlatform.isBluetoothLowEnergyDeviceTurnedOn()) {
-            if (!permissionChecker.hasScanPermissionCheckAndroid6()) {
-                Logger.log.logError("User needs to be shown runtime dialogue asking for coarse location services");
-            } else {
-                scanner.start();
-            }
+            scanner.start();
         }
     }
 

@@ -14,7 +14,7 @@ public class Logger {
     @SuppressWarnings("squid:S1444")
     public static Log log;
 
-    private static final String TAG = "Sensorberg";
+    public static final String TAG = "Sensorberg";
 
     public static boolean isVerboseLoggingEnabled() {
         return log != QUIET_LOG;

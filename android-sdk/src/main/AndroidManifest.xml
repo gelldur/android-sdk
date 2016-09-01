@@ -9,7 +9,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
-    <uses-permission-sdk-23 android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission-sdk-23 android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <uses-feature
@@ -55,14 +55,6 @@
                   android:process=":sensorberg">
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
-            </intent-filter>
-        </receiver>
-
-        <receiver android:name=".receivers.PermissionBroadcastReceiver"
-            android:process=":sensorberg"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.sensorberg.android.sdk.intent.permissionState"/>
             </intent-filter>
         </receiver>
     </application>

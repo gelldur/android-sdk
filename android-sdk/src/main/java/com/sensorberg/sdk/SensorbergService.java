@@ -82,6 +82,7 @@ public class SensorbergService extends Service {
         Logger.log.logServiceState("onCreate");
     }
 
+    //method exists, to enable some testing
     protected void logError(String message) {
         Logger.log.logError(message);
     }
@@ -338,15 +339,6 @@ public class SensorbergService extends Service {
             case SensorbergServiceMessage.MSG_SET_API_ADVERTISING_IDENTIFIER: {
                 setAdvertisingIdentifier(intent);
                 break;
-            }
-            case SensorbergServiceMessage.MSG_LOCATION_SERVICES_IS_SET: {
-                if (intent.getBooleanExtra(SensorbergServiceMessage.EXTRA_LOCATION_PERMISSION, false)) {
-                    Log.i("Location Permission", "scanner should stop");
-                    bootstrapper.stopScanning();
-                } else {
-                    bootstrapper.startScanning();
-                    Log.i("Location Permission", "scanner should start");
-                }
             }
         }
         return START_STICKY;

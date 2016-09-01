@@ -2,6 +2,7 @@ package com.sensorberg.sdk.demo;
 
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 
+import com.sensorberg.SensorbergSdk;
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.SensorbergServiceMessage;
 import com.sensorberg.sdk.action.Action;
@@ -151,10 +152,9 @@ public class DemoActivity extends Activity {
         switch (requestCode) {
             case MY_PERMISSION_REQUEST_LOCATION_SERVICES: {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d("Scanner Message", "coarse location permission granted");
-                    ((DemoApplication) getApplication()).setLocationPermissionGranted(SensorbergServiceMessage.MSG_LOCATION_SET);
+                    SensorbergSdk.sendLocationFlagToReceiver(SensorbergServiceMessage.MSG_LOCATION_SET);
                 } else {
-                    ((DemoApplication) getApplication()).setLocationPermissionGranted(SensorbergServiceMessage.MSG_LOCATION_NOT_SET_WHEN_NEEDED);
+                    SensorbergSdk.sendLocationFlagToReceiver(SensorbergServiceMessage.MSG_LOCATION_NOT_SET_WHEN_NEEDED);
                 }
             }
         }

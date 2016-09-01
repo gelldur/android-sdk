@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Messenger;
+import android.util.Log;
 
 import java.net.URL;
 import java.util.Set;
@@ -207,10 +208,8 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
         context.startService(SensorbergServiceIntents.getServiceLoggingIntent(context, enableLogging));
     }
 
-    public void sendLocationFlagToReceiver(int flagType) {
-        Intent intent = new Intent();
-        intent.setAction(SensorbergServiceMessage.EXTRA_LOCATION_PERMISSION);
-        intent.putExtra("type", flagType);
-        context.sendBroadcast(intent);
+    @Deprecated
+    public static void sendLocationFlagToReceiver(int flagType) {
+        Log.d(Logger.TAG,"ignoring any input from the host application regarding the permission state");
     }
 }
