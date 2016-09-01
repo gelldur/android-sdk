@@ -23,8 +23,8 @@ allprojects {
         jcenter()
         maven { url "https://jitpack.io" }
     }
-    project.ext.SDK_VERSION = "2.0.7"
-    project.ext.RC_VERSION = ""
+    project.ext.SDK_VERSION = "2.1.0"
+    project.ext.RC_VERSION = "RC2-SNAPSHOT"
     project.ext.buildToolsVersion = "23.0.3"
     project.ext.compileSdkVersion = 23
     project.ext.targetSdkVersion = 23

@@ -20,7 +20,12 @@ public enum ActionType {
     /**
      * Constant indicating an action with an in-app URI {@link Action}
      */
-    MESSAGE_IN_APP(0x00000103);
+    MESSAGE_IN_APP(0x00000103),
+
+    /**
+     * Constant indicating a "silent" campaign, which handled only internally in the SDK
+     */
+    SILENT(0x00000103);
 
     private final int id;
 
