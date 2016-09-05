@@ -431,7 +431,9 @@ public class SensorbergService extends Service {
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     @Override
     public void onTaskRemoved(Intent rootIntent) {
-        bootstrapper.saveAllDataBeforeDestroy();
+        if (bootstrapper != null) {
+            bootstrapper.saveAllDataBeforeDestroy();
+        }
         Logger.log.logServiceState("onTaskRemoved");
         super.onTaskRemoved(rootIntent);
     }
