@@ -19,22 +19,8 @@ public class ActionFactory {
     private static final String SUBJECT = "subject";
     private static final String BODY = "body";
     private static final String URL = "url";
-    private static final String DELAY_TIME = "delayTime";
-    private static final String CONTENT = "content";
-    private static final String TYPE = "type";
     private static final String PAYLOAD = "payload";
 
-
-    public static Action actionFromJSONObject(JSONObject contentJSON) throws JSONException {
-        int actionType = contentJSON.getInt(TYPE);
-        UUID actionUUID = UUID.fromString(contentJSON.getString("id"));
-
-        long delayMilliseconds = contentJSON.optLong(DELAY_TIME, Action.NO_DELAY) * 1000;
-        String messageString = contentJSON.getString(CONTENT);
-        JSONObject message = new JSONObject(messageString);
-
-        return getAction(actionType, message, actionUUID, delayMilliseconds);
-    }
 
     public static Action getAction(int actionType, JSONObject message, UUID actionUUID, long delay) throws JSONException {
         if (message == null){
