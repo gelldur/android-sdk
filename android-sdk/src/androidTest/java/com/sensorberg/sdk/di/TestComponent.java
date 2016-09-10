@@ -8,6 +8,8 @@ import com.sensorberg.sdk.SensorbergServiceMessengerListTests;
 import com.sensorberg.sdk.SensorbergServiceStartTests;
 import com.sensorberg.sdk.TheInternalApplicationBootstrapperShould;
 import com.sensorberg.sdk.TheInternalBootstrapperIntegration;
+import com.sensorberg.sdk.action.ActionFactoryTest;
+import com.sensorberg.sdk.action.TheActionShould;
 import com.sensorberg.sdk.internal.TheIntentSchedulingBeUpdateable;
 import com.sensorberg.sdk.internal.TheIntentSchedulingShould;
 import com.sensorberg.sdk.internal.http.HttpStackShouldCacheTheSettings;
@@ -114,6 +116,10 @@ public interface TestComponent extends Component {
     void inject(ApiServiceShould apiServiceShould);
 
     void inject(ApiServiceInGeneralShould apiServiceInGeneralShould);
+
+    void inject(ActionFactoryTest actionFactoryTest);
+
+    void inject(TheActionShould theActionShould);
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     final class Initializer {
