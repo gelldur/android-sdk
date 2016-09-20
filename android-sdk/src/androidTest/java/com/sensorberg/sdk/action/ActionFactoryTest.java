@@ -203,19 +203,19 @@ public class ActionFactoryTest {
     @Test
     public void should_parse_action_type_silent() throws IOException {
         Action result = getAction(action_factory_payload_010_silent_campaign);
-        Assertions.assertThat(result).isNull();
+        Assertions.assertThat(result.getType()).isEqualTo(ActionType.SILENT);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void fails_to_parse_a_map_with_null_values() throws IOException {
+    @Test()
+    public void succeeds_to_parse_a_map_with_null_values() throws IOException {
         Action result = getAction(action_factory_payload_010_silent_campaign_null_map);
-        Assertions.assertThat(result).isNull();
+        Assertions.assertThat(result.getType()).isEqualTo(ActionType.SILENT);
     }
 
     @Test
     public void should_parse_action_type_silent_without_content() throws IOException {
         Action result = getAction(action_factory_payload_010_silent_campaign_no_content_map);
-        Assertions.assertThat(result).isNull();
+        Assertions.assertThat(result.getType()).isEqualTo(ActionType.SILENT);
     }
 
     private Action getAction(int resourceID) throws IOException {

@@ -2,6 +2,7 @@ package com.sensorberg.sdk;
 
 import com.sensorberg.SensorbergSdk;
 import com.sensorberg.sdk.action.Action;
+import com.sensorberg.sdk.action.ActionType;
 import com.sensorberg.sdk.internal.PermissionChecker;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
 import com.sensorberg.sdk.internal.interfaces.Clock;
@@ -168,6 +169,12 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
         if (beaconEvent.getAction() != null) {
             beaconEvent.setPresentationTime(clock.now());
             beaconActionHistoryPublisher.onActionPresented(beaconEvent);
+
+            if (beaconEvent.getAction().getType() == ActionType.SILENT){
+                Logger.log.beaconResolveState(beaconEvent, "Silent campaign handled, no callback to host application");
+                return;
+            }
+
             if (presentationDelegate == null) {
                 Intent broadcastIntent = new Intent(ManifestParser.actionString);
                 broadcastIntent.putExtra(Action.INTENT_KEY, beaconEvent.getAction());
