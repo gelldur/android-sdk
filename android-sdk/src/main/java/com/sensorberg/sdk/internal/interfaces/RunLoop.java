@@ -19,6 +19,8 @@ public interface RunLoop {
 
     void add(Message event);
 
+    void addDelayed(Message event, long wait_time);
+
     void clearScheduledExecutions();
 
     void scheduleExecution(Runnable runnable, long wait_time);
@@ -34,5 +36,7 @@ public interface RunLoop {
     void sendMessage(int what);
 
     void sendMessage(int what, Object obj);
+
+    void sendMessageDelayed(int what, long wait_time);
 
 }

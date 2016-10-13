@@ -27,6 +27,11 @@ public class AndroidHandler implements RunLoop {
     }
 
     @Override
+    public void addDelayed(Message event, long wait_time) {
+        getHandler().sendMessageDelayed(event, wait_time);
+    }
+
+    @Override
     public void clearScheduledExecutions() {
         if (looper.handler != null) {
             looper.handler.removeCallbacksAndMessages(null);
@@ -97,6 +102,11 @@ public class AndroidHandler implements RunLoop {
     @Override
     public void sendMessage(int what, Object obj) {
         add(obtainMessage(what, obj));
+    }
+
+    @Override
+    public void sendMessageDelayed(int what, long wait_time) {
+        addDelayed(obtainMessage(what), wait_time);
     }
 
     static class LooperThread extends Thread {
