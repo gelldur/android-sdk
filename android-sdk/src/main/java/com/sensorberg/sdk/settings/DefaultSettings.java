@@ -1,5 +1,7 @@
 package com.sensorberg.sdk.settings;
 
+import android.os.Build;
+
 public class DefaultSettings {
 
     public static final boolean DEFAULT_SHOULD_RESTORE_BEACON_STATE = true;
@@ -16,9 +18,13 @@ public class DefaultSettings {
 
     public static final long DEFAULT_FOREGROUND_WAIT_TIME = DEFAULT_FOREGROUND_SCAN_TIME;
 
+    public static final int DEFAULT_FOREGROUND_SCAN_SPLIT = Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT ? 4 : 1;
+
     public static final long DEFAULT_BACKGROUND_WAIT_TIME = 2 * TimeConstants.ONE_MINUTE;
 
     public static final long DEFAULT_BACKGROUND_SCAN_TIME = 20 * TimeConstants.ONE_SECOND;
+
+    public static final int DEFAULT_BACKGROUND_SCAN_SPLIT = DEFAULT_FOREGROUND_SCAN_SPLIT;
 
     public static final long DEFAULT_CLEAN_BEACONMAP_ON_RESTART_TIMEOUT = TimeConstants.ONE_MINUTE;
 

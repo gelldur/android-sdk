@@ -40,6 +40,11 @@ public class Settings {
 
     @Getter
     @Expose
+    @SerializedName("scanner.foreGroundScanSplit")
+    private int foreGroundScanSplit = DefaultSettings.DEFAULT_FOREGROUND_SCAN_SPLIT;
+
+    @Getter
+    @Expose
     @SerializedName("scanner.backgroundScanTime")
     private long backgroundScanTime = DefaultSettings.DEFAULT_BACKGROUND_SCAN_TIME;
 
@@ -47,6 +52,11 @@ public class Settings {
     @Expose
     @SerializedName("scanner.backgroundWaitTime")
     private long backgroundWaitTime = DefaultSettings.DEFAULT_BACKGROUND_WAIT_TIME;
+
+    @Getter
+    @Expose
+    @SerializedName("scanner.backgroundScanSplit")
+    private int backgroundScanSplit = DefaultSettings.DEFAULT_BACKGROUND_SCAN_SPLIT;
 
     @Getter
     @Expose
@@ -93,10 +103,14 @@ public class Settings {
                     .getLong(SharedPreferencesKeys.Scanner.FORE_GROUND_SCAN_TIME, DefaultSettings.DEFAULT_FOREGROUND_SCAN_TIME);
             foreGroundWaitTime = preferences
                     .getLong(SharedPreferencesKeys.Scanner.FORE_GROUND_WAIT_TIME, DefaultSettings.DEFAULT_FOREGROUND_WAIT_TIME);
+            foreGroundScanSplit = preferences
+                    .getInt(SharedPreferencesKeys.Scanner.FORE_GROUND_SCAN_SPLIT, DefaultSettings.DEFAULT_FOREGROUND_SCAN_SPLIT);
             backgroundScanTime = preferences
                     .getLong(SharedPreferencesKeys.Scanner.BACKGROUND_SCAN_TIME, DefaultSettings.DEFAULT_BACKGROUND_SCAN_TIME);
             backgroundWaitTime = preferences
                     .getLong(SharedPreferencesKeys.Scanner.BACKGROUND_WAIT_TIME, DefaultSettings.DEFAULT_BACKGROUND_WAIT_TIME);
+            backgroundScanSplit = preferences
+                    .getInt(SharedPreferencesKeys.Scanner.BACKGROUND_SCAN_SPLIT, DefaultSettings.DEFAULT_BACKGROUND_SCAN_SPLIT);
             cleanBeaconMapRestartTimeout = preferences.getLong(SharedPreferencesKeys.Scanner.CLEAN_BEACON_MAP_RESTART_TIMEOUT,
                     DefaultSettings.DEFAULT_CLEAN_BEACONMAP_ON_RESTART_TIMEOUT);
             revision = preferences.getLong(SharedPreferencesKeys.Settings.REVISION, Long.MIN_VALUE);
@@ -121,8 +135,10 @@ public class Settings {
         exitTimeoutMillis = newSettings.getExitTimeoutMillis();
         foreGroundScanTime = newSettings.getForeGroundScanTime();
         foreGroundWaitTime = newSettings.getForeGroundWaitTime();
+        foreGroundScanSplit = newSettings.getForeGroundScanSplit();
         backgroundScanTime = newSettings.getBackgroundScanTime();
         backgroundWaitTime = newSettings.getBackgroundWaitTime();
+        backgroundScanSplit = newSettings.getBackgroundScanSplit();
 
         cleanBeaconMapRestartTimeout = newSettings.getCleanBeaconMapRestartTimeout();
 
@@ -166,8 +182,10 @@ public class Settings {
             editor.putLong(SharedPreferencesKeys.Scanner.TIMEOUT_MILLIES, exitTimeoutMillis);
             editor.putLong(SharedPreferencesKeys.Scanner.FORE_GROUND_SCAN_TIME, foreGroundScanTime);
             editor.putLong(SharedPreferencesKeys.Scanner.FORE_GROUND_WAIT_TIME, foreGroundWaitTime);
+            editor.putInt(SharedPreferencesKeys.Scanner.FORE_GROUND_SCAN_SPLIT, foreGroundScanSplit);
             editor.putLong(SharedPreferencesKeys.Scanner.BACKGROUND_SCAN_TIME, backgroundScanTime);
             editor.putLong(SharedPreferencesKeys.Scanner.BACKGROUND_WAIT_TIME, backgroundWaitTime);
+            editor.putInt(SharedPreferencesKeys.Scanner.BACKGROUND_SCAN_SPLIT, backgroundScanSplit);
             editor.putBoolean(SharedPreferencesKeys.Scanner.SHOULD_RESTORE_BEACON_STATES, shouldRestoreBeaconStates);
 
             editor.putLong(SharedPreferencesKeys.Settings.MESSAGE_DELAY_WINDOW_LENGTH, messageDelayWindowLength);
@@ -209,6 +227,11 @@ public class Settings {
             return this;
         }
 
+        public Builder withForegroundScanSplit(int scanSplit) {
+            settings.foreGroundScanSplit = scanSplit;
+            return this;
+        }
+
         public Builder withBackgroundScanTime(long scanTime) {
             settings.backgroundScanTime = scanTime;
             return this;
@@ -216,6 +239,11 @@ public class Settings {
 
         public Builder withBackgroundWaitTime(long scanTime) {
             settings.backgroundWaitTime = scanTime;
+            return this;
+        }
+
+        public Builder withBackgroundScanSplit(int scanSplit) {
+            settings.backgroundScanSplit = scanSplit;
             return this;
         }
 

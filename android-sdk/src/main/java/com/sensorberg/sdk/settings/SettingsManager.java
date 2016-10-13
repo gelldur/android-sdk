@@ -102,12 +102,20 @@ public class SettingsManager {
         return getSettings().getForeGroundScanTime();
     }
 
+    public int getForeGroundScanSplit() {
+        return getSettings().getForeGroundScanSplit();
+    }
+
     public long getBackgroundWaitTime() {
         return getSettings().getBackgroundWaitTime();
     }
 
     public long getBackgroundScanTime() {
         return getSettings().getBackgroundScanTime();
+    }
+
+    public int getBackgroundScanSplit() {
+        return getSettings().getBackgroundScanSplit();
     }
 
     public boolean isShouldRestoreBeaconStates() {

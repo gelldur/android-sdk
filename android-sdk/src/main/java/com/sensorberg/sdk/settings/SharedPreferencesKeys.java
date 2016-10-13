@@ -10,9 +10,13 @@ public final class SharedPreferencesKeys {
 
         public static final String FORE_GROUND_WAIT_TIME = "com.sensorberg.preferences.scanner.foreGroundWaitTime";
 
+        public static final String FORE_GROUND_SCAN_SPLIT = "com.sensorberg.preferences.scanner.foreGroundScanSplit";
+
         public static final String BACKGROUND_SCAN_TIME = "com.sensorberg.preferences.scanner.backgroundScanTime";
 
         public static final String BACKGROUND_WAIT_TIME = "com.sensorberg.preferences.scanner.backgroundWaitTime";
+
+        public static final String BACKGROUND_SCAN_SPLIT = "com.sensorberg.preferences.scanner.backgroundScanSplit";
 
         public static final String CLEAN_BEACON_MAP_RESTART_TIMEOUT = "com.sensorberg.preferences.scanner.cleanBeaconMapRestartTimeout";
 
