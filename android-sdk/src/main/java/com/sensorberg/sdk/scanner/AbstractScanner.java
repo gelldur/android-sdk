@@ -36,6 +36,8 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
 
     protected long scanTime = DefaultSettings.DEFAULT_BACKGROUND_SCAN_TIME;
 
+    protected long subScanTime = DefaultSettings.DEFAULT_BACKGROUND_SCAN_TIME;
+
     private final SettingsManager settingsManager;
 
     private final Clock clock;
@@ -170,6 +172,16 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
     public void handleMessage(Message message) {
         ScannerEvent queueEvent = new ScannerEvent(message.what, message.obj);
         switch (queueEvent.getType()) {
+            case ScannerEvent.SPLIT_SCAN: {
+                if (settingsManager.getBackgroundScanSplit() > 1 && scanning) {
+                    bluetoothPlatform.stopLeScan();
+                    Logger.log.scannerStateChange("restarting scan next restart in "+ subScanTime);
+                    bluetoothPlatform.startLeScan(scanCallback);
+                    //TODO do not schedule next if it's after planned finish.
+                    runLoop.sendMessageDelayed(ScannerEvent.SPLIT_SCAN, subScanTime);
+                }
+                break;
+            }
             case ScannerEvent.LOGICAL_SCAN_START_REQUESTED: {
                 if (!scanning) {
                     lastExitCheckTimestamp = clock.now();
@@ -200,6 +212,7 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
                     Logger.log.scannerStateChange("scanning for" + scanTime + "millis");
                     bluetoothPlatform.startLeScan(scanCallback);
                     scheduleExecution(ScannerEvent.PAUSE_SCAN, scanTime);
+                    runLoop.sendMessageDelayed(ScannerEvent.SPLIT_SCAN, subScanTime);
 
                     runLoop.scheduleAtFixedRate(new TimerTask() {
                         @Override
@@ -302,6 +315,9 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
         if (isNotSetupForForegroundScanning()) {
             waitTime = settingsManager.getForeGroundWaitTime();
             scanTime = settingsManager.getForeGroundScanTime();
+            if (settingsManager.getForeGroundScanSplit() != 0) {
+                subScanTime = scanTime / settingsManager.getForeGroundScanSplit();
+            }
             if (scanning) {
                 long lastWaitTime = clock.now() - lastExitCheckTimestamp;
                 clearScheduledExecutions();
@@ -328,6 +344,9 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
     public void hostApplicationInBackground() {
         waitTime = settingsManager.getBackgroundWaitTime();
         scanTime = settingsManager.getBackgroundScanTime();
+        if (settingsManager.getBackgroundScanSplit() != 0) {
+            subScanTime = scanTime / settingsManager.getBackgroundScanSplit();
+        }
         if ((clock.now() - lastScanStart) > scanTime) {
             Logger.log.scannerStateChange("We have been scanning longer than the background scan, so we´e going to pause right away");
             clearScheduledExecutions();
