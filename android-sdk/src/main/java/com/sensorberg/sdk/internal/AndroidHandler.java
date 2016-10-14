@@ -39,6 +39,11 @@ public class AndroidHandler implements RunLoop {
     }
 
     @Override
+    public void clearMessage(int what) {
+        getHandler().removeMessages(what);
+    }
+
+    @Override
     public void scheduleExecution(Runnable runnable, long wait_time) {
         if (wait_time > 0) {
             if (wait_time > TimeConstants.ONE_HOUR * 24) {

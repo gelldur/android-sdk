@@ -23,6 +23,8 @@ public interface RunLoop {
 
     void clearScheduledExecutions();
 
+    void clearMessage(int what);
+
     void scheduleExecution(Runnable runnable, long wait_time);
 
     void scheduleAtFixedRate(TimerTask timerTask, int when, long interval);

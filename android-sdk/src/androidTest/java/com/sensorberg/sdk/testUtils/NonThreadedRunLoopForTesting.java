@@ -37,7 +37,7 @@ public class NonThreadedRunLoopForTesting implements RunLoop {
             this.messageCallback.handleMessage(event);
         } else {
             synchronized (this) {
-                //scheduledMessages.add(new Pair<>(clock.now() + wait_time, event)); //TODO uncomment and fix ordering bug
+                scheduledMessages.add(new Pair<>(clock.now() + wait_time, event));
             }
         }
     }
@@ -45,7 +45,18 @@ public class NonThreadedRunLoopForTesting implements RunLoop {
     @Override
     public void clearScheduledExecutions() {
         scheduledEvents.clear();
-        scheduledMessages.clear();
+    }
+
+    @Override
+    public void clearMessage(int what) {
+        synchronized (this) {
+            for (int i = scheduledMessages.size() - 1; i >= 0; i--) {
+                Pair<Long, Message> pair = scheduledMessages.get(i);
+                if (pair.second.what == what) {
+                    scheduledMessages.remove(i);
+                }
+            }
+        }
     }
 
     @Override
@@ -108,24 +119,14 @@ public class NonThreadedRunLoopForTesting implements RunLoop {
         }
     }
 
-    public void unscheduleMessages(Message message) {
-        synchronized (this) {
-            for (int i = scheduledMessages.size() - 1; i >= 0; i--) {
-                if (scheduledMessages.get(i).second == message) {
-                    scheduledMessages.remove(i);
-                }
-            }
-        }
-    }
-
     public void loop() {
         if (this.timerTask != null) {
             timerTask.run();
         } else {
             Logger.log.logError("Timertask was null");
         }
+        scheduledMessages(); //TODO potential bug here related to order of execution
         scheduledEvents();
-        scheduledMessages();
     }
 
     public void timeChanged() {
