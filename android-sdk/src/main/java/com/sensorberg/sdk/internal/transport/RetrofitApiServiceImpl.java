@@ -119,11 +119,11 @@ public class RetrofitApiServiceImpl {
     }
 
     public Call<BaseResolveResponse> updateBeaconLayout() {
-        return mApiService.updateBeaconLayout();
+        return mApiService.updateBeaconLayout(mApiToken);
     }
 
     public Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo) {
-        return mApiService.getBeacon(beaconId, networkInfo);
+        return mApiService.getBeacon(beaconId, networkInfo, mApiToken);
     }
 
     public Call<ResolveResponse> publishHistory(@Body HistoryBody body) {
