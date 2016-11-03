@@ -1,5 +1,6 @@
 package com.sensorberg.di;
 
+import com.sensorberg.BackgroundDetector;
 import com.sensorberg.SensorbergSdk;
 import com.sensorberg.sdk.InternalApplicationBootstrapper;
 import com.sensorberg.sdk.SensorbergService;
@@ -29,6 +30,8 @@ public interface Component {
     void inject(BeaconMap beaconMap);
 
     void inject(SensorbergSdk sensorbergSdk);
+
+    void inject(BackgroundDetector backgroundDetector);
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     final class Initializer {

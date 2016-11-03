@@ -11,6 +11,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 
+import javax.inject.Inject;
+
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class BackgroundDetector implements Application.ActivityLifecycleCallbacks {
     private final Runnable FOREGROUND = new Runnable() {
@@ -35,20 +37,20 @@ public class BackgroundDetector implements Application.ActivityLifecycleCallback
     private boolean isInForeground = false;
     private boolean appForeGroundState = isInForeground;
     private Platform.ForegroundStateListener foregroundStateListener = Platform.ForegroundStateListener.NONE;
-    private PermissionChecker permissionChecker;
+    @Inject
+    protected PermissionChecker permissionChecker;
     private boolean hasPermission;
 
     public BackgroundDetector(Platform.ForegroundStateListener foregroundStateListener){
         this.handler = new Handler();
         this.foregroundStateListener = foregroundStateListener;
+        SensorbergSdk.getComponent().inject(this);
+        hasPermission = permissionChecker.hasScanPermissionCheckAndroid6();
     }
 
     @Override
     public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-        if (permissionChecker == null) {
-            permissionChecker = new PermissionChecker(activity.getApplicationContext());
-            hasPermission = permissionChecker.hasScanPermissionCheckAndroid6();
-        }
+
     }
 
     @Override
