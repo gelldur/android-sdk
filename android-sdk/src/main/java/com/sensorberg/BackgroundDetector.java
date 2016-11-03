@@ -1,5 +1,7 @@
 package com.sensorberg;
 
+import com.sensorberg.sdk.SensorbergServiceIntents;
+import com.sensorberg.sdk.internal.PermissionChecker;
 import com.sensorberg.sdk.internal.interfaces.Platform;
 
 import android.annotation.TargetApi;
@@ -33,6 +35,8 @@ public class BackgroundDetector implements Application.ActivityLifecycleCallback
     private boolean isInForeground = false;
     private boolean appForeGroundState = isInForeground;
     private Platform.ForegroundStateListener foregroundStateListener = Platform.ForegroundStateListener.NONE;
+    private PermissionChecker permissionChecker;
+    private boolean hasPermission;
 
     public BackgroundDetector(Platform.ForegroundStateListener foregroundStateListener){
         this.handler = new Handler();
@@ -41,7 +45,10 @@ public class BackgroundDetector implements Application.ActivityLifecycleCallback
 
     @Override
     public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-
+        if (permissionChecker == null) {
+            permissionChecker = new PermissionChecker(activity.getApplicationContext());
+            hasPermission = permissionChecker.hasScanPermissionCheckAndroid6();
+        }
     }
 
     @Override
@@ -54,7 +61,11 @@ public class BackgroundDetector implements Application.ActivityLifecycleCallback
         handler.removeCallbacksAndMessages(null);
         this.isInForeground = true;
         handler.postDelayed(FOREGROUND, 500);
-
+        if (!hasPermission && permissionChecker.hasScanPermissionCheckAndroid6()) {
+            hasPermission = true;
+            activity.startService(
+                    SensorbergServiceIntents.getPingIntent(activity));
+        }
     }
 
     @Override
