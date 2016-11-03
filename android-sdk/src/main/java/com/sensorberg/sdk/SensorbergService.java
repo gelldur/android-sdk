@@ -16,7 +16,6 @@ import com.sensorberg.sdk.resolver.ResolverConfiguration;
 
 import android.annotation.TargetApi;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,7 +26,6 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.HashSet;
 import java.util.Set;
