@@ -94,7 +94,9 @@ public class AndroidServiceScheduler implements ServiceScheduler, MessageDelayWi
     @SuppressLint("NewApi")
     private void scheduleAlarm(long delayInMillis, PendingIntent pendingIntent) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            alarmManager.setWindow(AlarmManager.ELAPSED_REALTIME_WAKEUP, clock.elapsedRealtime() + delayInMillis, messageDelayWindowLength,
+/*            alarmManager.setWindow(AlarmManager.ELAPSED_REALTIME_WAKEUP, clock.elapsedRealtime() + delayInMillis, messageDelayWindowLength,
+                    pendingIntent);*/
+            alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, clock.elapsedRealtime() + delayInMillis,
                     pendingIntent);
         } else {
             alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, clock.elapsedRealtime() + delayInMillis, pendingIntent);

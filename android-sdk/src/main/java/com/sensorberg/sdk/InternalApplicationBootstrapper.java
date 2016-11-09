@@ -11,6 +11,7 @@ import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.interfaces.MessageDelayWindowLengthListener;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
+import com.sensorberg.sdk.model.BeaconId;
 import com.sensorberg.sdk.presenter.LocalBroadcastManager;
 import com.sensorberg.sdk.presenter.ManifestParser;
 import com.sensorberg.sdk.receivers.GenericBroadcastReceiver;
@@ -32,6 +33,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SyncStatusObserver;
+import android.os.Parcelable;
 
 import java.util.HashSet;
 import java.util.List;
@@ -178,6 +180,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
             if (presentationDelegate == null) {
                 Intent broadcastIntent = new Intent(ManifestParser.actionString);
                 broadcastIntent.putExtra(Action.INTENT_KEY, beaconEvent.getAction());
+                broadcastIntent.putExtra(BeaconId.INTENT_KEY, (Parcelable) beaconEvent.getBeaconId());
                 LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
             } else {
                 Logger.log.beaconResolveState(beaconEvent, "delegating the display of the beacon event to the application");
