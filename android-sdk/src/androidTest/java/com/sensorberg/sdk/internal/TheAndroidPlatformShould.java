@@ -34,7 +34,7 @@ public class TheAndroidPlatformShould {
     }
 
     @Test
-    public void test_should_cache_the_permissions(){
+    public void test_should_not_cache_the_permissions(){
         Context mockContext = mock(Context.class);
 
         when(mockContext.checkCallingOrSelfPermission(anyString())).thenReturn(PackageManager.PERMISSION_GRANTED);
@@ -46,7 +46,7 @@ public class TheAndroidPlatformShould {
         tested.hasVibratePermission();
         tested.hasVibratePermission();
 
-        verify(mockContext, times(1)).checkCallingOrSelfPermission(anyString());
+        verify(mockContext, times(2)).checkCallingOrSelfPermission(anyString());
     }
 
     @Test
