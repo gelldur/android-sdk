@@ -106,6 +106,7 @@ public class RetrofitApiTransport implements Transport {
             beaconEvent.setBeaconId(scanEvent.getBeaconId());
             beaconEvent.setTrigger(scanEvent.getTrigger());
             beaconEvent.setResolvedTime(mClock.now());
+            beaconEvent.setGeohash(scanEvent.getGeohash());
         }
 
         return beaconEvents;
