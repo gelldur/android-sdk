@@ -107,7 +107,7 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
                         //might be negative!!!
                         long timeSinceWeSawTheBeacon = now - lastBreakLength - beaconEntry.getLastBeaconTime();
                         if (timeSinceWeSawTheBeacon > settingsManager.getExitTimeoutMillis()) {
-                            ScanEvent scanEvent = new ScanEvent(beaconId, now, false);
+                            ScanEvent scanEvent = new ScanEvent(beaconId, now, false, getCurrentGeohash());
                             runLoop.sendMessage(ScannerEvent.EVENT_DETECTED, scanEvent);
                             Logger.log.beaconResolveState(scanEvent,
                                     " exited (time since we saw the beacon: " + (int) (timeSinceWeSawTheBeacon / 1000) + " seconds)");
@@ -150,7 +150,7 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
                 if (entry == null) {
                     int calRssi = beacon.second;
                     String address = device != null ? device.getAddress() : null;
-                    ScanEvent scanEvent = new ScanEvent(beaconId, now, true, address, rssi, calRssi);
+                    ScanEvent scanEvent = new ScanEvent(beaconId, now, true, address, rssi, calRssi, getCurrentGeohash());
                     runLoop.sendMessage(ScannerEvent.EVENT_DETECTED, scanEvent);
                     entry = new EventEntry(now, ScanEventType.ENTRY.getMask());
                     Logger.log.beaconResolveState(scanEvent, "entered");
@@ -164,6 +164,10 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
                 enteredBeacons.put(beaconId, entry);
             }
         }
+    }
+
+    public String getCurrentGeohash() {
+        return null;
     }
 
     @Override
