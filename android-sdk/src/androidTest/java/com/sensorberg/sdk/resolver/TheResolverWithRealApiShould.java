@@ -104,7 +104,7 @@ public class TheResolverWithRealApiShould {
                 .withBeaconId(TestConstants.IN_APP_BEACON_ID)
                 .withEntry(true).build()
         );
-        Assertions.assertThat(latch.await(10, TimeUnit.SECONDS)).isEqualTo(true).overridingErrorMessage("Request did not return within time");
+        Assertions.assertThat(latch.await(10, TimeUnit.SECONDS)).overridingErrorMessage("Request did not return within time").isEqualTo(true);
 
     }
 
@@ -135,6 +135,6 @@ public class TheResolverWithRealApiShould {
                 .withEntry(true)
                 .build()
         );
-        Assertions.assertThat(latch.await(10, TimeUnit.SECONDS)).isEqualTo(true).overridingErrorMessage("Request did not return within time");
+        Assertions.assertThat(latch.await(10, TimeUnit.SECONDS)).overridingErrorMessage("Request did not return within time").isEqualTo(true);
     }
 }

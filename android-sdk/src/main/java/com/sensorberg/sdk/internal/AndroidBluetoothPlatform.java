@@ -67,10 +67,18 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
         if (isBluetoothLowEnergySupported() && crashCallBackWrapper != null) {
             if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_ON
                     && permissionChecker.hasScanPermissionCheckAndroid6()) {
-                //noinspection deprecation old API compatability
-                bluetoothAdapter.startLeScan(crashCallBackWrapper);
-                crashCallBackWrapper.setCallback(scanCallback);
-                leScanRunning = true;
+                try {
+                    //noinspection deprecation old API compatability
+                    bluetoothAdapter.startLeScan(crashCallBackWrapper);
+                    crashCallBackWrapper.setCallback(scanCallback);
+                    leScanRunning = true;
+                } catch (IllegalStateException e) {
+                    // even with the adapter state checking two lines above,
+                    // this still crashes https://sensorberg.atlassian.net/browse/AND-248
+                    Logger.log.logError("System bug throwing error.", e);
+                    leScanRunning = false;
+                    crashCallBackWrapper.setCallback(null);
+                }
             }
         }
     }
