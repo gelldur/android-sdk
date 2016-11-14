@@ -22,6 +22,9 @@ import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
 import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
+import com.sensorberg.sdk.location.LocationHelper;
+import com.sensorberg.sdk.location.LocationHelper23;
+import com.sensorberg.sdk.location.LocationHelperXX;
 import com.sensorberg.sdk.model.ISO8601TypeAdapter;
 import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 import com.sensorberg.sdk.settings.DefaultSettings;
@@ -33,6 +36,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.LocationManager;
+import android.os.Build;
 
 import java.util.Date;
 
@@ -75,6 +79,16 @@ public class ProvidersModule {
     @Singleton
     public LocationManager provideLocationManager(Context context) {
         return (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+    }
+
+    @Provides
+    @Singleton
+    public LocationHelper provideLocationHelper(LocationManager locationManager, PermissionChecker permissionChecker) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return new LocationHelper23(locationManager, permissionChecker);
+        } else {
+            return new LocationHelperXX(locationManager, permissionChecker);
+        }
     }
 
     @Provides
