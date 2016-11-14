@@ -5,49 +5,41 @@ import android.os.Parcel;
 
 import java.util.UUID;
 
+import lombok.Getter;
 import lombok.ToString;
 
 @ToString
 public class InAppAction extends Action implements android.os.Parcelable {
 
-    private final String subject;
+    /**
+     * -- GETTER --
+     * the subject of this action as entered on the web interface. This field is optional!
+     *
+     * @return the subject or null
+     */
+    @Getter private final String subject;
 
-    private final String body;
+    /**
+     * -- GETTER --
+     * the body of the action as entered in the web interface. This field is optional!
+     *
+     * @return the body as a string or null
+     */
+    @Getter private final String body;
 
-    private final Uri uri;
+    /**
+     * -- GETTER --
+     * the URL of the website as entered in the web interface. This field is mandatory.
+     *
+     * @return the url
+     */
+    @Getter private final Uri uri;
 
     public InAppAction(UUID uuid, String subject, String body, String payload, Uri uri, long delayTime) {
         super(ActionType.MESSAGE_IN_APP, delayTime, uuid, payload);
         this.subject = subject;
         this.body = body;
         this.uri = uri;
-    }
-
-    /**
-     * the subject of this action as entered on the web interface. This field is optional!
-     *
-     * @return the subject or null
-     */
-    public String getSubject() {
-        return subject;
-    }
-
-    /**
-     * the body of the action as entered in the web interface. This field is optional!
-     *
-     * @return the body as a string or null
-     */
-    public String getBody() {
-        return body;
-    }
-
-    /**
-     * the URL of the website as entered in the web interface. This field is mandatory.
-     *
-     * @return the url
-     */
-    public Uri getUri() {
-        return uri;
     }
 
     @Override

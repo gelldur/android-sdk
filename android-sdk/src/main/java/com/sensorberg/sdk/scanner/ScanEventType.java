@@ -1,5 +1,7 @@
 package com.sensorberg.sdk.scanner;
 
+import lombok.Getter;
+
 /**
  * Enumeration {@link ScanEventType} enumerates the various event types.
  */
@@ -14,7 +16,13 @@ public enum ScanEventType {
      */
     EXIT(1 << 1);
 
-    private final int mask;
+    /**
+     * -- GETTER --
+     * Return the mask value of the {@link ScanEventType}.
+     *
+     * @return the mask value of the {@link ScanEventType}
+     */
+    @Getter private final int mask;
 
     ScanEventType(int mask) {
         this.mask = mask;
@@ -31,12 +39,4 @@ public enum ScanEventType {
         return (eventMask | eventType.mask);
     }
 
-    /**
-     * Return the mask value of the {@link ScanEventType}.
-     *
-     * @return the mask value of the {@link ScanEventType}
-     */
-    public int getMask() {
-        return (mask);
-    }
 }

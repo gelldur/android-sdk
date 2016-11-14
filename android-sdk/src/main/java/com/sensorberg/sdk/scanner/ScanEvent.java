@@ -1,11 +1,12 @@
 package com.sensorberg.sdk.scanner;
 
-import com.sensorberg.sdk.model.BeaconId;
-import com.sensorberg.utils.Objects;
-
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.sensorberg.sdk.model.BeaconId;
+import com.sensorberg.utils.Objects;
+
+import lombok.Getter;
 import lombok.ToString;
 
 /**
@@ -27,15 +28,47 @@ public class ScanEvent implements Parcelable {
         }
     };
 
-    private String hardwareAdress;
+    /**
+     * -- GETTER --
+     * Returns the hardware address of this BluetoothDevice.
+     * <p> For example, "00:11:22:AA:BB:CC".
+     *
+     * @return Bluetooth hardware address as string
+     */
+    @Getter private String hardwareAdress;
 
-    private int initialRssi;
+    /**
+     * -- GETTER --
+     * Get the initial RSSI of this event.
+     *
+     * @return the received signal strength in db
+     */
+    @Getter private int initialRssi;
 
-    private int calRssi;
+    /**
+     * -- GETTER --
+     * The provided rssi provided by the beacon. Corresponds to the rssi of an iPhone 5S in 1 meter distance.
+     * This value can be used for disatance calculations
+     *
+     * @return rssi in db
+     */
+    @Getter private int calRssi;
 
-    private final BeaconId beaconId;
+    /**
+     * -- GETTER --
+     * Returns the {@link BeaconId} of the {@link ScanEvent}.
+     *
+     * @return the {@link BeaconId} of the {@link ScanEvent}
+     */
+    @Getter private final BeaconId beaconId;
 
-    private final long eventTime;
+    /**
+     * -- GETTER --
+     * Returns the event time in milliseconds of the {@link ScanEvent}.
+     *
+     * @return the event time in milliseconds of the {@link ScanEvent}
+     */
+    @Getter private final long eventTime;
 
     private final boolean entry;
 
@@ -102,14 +135,6 @@ public class ScanEvent implements Parcelable {
         return (result);
     }
 
-    /**
-     * Returns the {@link BeaconId} of the {@link ScanEvent}.
-     *
-     * @return the {@link BeaconId} of the {@link ScanEvent}
-     */
-    public BeaconId getBeaconId() {
-        return (beaconId);
-    }
 
     /**
      * Returns the event type: entry or not entry i.e.exit.
@@ -119,46 +144,6 @@ public class ScanEvent implements Parcelable {
     public boolean isEntry() {
         return (entry);
     }
-
-    /**
-     * Returns the event time in milliseconds of the {@link ScanEvent}.
-     *
-     * @return the event time in milliseconds of the {@link ScanEvent}
-     */
-    public long getEventTime() {
-        return (eventTime);
-    }
-
-    /**
-     * The provided rssi provided by the beacon. Corresponds to the rssi of an iPhone 5S in 1 meter distance.
-     * This value can be used for disatance calculations
-     *
-     * @return rssi in db
-     */
-    public int getCalRssi() {
-        return calRssi;
-    }
-
-    /**
-     * Returns the hardware address of this BluetoothDevice.
-     * <p> For example, "00:11:22:AA:BB:CC".
-     *
-     * @return Bluetooth hardware address as string
-     */
-    public String getHardwareAdress() {
-        return hardwareAdress;
-    }
-
-    /**
-     * Get the initial RSSI of this event.
-     *
-     * @return the received signal strength in db
-     */
-
-    public int getInitialRssi() {
-        return initialRssi;
-    }
-
 
     public static class Builder {
 

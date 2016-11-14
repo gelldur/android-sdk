@@ -22,6 +22,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  *
  * Copyright 2014 Radius Networks
@@ -70,14 +73,18 @@ public class BluetoothCrashResolver {
 
     private long lastBluetoothOffTime = 0l;
     private long lastBluetoothTurningOnTime = 0l;
+    @Getter
     private long lastBluetoothCrashDetectionTime = 0l;
+    @Getter
     private int detectedCrashCount = 0;
+    @Getter
     private int recoveryAttemptCount = 0;
     private boolean lastRecoverySucceeded = false;
     private long lastStateSaveTime = 0l;
     private static final long MIN_TIME_BETWEEN_STATE_SAVES_MILLIS = 60000l;
 
     private Context context = null;
+    @Setter
     private UpdateNotifier updateNotifier;
     private final Set<String> distinctBluetoothAddresses = new HashSet<>();
     private final DiscoveryCanceller discoveryCanceller = new DiscoveryCanceller();
@@ -226,15 +233,6 @@ public class BluetoothCrashResolver {
 
     }
 
-    public long getLastBluetoothCrashDetectionTime() {
-        return lastBluetoothCrashDetectionTime;
-    }
-    public int getDetectedCrashCount() {
-        return detectedCrashCount;
-    }
-    public int getRecoveryAttemptCount() {
-        return recoveryAttemptCount;
-    }
     public boolean isLastRecoverySucceeded() {
         return lastRecoverySucceeded;
     }
@@ -244,9 +242,6 @@ public class BluetoothCrashResolver {
         void dataUpdated();
     }
 
-    public void setUpdateNotifier(UpdateNotifier updateNotifier) {
-        this.updateNotifier = updateNotifier;
-    }
 
     /**
      Used to force a recovery operation
