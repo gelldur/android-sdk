@@ -1,6 +1,8 @@
 package com.sensorberg.sdk.action;
 
 
+import lombok.Getter;
+
 /**
  * Enumeration {@link ActionType} enumerates the various {@link Action} types; each {@link ActionType} has an id with ids below <code>0x1000000</code> being
  * reserved for the sensorberg API.
@@ -27,7 +29,12 @@ public enum ActionType {
      */
     SILENT(0x00000103);
 
-    private final int id;
+    /**
+     * Returns the id of the {@link ActionType}.
+     *
+     * @return the id of the {@link ActionType}
+     */
+    @Getter private final int id;
 
     ActionType(int id) {
         this.id = id;
@@ -48,12 +55,4 @@ public enum ActionType {
         return (null);
     }
 
-    /**
-     * Returns the id of the {@link ActionType}.
-     *
-     * @return the id of the {@link ActionType}
-     */
-    public int getId() {
-        return (id);
-    }
 }
