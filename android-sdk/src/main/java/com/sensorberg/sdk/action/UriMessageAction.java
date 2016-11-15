@@ -1,11 +1,12 @@
 package com.sensorberg.sdk.action;
 
-import com.sensorberg.utils.Objects;
-
 import android.os.Parcel;
+
+import com.sensorberg.utils.Objects;
 
 import java.util.UUID;
 
+import lombok.Getter;
 import lombok.ToString;
 
 /**
@@ -28,11 +29,29 @@ public class UriMessageAction extends Action {
         }
     };
 
-    private final String title;
+    /**
+     * -- GETTER --
+     * Returns the title
+     *
+     * @return the title
+     */
+    @Getter private final String title;
 
-    private final String content;
+    /**
+     * -- GETTER --
+     * Returns the content
+     *
+     * @return the content
+     */
+    @Getter private final String content;
 
-    private final String uri;
+    /**
+     * -- GETTER --
+     * Returns the URI of the {@link UriMessageAction}.
+     *
+     * @return the URI of the {@link UriMessageAction}
+     */
+    @Getter private final String uri;
 
     /**
      * Creates and initializes a new {@link UriMessageAction}.
@@ -55,33 +74,6 @@ public class UriMessageAction extends Action {
         this.title = source.readString();
         this.content = source.readString();
         this.uri = source.readString();
-    }
-
-    /**
-     * Returns the URI of the {@link UriMessageAction}.
-     *
-     * @return the URI of the {@link UriMessageAction}
-     */
-    public String getUri() {
-        return (uri);
-    }
-
-    /**
-     * Returns the content
-     *
-     * @return the content
-     */
-    public String getContent() {
-        return (content);
-    }
-
-    /**
-     * Returns the title
-     *
-     * @return the title
-     */
-    public String getTitle() {
-        return (title);
     }
 
     /**

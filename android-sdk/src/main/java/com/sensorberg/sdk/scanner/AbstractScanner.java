@@ -1,18 +1,5 @@
 package com.sensorberg.sdk.scanner;
 
-import com.sensorberg.sdk.Logger;
-import com.sensorberg.sdk.internal.interfaces.Platform;
-import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
-import com.sensorberg.sdk.internal.interfaces.Clock;
-import com.sensorberg.sdk.internal.interfaces.FileManager;
-import com.sensorberg.sdk.internal.interfaces.HandlerManager;
-import com.sensorberg.sdk.internal.interfaces.RunLoop;
-import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
-import com.sensorberg.sdk.model.BeaconId;
-import com.sensorberg.sdk.settings.DefaultSettings;
-import com.sensorberg.sdk.settings.SettingsManager;
-import com.sensorberg.sdk.settings.TimeConstants;
-
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -21,12 +8,26 @@ import android.os.Message;
 import android.util.Log;
 import android.util.Pair;
 
+import com.sensorberg.sdk.Logger;
+import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
+import com.sensorberg.sdk.internal.interfaces.Clock;
+import com.sensorberg.sdk.internal.interfaces.FileManager;
+import com.sensorberg.sdk.internal.interfaces.HandlerManager;
+import com.sensorberg.sdk.internal.interfaces.Platform;
+import com.sensorberg.sdk.internal.interfaces.RunLoop;
+import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
+import com.sensorberg.sdk.model.BeaconId;
+import com.sensorberg.sdk.settings.DefaultSettings;
+import com.sensorberg.sdk.settings.SettingsManager;
+import com.sensorberg.sdk.settings.TimeConstants;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
 
 import lombok.Getter;
+import lombok.Setter;
 
 public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback, Platform.ForegroundStateListener {
 
@@ -70,7 +71,7 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
 
     private long lastScanStart;
 
-    private RssiListener rssiListener = RssiListener.NONE;
+    @Getter @Setter private RssiListener rssiListener = RssiListener.NONE;
 
     AbstractScanner(SettingsManager stgMgr, boolean shouldRestoreBeaconStates, Clock clk, FileManager fileManager,
             ServiceScheduler scheduler, HandlerManager handlerManager, BluetoothPlatform btPlatform) {
@@ -267,13 +268,6 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
         }
     }
 
-    public RssiListener getRssiListener() {
-        return rssiListener;
-    }
-
-    public void setRssiListener(RssiListener rssiListener) {
-        this.rssiListener = rssiListener;
-    }
 
     /**
      * Starts scanning.
