@@ -20,10 +20,6 @@ public abstract class LocationHelper {
         this.manager = manager;
         this.checker = checker;
         provider = determineProviderStartup(checker);
-        //TODO listen for provider availability changes (optional)
-        //TODO provider not existing case - list all providers, choose from them.
-        //TODO cache provider/permissions for api >= 23 (?)
-        //TODO tests for geocache
     }
 
     /**
