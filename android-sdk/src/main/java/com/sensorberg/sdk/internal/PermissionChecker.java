@@ -11,7 +11,6 @@ import java.util.Map;
 public class PermissionChecker {
 
     private final Context context;
-    private final Map<String, Boolean> permissionCache = new HashMap<>();
 
     public PermissionChecker(Context context) {
         this.context = context;
@@ -30,13 +29,7 @@ public class PermissionChecker {
     }
 
     private boolean checkForPermission(String permissionIdentifier){
-        if (permissionCache.get(permissionIdentifier) != null){
-            return permissionCache.get(permissionIdentifier);
-        }
-        int res = context.checkCallingOrSelfPermission(permissionIdentifier);
-        boolean value = (res == PackageManager.PERMISSION_GRANTED);
-        permissionCache.put(permissionIdentifier, value);
-        return value;
+        return context.checkCallingOrSelfPermission(permissionIdentifier)== PackageManager.PERMISSION_GRANTED;
     }
 
     /**

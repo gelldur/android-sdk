@@ -19,6 +19,8 @@ import java.util.UUID;
  */
 public class BeaconId implements Parcelable, Serializable {
 
+    public static final String INTENT_KEY = "com.sensorberg.sdk.BeaconId";
+
     private static final long serialVersionUID = 1L;
 
     /**
