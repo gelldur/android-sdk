@@ -4,6 +4,8 @@ import android.location.Location;
 
 import com.sensorberg.sdk.settings.TimeConstants;
 
+import lombok.NonNull;
+
 public class GeoHashLocation extends Location {
 
     public static final float MIN_ACCURACY_RADIUS = 25.0F;
@@ -34,6 +36,13 @@ public class GeoHashLocation extends Location {
             valid = false;
         }
         return valid;
+    }
+
+    public boolean isDifferent(@NonNull Location other) {
+        return this.getTime() != other.getTime() ||
+                this.getLatitude() != other.getLatitude() ||
+                this.getLongitude() != other.getLongitude() ||
+                this.getAccuracy() != other.getAccuracy();
     }
 
     private boolean isAccurateAndFresh() {

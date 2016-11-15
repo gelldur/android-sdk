@@ -3,6 +3,7 @@ package com.sensorberg.sdk.location;
 import android.location.Location;
 import android.location.LocationManager;
 
+import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.internal.PermissionChecker;
 
 import lombok.Getter;
@@ -29,21 +30,9 @@ public abstract class LocationHelper {
      * Also null if the location is not available or permissions are missing.
      */
     public String getGeohash() {
-        provider = determineProviderRuntime(checker);
-        if (provider == null) {
-            return null;
-        }
-        try {
-            if (manager.isProviderEnabled(provider)) {
-                Location fresh = manager.getLastKnownLocation(provider);
-                location = wrap(fresh);
-                if (location != null) {
-                    return location.getValidGeohash();
-                }
-            }
-        } catch (SecurityException | IllegalArgumentException ex) {
-            //TODO better logging.
-            ex.printStackTrace();
+        location = acquireGeohash();
+        if(location != null) {
+            return location.getValidGeohash();
         }
         return null;
     }
@@ -62,11 +51,34 @@ public abstract class LocationHelper {
      */
     protected abstract String determineProviderRuntime(PermissionChecker checker);
 
-    private GeoHashLocation wrap(Location fresh) {
-        if (fresh != null && !fresh.equals(location)) {
-            return new GeoHashLocation(fresh);
-        } else {
+    /**
+     * Try to get current location as passively as possible.
+     * (by using getLastKnownLocation only)
+     * @return Most recent known location.
+     */
+    private GeoHashLocation acquireGeohash() {
+        provider = determineProviderRuntime(checker);
+        if (provider == null) {
             return location;
         }
+        try {
+            if (!manager.isProviderEnabled(provider)) {
+                return location;
+            }
+            Location fresh = manager.getLastKnownLocation(provider);
+            if (fresh == null) {
+                return location;
+            }
+            if (location == null || location.isDifferent(fresh)) {
+                return new GeoHashLocation(fresh);
+            }
+        } catch (SecurityException ex) {
+            //This should not happen since we're always checking for permission.
+            Logger.log.logError("Missing permission for "+provider+" provider", ex);
+        } catch (IllegalArgumentException ex) {
+            //This should not happen since there are probably no devices without network or passive provider.
+            Logger.log.logError("Provider "+provider+" is missing on this device", ex);
+        }
+        return location;
     }
 }
