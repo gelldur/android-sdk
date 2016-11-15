@@ -11,6 +11,7 @@ import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolverConfiguration;
 import com.sensorberg.sdk.test.TestGenericBroadcastReceiver;
 import com.sensorberg.sdk.test.TestGenericBroadcastReceiver2;
+import com.sensorberg.sdk.testUtils.TestBluetoothPlatform;
 
 import org.fest.assertions.api.Assertions;
 import org.junit.After;
@@ -71,6 +72,7 @@ public class SensorbergServiceInternalTests {
 
         tested = spy(new SensorbergService());
         tested.onCreate();
+        tested.bluetoothPlatform = new TestBluetoothPlatform();
         fileManager = spy(fileManager);
         tested.fileManager = fileManager;
         tested.transport = Mockito.mock(Transport.class);
