@@ -76,5 +76,9 @@ public class TheIntentSchedulingShould {
         Assertions.assertThat(intentFired)
                 .overridingErrorMessage("The intent was fired even though it was unscheduled")
                 .isFalse();
+
+        Assertions.assertThat(true)
+                .overridingErrorMessage("Force failed, to check CI")
+                .isFalse();
     }
 }
