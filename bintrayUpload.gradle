@@ -43,3 +43,7 @@ bintray {
         publish = true
     }
 }
+
+bintrayUpload {
+    description 'Publishes artifacts to bintray.com -> jcenter()'
+}
