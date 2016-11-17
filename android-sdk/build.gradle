@@ -110,29 +110,7 @@ checkstyle {
 }
 
 apply from: '../bintrayUpload.gradle'
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            pom.project {
-                inceptionYear '2014'
-                name 'Sensorberg Android SDK'
-                artifactId project.archivesBaseName
-                groupId = project.group
-                packaging 'aar'
-                description 'Android SDK for the Sensorberg beacon management platform'
-                url 'https://github.com/sensorberg-dev/android-sdk'
-
-                scm {
-                    url 'scm:git@github.com:sensorberg-dev/android-sdk.git'
-                    connection 'scm:git@github.com:sensorberg-dev/android-sdk.git'
-                    developerConnection 'scm:git@github.com:sensorberg-dev/android-sdk.git'
-                }
-            }
-        }
-    }
-}
-
+apply from: '../snapshotUpload.gradle'
 
 sonarqube {
     properties {
@@ -157,15 +135,3 @@ sonarqube {
 def wrapInQuotes(String wrapMe){
     return "\"" + wrapMe + "\"";
 }
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: "file://temp")
-        }
-    }
-}
-
-
-
-
