@@ -1,11 +1,15 @@
 package com.sensorberg.sdk.location;
 
+import android.support.test.runner.AndroidJUnit4;
+
 import static org.junit.Assert.*;
 
 import java.util.Random;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+@RunWith(AndroidJUnit4.class)
 public class GeoHashTest {
 
     /*

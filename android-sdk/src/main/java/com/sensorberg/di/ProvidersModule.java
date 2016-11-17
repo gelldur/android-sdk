@@ -23,8 +23,6 @@ import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
 import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.location.LocationHelper;
-import com.sensorberg.sdk.location.LocationHelper23;
-import com.sensorberg.sdk.location.LocationHelperXX;
 import com.sensorberg.sdk.model.ISO8601TypeAdapter;
 import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 import com.sensorberg.sdk.settings.DefaultSettings;
@@ -83,12 +81,8 @@ public class ProvidersModule {
 
     @Provides
     @Singleton
-    public LocationHelper provideLocationHelper(LocationManager locationManager, PermissionChecker permissionChecker) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return new LocationHelper23(locationManager, permissionChecker);
-        } else {
-            return new LocationHelperXX(locationManager, permissionChecker);
-        }
+    public LocationHelper provideLocationHelper(LocationManager locationManager) {
+        return new LocationHelper(locationManager);
     }
 
     @Provides

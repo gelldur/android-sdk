@@ -18,18 +18,10 @@ import javax.inject.Inject;
 public class Scanner extends AbstractScanner {
     public static final String SCANNER_EVENT = "com.sensorberg.sdk.scanner.SDKScanner.SCANNER_EVENT";
 
-    @Inject
-    protected LocationHelper locationHelper;
-
     public Scanner(SettingsManager stgMgr, boolean shouldRestoreBeaconStates, Clock clock, FileManager fileManager,
                    ServiceScheduler scheduler, HandlerManager handlerManager, BluetoothPlatform bluetoothPlatform) {
         super(stgMgr, shouldRestoreBeaconStates, clock, fileManager, scheduler, handlerManager, bluetoothPlatform);
         SensorbergSdk.getComponent().inject(this);
-    }
-
-    @Override
-    public String getCurrentGeohash() {
-        return locationHelper.getGeohash();
     }
 
     @Override

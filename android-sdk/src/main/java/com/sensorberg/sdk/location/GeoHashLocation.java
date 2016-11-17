@@ -1,52 +1,36 @@
 package com.sensorberg.sdk.location;
 
 import android.location.Location;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-import com.sensorberg.sdk.settings.TimeConstants;
+import lombok.Getter;
 
 public class GeoHashLocation extends Location {
 
-    public static final float MIN_ACCURACY_RADIUS = 25.0F;
-    public static final long MAX_LOCATION_AGE = TimeConstants.ONE_MINUTE;
-
-    private String geohash;
-    private boolean valid = false;
+    @Getter private String geohash;
 
     public GeoHashLocation(Location location) {
         super(location);
-        if (isAccurateAndFresh()) {
-            geohash = GeoHash.encode(location.getLatitude(), location.getLongitude(), 9).toHashString();
-            valid = true;
-        }
+        geohash = GeoHash.encode(location.getLatitude(), location.getLongitude(), 9).toHashString();
     }
 
-    public String getValidGeohash() {
-        return isValid() ? geohash : null;
-    }
-
-    public boolean isValid() {
-        if (!valid) {
-            return false;
+    // parcelable implementations
+    public static final Parcelable.Creator<GeoHashLocation> CREATOR = new Parcelable.Creator<GeoHashLocation>() {
+        @Override
+        public GeoHashLocation createFromParcel(Parcel in) {
+            Location location = Location.CREATOR.createFromParcel(in);
+            return new GeoHashLocation(location);
         }
-        if (isAccurateAndFresh()) {
-            valid = true;
-        } else {
-            valid = false;
-        }
-        return valid;
-    }
 
-    public boolean isDifferent(Location other) {
-        if (other == null) {
-            return true;
+        @Override
+        public GeoHashLocation[] newArray(int size) {
+            return new GeoHashLocation[size];
         }
-        return this.getTime() != other.getTime() ||
-                this.getLatitude() != other.getLatitude() ||
-                this.getLongitude() != other.getLongitude() ||
-                this.getAccuracy() != other.getAccuracy();
-    }
+    };
 
-    private boolean isAccurateAndFresh() {
-        return getAccuracy() < MIN_ACCURACY_RADIUS && (System.currentTimeMillis() - getTime()) < MAX_LOCATION_AGE;
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        super.writeToParcel(parcel, flags);
     }
 }
