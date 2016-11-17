@@ -6,7 +6,9 @@ import com.sensorberg.sdk.InternalApplicationBootstrapper;
 import com.sensorberg.sdk.SensorbergService;
 import com.sensorberg.sdk.internal.AndroidPlatform;
 import com.sensorberg.sdk.internal.PendingIntentStorage;
+import com.sensorberg.sdk.scanner.AbstractScanner;
 import com.sensorberg.sdk.scanner.BeaconMap;
+import com.sensorberg.sdk.scanner.Scanner;
 
 import android.app.Application;
 
@@ -32,6 +34,8 @@ public interface Component {
     void inject(SensorbergSdk sensorbergSdk);
 
     void inject(BackgroundDetector backgroundDetector);
+
+    void inject(AbstractScanner scanner);
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     final class Initializer {

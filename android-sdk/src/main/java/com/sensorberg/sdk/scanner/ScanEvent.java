@@ -72,10 +72,19 @@ public class ScanEvent implements Parcelable {
 
     private final boolean entry;
 
-    protected ScanEvent(BeaconId beaconId, long eventTime, boolean entry) {
+    /**
+     * -- GETTER --
+     * Returns the geohash for this {@link ScanEvent}.
+     *
+     * @return Geohash string or null if there is none.
+     */
+    @Getter private final String geohash;
+
+    protected ScanEvent(BeaconId beaconId, long eventTime, boolean entry, String geohash) {
         this.beaconId = beaconId;
         this.eventTime = eventTime;
         this.entry = entry;
+        this.geohash = geohash;
     }
 
     private ScanEvent(Parcel source) {
@@ -85,10 +94,11 @@ public class ScanEvent implements Parcelable {
         this.hardwareAdress = source.readString();
         this.initialRssi = source.readInt();
         this.calRssi = source.readInt();
+        this.geohash = source.readString();
     }
 
-    public ScanEvent(BeaconId beaconId, long now, boolean entry, String address, int rssi, int calRssi) {
-        this(beaconId, now, entry);
+    public ScanEvent(BeaconId beaconId, long now, boolean entry, String address, int rssi, int calRssi, String geohash) {
+        this(beaconId, now, entry, geohash);
         this.hardwareAdress = address;
         this.initialRssi = rssi;
         this.calRssi = calRssi;
@@ -109,6 +119,7 @@ public class ScanEvent implements Parcelable {
         destination.writeString(hardwareAdress);
         destination.writeInt(initialRssi);
         destination.writeInt(calRssi);
+        destination.writeString(geohash);
     }
 
     @Override
@@ -123,7 +134,7 @@ public class ScanEvent implements Parcelable {
             return (false);
         }
         ScanEvent other = (ScanEvent) object;
-        return Objects.equals(beaconId, other.beaconId) && entry == other.entry;
+        return Objects.equals(beaconId, other.beaconId) && entry == other.entry && Objects.equals(geohash, other.geohash);
     }
 
     @Override
@@ -132,6 +143,7 @@ public class ScanEvent implements Parcelable {
         int result = 1;
         result = prime * result + ((beaconId == null) ? 0 : beaconId.hashCode());
         result = prime * result + (entry ? 1 : 0);
+        result = prime * result + (geohash == null ? 0 : geohash.hashCode());
         return (result);
     }
 
@@ -153,6 +165,8 @@ public class ScanEvent implements Parcelable {
 
         private boolean entry;
 
+        private String geohash;
+
         public Builder() {
         }
 
@@ -171,8 +185,13 @@ public class ScanEvent implements Parcelable {
             return this;
         }
 
+        public Builder withGeohash(String geohash) {
+            this.geohash = geohash;
+            return this;
+        }
+
         public ScanEvent build() {
-            return new ScanEvent(beaconId, eventTime, entry);
+            return new ScanEvent(beaconId, eventTime, entry, geohash);
         }
     }
 
