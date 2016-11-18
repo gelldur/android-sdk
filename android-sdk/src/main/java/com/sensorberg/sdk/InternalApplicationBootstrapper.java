@@ -12,6 +12,7 @@ import com.sensorberg.sdk.internal.interfaces.MessageDelayWindowLengthListener;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.model.BeaconId;
+import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.presenter.LocalBroadcastManager;
 import com.sensorberg.sdk.presenter.ManifestParser;
 import com.sensorberg.sdk.receivers.GenericBroadcastReceiver;
@@ -149,6 +150,10 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
         }
     }
 
+    public void onConversionUpdate(ActionConversion conversion) {
+        beaconActionHistoryPublisher.onConversionUpdate(conversion);
+    }
+
     public void presentBeaconEvent(BeaconEvent beaconEvent) {
         if (beaconEvent != null && beaconEvent.getAction() != null) {
             Action beaconEventAction = beaconEvent.getAction();
@@ -177,6 +182,9 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
                 return;
             }
 
+            //Before sending Action to avoid race conditions.
+            ActionConversion conversion = new ActionConversion(beaconEvent.getAction().getUuid(), ActionConversion.TYPE_SUPPRESSED);
+            onConversionUpdate(conversion);
             if (presentationDelegate == null) {
                 Intent broadcastIntent = new Intent(ManifestParser.actionString);
                 broadcastIntent.putExtra(Action.INTENT_KEY, beaconEvent.getAction());
