@@ -13,6 +13,7 @@ import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback
 import com.sensorberg.sdk.internal.transport.interfaces.TransportSettingsCallback;
 import com.sensorberg.sdk.internal.transport.model.HistoryBody;
 import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
+import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.model.persistence.BeaconAction;
 import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.model.server.ResolveResponse;
@@ -163,6 +164,7 @@ public class TransportShould {
     public void test_publish_data_to_the_server() throws Exception {
         List<BeaconScan> scans = new ArrayList<>();
         List<BeaconAction> actions = new ArrayList<>();
+        List<ActionConversion> conversions = new ArrayList<>();
 
         BeaconScan scan1 = BeaconScan.from(TestConstants.BEACON_SCAN_ENTRY_EVENT(System.currentTimeMillis() - TimeConstants.ONE_HOUR));
         scan1.setCreatedAt(System.currentTimeMillis() - TimeConstants.ONE_HOUR);
@@ -171,7 +173,7 @@ public class TransportShould {
         Mockito.when(mockRetrofitApiService.publishHistory(any(HistoryBody.class)))
                 .thenReturn(Calls.response(new ResolveResponse.Builder().build()));
 
-        tested.publishHistory(scans, actions, new TransportHistoryCallback() {
+        tested.publishHistory(scans, actions, conversions, new TransportHistoryCallback() {
             @Override
             public void onFailure(Exception volleyError) {
                 Assert.fail();
@@ -183,9 +185,10 @@ public class TransportShould {
             }
 
             @Override
-            public void onSuccess(List<BeaconScan> scans, List<BeaconAction> actions) {
+            public void onSuccess(List<BeaconScan> scans, List<BeaconAction> actions, List<ActionConversion> conversions) {
                 Assertions.assertThat(scans).isNotNull();
                 Assertions.assertThat(scans.size()).isEqualTo(1);
+                Assertions.assertThat(conversions).isNotNull();
             }
         });
     }
