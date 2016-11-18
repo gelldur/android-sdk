@@ -48,9 +48,20 @@ dependencies {
     provided "org.projectlombok:lombok:1.16.2"
 }
 
+def buildVersion() {
+    def output
+    def isCi = System.getenv("CI")
+    if (isCi == "true") {
+        output = "${project.ext.SDK_VERSION}" + "-" + System.getenv("BITRISE_GIT_COMMIT")
+    } else {
+        output = "${project.ext.SDK_VERSION}${project.ext.RC_VERSION}"
+    }
+    return output;
+}
+
 group = "com.sensorberg.sdk"
 archivesBaseName = 'android-sdk'
-version = "${project.ext.SDK_VERSION}${project.ext.RC_VERSION}"
+version = buildVersion()
 
 def resolverURL = System.getenv("RESOLVER_URL") ?: project.ext.has("resolver_url") ? project.ext.get("resolver_url"): null
 
