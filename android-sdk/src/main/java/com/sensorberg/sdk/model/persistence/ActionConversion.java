@@ -24,7 +24,7 @@ public class ActionConversion implements Parcelable {
     public static final int TYPE_SUPPRESSED = -1;
 
     /**
-     * App has confirmed via {@link com.sensorberg.SensorbergSdk#notifyActionShown(UUID, Context) SensorbergSdk.notifyActionShown}
+     * App has confirmed via {@link com.sensorberg.SensorbergSdk#notifyActionShowAttempt(UUID, Context) SensorbergSdk.notifyActionShowAttempt}
      * that the action was shown to  the user by notification or otherwise.
      */
     public static final int TYPE_IGNORED = 0;
