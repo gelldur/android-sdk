@@ -8,6 +8,7 @@ import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback
 import com.sensorberg.sdk.internal.transport.interfaces.TransportSettingsCallback;
 import com.sensorberg.sdk.internal.transport.model.HistoryBody;
 import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
+import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.model.server.BaseResolveResponse;
 import com.sensorberg.sdk.model.server.ResolveAction;
 import com.sensorberg.sdk.model.server.ResolveResponse;
@@ -146,16 +147,16 @@ public class RetrofitApiTransport implements Transport {
     }
 
     @Override
-    public void publishHistory(final List<BeaconScan> scans, final List<BeaconAction> actions, final TransportHistoryCallback callback) {
+    public void publishHistory(final List<BeaconScan> scans, final List<BeaconAction> actions, final List<ActionConversion> conversions, final TransportHistoryCallback callback) {
 
-        HistoryBody body = new HistoryBody(scans, actions, mClock);
+        HistoryBody body = new HistoryBody(scans, actions, conversions, mClock);
         Call<ResolveResponse> call = getApiService().publishHistory(body);
 
         call.enqueue(new Callback<ResolveResponse>() {
             @Override
             public void onResponse(Call<ResolveResponse> call, Response<ResolveResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    callback.onSuccess(scans, actions);
+                    callback.onSuccess(scans, actions, conversions);
                     callback.onInstantActions(response.body().getInstantActionsAsBeaconEvent());
                 } else {
                     callback.onFailure(new Exception("No Content, Invalid Api Key"));

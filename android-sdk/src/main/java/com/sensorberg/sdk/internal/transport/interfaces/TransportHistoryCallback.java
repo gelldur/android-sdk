@@ -1,5 +1,6 @@
 package com.sensorberg.sdk.internal.transport.interfaces;
 
+import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.model.persistence.BeaconAction;
 import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.resolver.BeaconEvent;
@@ -11,5 +12,5 @@ public interface TransportHistoryCallback {
 
     void onInstantActions(List<BeaconEvent> instantActions);
 
-    void onSuccess(List<BeaconScan> scans, List<BeaconAction> actions);
+    void onSuccess(List<BeaconScan> scans, List<BeaconAction> actions, List<ActionConversion> conversions);
 }
