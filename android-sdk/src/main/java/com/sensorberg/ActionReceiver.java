@@ -47,7 +47,6 @@ import java.util.UUID;
  *
  * For sample implementation please refer to this blog post: //TODO
  */
-//TODO fix Uri so every Action has it.
 public abstract class ActionReceiver extends BroadcastReceiver {
 
     private static final String TAG = ActionReceiver.class.getName();
@@ -171,7 +170,7 @@ public abstract class ActionReceiver extends BroadcastReceiver {
     /**
      * Build your notification here if you wish to use conversion-ready implementation.
      * The conversion-ready implementation will let SDK know that user has tapped your notification.
-     * You will get result of tapping / deleting in {@link #onNotificationSuccess(Action, BeaconId, Uri, Bundle, Context) onNotificationSuccess}.
+     * You will get result of tapping in {@link #onNotificationSuccess(Action, BeaconId, Uri, Bundle, Context) onNotificationSuccess}.
      * Use result of {@link #getNotificationContentPendingIntent(Action, BeaconId, Uri, Bundle, Context, int) getNotificationContentPendingIntent} as {@link Notification#contentIntent}.
      * Without above the SDK won't get to know about successfull conversion, unless you'll let it know
      * by {@link SensorbergSdk#notifyActionSuccess(UUID, Context) SensorbergSdk.notifyActionSuccess}.
@@ -246,16 +245,14 @@ public abstract class ActionReceiver extends BroadcastReceiver {
     private PendingIntent getPendingIntent(String actionString, Action action, BeaconId beaconId, Uri uri, Bundle bundle, Context context, int flags) {
         Intent intent = new Intent(actionString);
         intent.setClass(context, this.getClass());
-        if (action != null) {
-            intent.putExtra(EXTRA_ACTION, action);
-        } else {
+        if (action == null) {
             Log.w(TAG, "Missing SDK Action! Action will be null in onNotificationSuccess");
         }
-        if (action != null) {
-            intent.putExtra(EXTRA_BEACON, (Parcelable) beaconId);
-        } else {
+        if (beaconId == null) {
             Log.w(TAG, "Missing BeaconId! BeaconId will be null in onNotificationSuccess");
         }
+        intent.putExtra(EXTRA_ACTION, action);
+        intent.putExtra(EXTRA_BEACON, (Parcelable) beaconId);
         intent.putExtra(EXTRA_URI, uri);
         intent.putExtra(EXTRA_BUNDLE, bundle);
         return PendingIntent.getBroadcast(context, 0, intent, flags);
