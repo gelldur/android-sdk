@@ -28,7 +28,7 @@ public class PermissionChecker {
         return checkForPermission(Manifest.permission.ACCESS_COARSE_LOCATION) || checkForPermission(Manifest.permission.ACCESS_FINE_LOCATION);
     }
 
-    private boolean checkForPermission(String permissionIdentifier){
+    public boolean checkForPermission(String permissionIdentifier){
         return context.checkCallingOrSelfPermission(permissionIdentifier)== PackageManager.PERMISSION_GRANTED;
     }
 
