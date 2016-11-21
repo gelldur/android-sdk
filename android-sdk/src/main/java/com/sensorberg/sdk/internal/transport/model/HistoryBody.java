@@ -3,6 +3,7 @@ package com.sensorberg.sdk.internal.transport.model;
 import com.google.gson.annotations.Expose;
 
 import com.sensorberg.sdk.internal.interfaces.Clock;
+import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.model.persistence.BeaconAction;
 import com.sensorberg.sdk.model.persistence.BeaconScan;
 
@@ -20,11 +21,15 @@ public class HistoryBody {
     public final List<BeaconAction> actions;
 
     @Expose
+    public final List<ActionConversion> conversions;
+
+    @Expose
     public final Date deviceTimestamp;
 
-    public HistoryBody(List<BeaconScan> scans, List<BeaconAction> actions, Clock clock) {
+    public HistoryBody(List<BeaconScan> scans, List<BeaconAction> actions, List<ActionConversion> conversions, Clock clock) {
         this.events = scans;
         this.deviceTimestamp = new Date(clock.now());
         this.actions = actions;
+        this.conversions = conversions;
     }
 }

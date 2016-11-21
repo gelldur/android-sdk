@@ -2,6 +2,7 @@ package com.sensorberg.sdk.scanner;
 
 import android.content.SharedPreferences;
 import android.os.Message;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -11,6 +12,7 @@ import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.interfaces.RunLoop;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback;
+import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.model.persistence.BeaconAction;
 import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.resolver.BeaconEvent;
@@ -22,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import lombok.Setter;
@@ -50,6 +53,8 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     List<BeaconScan> beaconScans = Collections.synchronizedList(new LinkedList<BeaconScan>());
 
     List<BeaconAction> beaconActions = Collections.synchronizedList(new LinkedList<BeaconAction>());
+
+    Map<String, ActionConversion> actionConversions = Collections.synchronizedMap(new HashMap<String, ActionConversion>());
 
     private HashMap<String, Long> suppressionTimeStore = new HashMap<>();
 
@@ -87,20 +92,29 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     private void publishHistorySynchronously() {
         final List<BeaconScan> notSentScans = new LinkedList<>(beaconScans);
         final List<BeaconAction> notSentActions = new LinkedList<>(beaconActions);
+        final List<String> notSentConversionsKeys = new LinkedList<>(actionConversions.keySet());
+        final List<ActionConversion> notSentConversionsValues = new LinkedList<>(actionConversions.values());
 
-        if (notSentScans.isEmpty() && notSentActions.isEmpty()) {
+        if (notSentScans.isEmpty() && notSentActions.isEmpty() && notSentConversionsKeys.isEmpty()) {
             Logger.log.logBeaconHistoryPublisherState("nothing to report");
             return;
         } else {
-            Logger.log.logBeaconHistoryPublisherState("reporting " + notSentScans.size() + " scans and " + notSentActions.size() + " actions");
+            Logger.log.logBeaconHistoryPublisherState("reporting "
+                    + notSentScans.size() + " scans and "
+                    + notSentActions.size() + " actions and " +
+                    + notSentConversionsKeys.size() + " conversions");
         }
 
-        transport.publishHistory(notSentScans, notSentActions, new TransportHistoryCallback() {
+        transport.publishHistory(notSentScans, notSentActions, notSentConversionsValues, new TransportHistoryCallback() {
             @Override
-            public void onSuccess(List<BeaconScan> scanObjectList, List<BeaconAction> actionList) {
+            public void onSuccess(List<BeaconScan> scanObjectList, List<BeaconAction> actionList, List<ActionConversion> conversions) {
                 beaconActions.removeAll(notSentActions);
                 beaconScans.removeAll(notSentScans);
-                Logger.log.logBeaconHistoryPublisherState("published " + notSentActions.size() + " campaignStats and " + notSentScans.size() + " beaconStats successfully.");
+                actionConversions.keySet().removeAll(notSentConversionsKeys);
+                Logger.log.logBeaconHistoryPublisherState("published "
+                        + notSentActions.size() + " campaignStats and "
+                        + notSentScans.size() + " beaconStats and " +
+                        + notSentConversionsKeys.size() + " actionConversions successfully.");
                 saveAllData();
             }
 
@@ -125,6 +139,17 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
         if (beaconEvent.isReportImmediately()){
             publishHistory();
         }
+    }
+
+    public void onConversionUpdate(ActionConversion incoming) {
+        ActionConversion existing = actionConversions.get(incoming.getAction());
+        if (existing != null && incoming.getType() <= existing.getType()) {
+            Log.w("Conversion", "Conversion "+existing.getAction()+" type change rejected. " +
+                    "Type can be changed only to higher. " +
+                    "Existing type: "+existing.getType()+" Incoming type: "+incoming.getType());
+            return;
+        }
+        actionConversions.put(incoming.getAction(), incoming);
     }
 
     public void deleteAllObjects() {
@@ -175,7 +200,16 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
             Type listType = new TypeToken<List<BeaconScan>>() {}.getType();
             beaconScans = Collections.synchronizedList((List<BeaconScan>) gson.fromJson(scanJson, listType));
         }
-        Logger.log.logBeaconHistoryPublisherState("loaded " + beaconActions.size() + " campaignStats and " + beaconScans.size()  +" beaconStats from shared preferences");
+
+        String conversionJson = sharedPreferences.getString(ActionConversion.SHARED_PREFS_TAG, "");
+        if (!conversionJson.isEmpty()) {
+            Type mapType = new TypeToken<HashMap<String, ActionConversion>>() {}.getType();
+            actionConversions = Collections.synchronizedMap((Map<String, ActionConversion>) gson.fromJson(conversionJson, mapType));
+        }
+        Logger.log.logBeaconHistoryPublisherState("loaded "
+                + beaconActions.size() + " campaignStats and "
+                + beaconScans.size()  +" beaconStats "
+                + actionConversions.size() + " actionConversions from shared preferences");
 
         String supressionTimeStoreString = sharedPreferences.getString(SUPRESSION_TIME_STORE_SHARED_PREFS_TAG,"");
         if (!supressionTimeStoreString.isEmpty()){
@@ -187,10 +221,14 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     public void saveAllData() {
         String actionsJson = gson.toJson(beaconActions);
         String scansJson = gson.toJson(beaconScans);
+        String conversionJson = gson.toJson(actionConversions);
         String supressionTimeStoreJson = gson.toJson(suppressionTimeStore);
         if(Logger.isVerboseLoggingEnabled()){
             try {
-                Logger.log.logBeaconHistoryPublisherState("size of the stats campaignStats:" + actionsJson.getBytes("UTF-8").length + " beaconStats:" + scansJson.getBytes("UTF-8").length);
+                Logger.log.logBeaconHistoryPublisherState("size of the stats" +
+                        " campaignStats:" + actionsJson.getBytes("UTF-8").length +
+                        " beaconStats:" + scansJson.getBytes("UTF-8").length +
+                        " conversionStats:" + conversionJson.getBytes("UTF-8").length);
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
@@ -199,9 +237,14 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
         editor
                 .putString(BeaconAction.SHARED_PREFS_TAG, actionsJson)
                 .putString(BeaconScan.SHARED_PREFS_TAG, scansJson)
+                .putString(ActionConversion.SHARED_PREFS_TAG, conversionJson)
                 .putString(SUPRESSION_TIME_STORE_SHARED_PREFS_TAG, supressionTimeStoreJson)
                 .apply();
-        Logger.log.logBeaconHistoryPublisherState("saved " + beaconActions.size() + " campaignStats and " + beaconScans.size()  +" beaconStats and " + suppressionTimeStore.size() + " supression related items to shared preferences");
+        Logger.log.logBeaconHistoryPublisherState(
+                "saved " + beaconActions.size() + " campaignStats and "
+                        + beaconScans.size()  +" beaconStats and "
+                        + actionConversions.size() + " actionConversions and "
+                        + suppressionTimeStore.size() + " supression related items to shared preferences");
     }
 
     public void saveSuppressionTimeStore(){
@@ -212,32 +255,25 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
                 .apply();
     }
 
-    private void deleteSavedBeaconScansFromSharedPreferences() {
-        if (sharedPreferences.contains(BeaconAction.SHARED_PREFS_TAG)) {
-            sharedPreferences.edit().remove(BeaconScan.SHARED_PREFS_TAG).apply();
-        }
-    }
-
-    private void deleteSavedBeaconActionsFromSharedPreferences() {
-        if (sharedPreferences.contains(BeaconAction.SHARED_PREFS_TAG)) {
-            sharedPreferences.edit().remove(BeaconScan.SHARED_PREFS_TAG).apply();
-        }
-    }
-
-    private void deleteSuppressionTimeStore() {
-        if (sharedPreferences.contains(SUPRESSION_TIME_STORE_SHARED_PREFS_TAG)) {
-            sharedPreferences.edit().remove(SUPRESSION_TIME_STORE_SHARED_PREFS_TAG).apply();
+    private void deleteSavedFromSharedPreferences(String key) {
+        if (sharedPreferences.contains(key)) {
+            sharedPreferences.edit().remove(key).apply();
         }
     }
 
     public void deleteAllData() {
-        Logger.log.logBeaconHistoryPublisherState("will purge the saved data of " + beaconActions.size() + " campaignStats and " + beaconScans.size()  +" beaconStats");
+        Logger.log.logBeaconHistoryPublisherState("will purge the saved data of "
+                + beaconActions.size() + " campaignStats and "
+                + beaconScans.size()  + " beaconStats and "
+                + actionConversions.size() + "actionConversions");
         beaconActions = Collections.synchronizedList(new LinkedList<BeaconAction>());
         beaconScans = Collections.synchronizedList(new LinkedList<BeaconScan>());
+        actionConversions = Collections.synchronizedMap(new HashMap<String, ActionConversion>());
         suppressionTimeStore = new HashMap<>();
 
-        deleteSuppressionTimeStore();
-        deleteSavedBeaconScansFromSharedPreferences();
-        deleteSavedBeaconActionsFromSharedPreferences();
+        deleteSavedFromSharedPreferences(SUPRESSION_TIME_STORE_SHARED_PREFS_TAG);
+        deleteSavedFromSharedPreferences(BeaconScan.SHARED_PREFS_TAG);
+        deleteSavedFromSharedPreferences(BeaconAction.SHARED_PREFS_TAG);
+        deleteSavedFromSharedPreferences(ActionConversion.SHARED_PREFS_TAG);
     }
 }

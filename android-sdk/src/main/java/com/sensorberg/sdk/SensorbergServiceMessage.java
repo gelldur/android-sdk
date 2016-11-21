@@ -42,6 +42,8 @@ public class SensorbergServiceMessage {
 
     public static final int MSG_LOCATION_SET = 107;
 
+    public static final int MSG_CONVERSION = 200;
+
     public static final String MSG_SET_API_TOKEN_TOKEN = "com.sensorberg.android.sdk.message.setApiToken.apiTokenString";
 
     public static final String MSG_PRESENT_ACTION_BEACONEVENT = "com.sensorberg.android.sdk.message.presentBeaconEvent.beaconEvent";
@@ -66,6 +68,8 @@ public class SensorbergServiceMessage {
     public static final String EXTRA_MESSENGER = "com.sensorberg.android.sdk.intent.messenger";
 
     public static final String EXTRA_LOCATION_PERMISSION = "com.sensorberg.android.sdk.intent.permissionState";
+
+    public static final String EXTRA_CONVERSION = "com.sensorberg.android.sdk.intent.conversion";
 
     private SensorbergServiceMessage() {
         throw new IllegalAccessError("Utility class");
