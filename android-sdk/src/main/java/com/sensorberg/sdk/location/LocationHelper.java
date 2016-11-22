@@ -4,26 +4,23 @@ import android.location.Location;
 import android.location.LocationManager;
 
 import com.sensorberg.sdk.Logger;
-import com.sensorberg.sdk.internal.PermissionChecker;
-import com.sensorberg.sdk.settings.TimeConstants;
+import com.sensorberg.sdk.settings.SettingsManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import lombok.Getter;
-
 public class LocationHelper {
 
-    static final float MIN_ACCURACY_RADIUS = 25.0F;
-    static final long MAX_LOCATION_AGE = TimeConstants.ONE_MINUTE;
-
     private LocationManager manager;
+    private SettingsManager settings;
+
     private GeoHashLocation location;
 
-    public LocationHelper(LocationManager manager) {
+    public LocationHelper(LocationManager manager, SettingsManager settings) {
         this.manager = manager;
+        this.settings = settings;
     }
 
     /**
@@ -89,10 +86,18 @@ public class LocationHelper {
         }
     }
 
+    public long getMaxLocationAge() {
+        return settings.getGeohashMaxAge();
+    }
+
+    public int getGeohashMinAccuracyRadius() {
+        return settings.getGeohashMinAccuracyRadius();
+    }
+
     private boolean isAccurateAndFreshAndNotNull(Location location) {
         return location != null &&
-                location.getAccuracy() < MIN_ACCURACY_RADIUS &&
-                (System.currentTimeMillis() - location.getTime()) < MAX_LOCATION_AGE;
+                location.getAccuracy() < getGeohashMinAccuracyRadius() &&
+                (System.currentTimeMillis() - location.getTime()) < getMaxLocationAge();
     }
 
     private final Comparator<Location> timeComparator = new Comparator<Location>() {

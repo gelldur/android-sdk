@@ -81,8 +81,8 @@ public class ProvidersModule {
 
     @Provides
     @Singleton
-    public LocationHelper provideLocationHelper(LocationManager locationManager) {
-        return new LocationHelper(locationManager);
+    public LocationHelper provideLocationHelper(LocationManager locationManager, @Named("realSettingsManager") SettingsManager settingsManager) {
+        return new LocationHelper(locationManager, settingsManager);
     }
 
     @Provides

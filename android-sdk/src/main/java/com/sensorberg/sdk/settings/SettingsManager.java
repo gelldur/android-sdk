@@ -110,6 +110,14 @@ public class SettingsManager {
         return getSettings().getBackgroundScanTime();
     }
 
+    public long getGeohashMaxAge() {
+        return getSettings().getGeohashMaxAge();
+    }
+
+    public int getGeohashMinAccuracyRadius() {
+        return getSettings().getGeohashMinAccuracyRadius();
+    }
+
     public boolean isShouldRestoreBeaconStates() {
         return getSettings().isShouldRestoreBeaconStates();
     }
