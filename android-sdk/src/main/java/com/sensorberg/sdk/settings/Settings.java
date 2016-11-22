@@ -1,10 +1,10 @@
 package com.sensorberg.sdk.settings;
 
 
+import android.content.SharedPreferences;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-
-import android.content.SharedPreferences;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -47,6 +47,16 @@ public class Settings {
     @Expose
     @SerializedName("scanner.backgroundWaitTime")
     private long backgroundWaitTime = DefaultSettings.DEFAULT_BACKGROUND_WAIT_TIME;
+
+    @Getter
+    @Expose
+    @SerializedName("location.geohashMaxAge")
+    private long geohashMaxAge = DefaultSettings.DEFAULT_GEOHASH_MAX_AGE;
+
+    @Getter
+    @Expose
+    @SerializedName("location.geohashMinAccuracyRadius")
+    private int geohashMinAccuracyRadius = DefaultSettings.DEFAULT_GEOHASH_MIN_ACCURACY_RADIUS;
 
     @Getter
     @Expose
@@ -97,6 +107,10 @@ public class Settings {
                     .getLong(SharedPreferencesKeys.Scanner.BACKGROUND_SCAN_TIME, DefaultSettings.DEFAULT_BACKGROUND_SCAN_TIME);
             backgroundWaitTime = preferences
                     .getLong(SharedPreferencesKeys.Scanner.BACKGROUND_WAIT_TIME, DefaultSettings.DEFAULT_BACKGROUND_WAIT_TIME);
+            geohashMaxAge = preferences
+                    .getLong(SharedPreferencesKeys.Location.GEOHASH_MAX_AGE, DefaultSettings.DEFAULT_GEOHASH_MAX_AGE);
+            geohashMinAccuracyRadius = preferences
+                    .getInt(SharedPreferencesKeys.Location.GEOHASH_MIN_ACCURACY_RADIUS, DefaultSettings.DEFAULT_GEOHASH_MIN_ACCURACY_RADIUS);
             cleanBeaconMapRestartTimeout = preferences.getLong(SharedPreferencesKeys.Scanner.CLEAN_BEACON_MAP_RESTART_TIMEOUT,
                     DefaultSettings.DEFAULT_CLEAN_BEACONMAP_ON_RESTART_TIMEOUT);
             revision = preferences.getLong(SharedPreferencesKeys.Settings.REVISION, Long.MIN_VALUE);
@@ -123,6 +137,8 @@ public class Settings {
         foreGroundWaitTime = newSettings.getForeGroundWaitTime();
         backgroundScanTime = newSettings.getBackgroundScanTime();
         backgroundWaitTime = newSettings.getBackgroundWaitTime();
+        geohashMaxAge = newSettings.getGeohashMaxAge();
+        geohashMinAccuracyRadius = newSettings.getGeohashMinAccuracyRadius();
 
         cleanBeaconMapRestartTimeout = newSettings.getCleanBeaconMapRestartTimeout();
 
@@ -168,6 +184,8 @@ public class Settings {
             editor.putLong(SharedPreferencesKeys.Scanner.FORE_GROUND_WAIT_TIME, foreGroundWaitTime);
             editor.putLong(SharedPreferencesKeys.Scanner.BACKGROUND_SCAN_TIME, backgroundScanTime);
             editor.putLong(SharedPreferencesKeys.Scanner.BACKGROUND_WAIT_TIME, backgroundWaitTime);
+            editor.putLong(SharedPreferencesKeys.Location.GEOHASH_MAX_AGE, geohashMaxAge);
+            editor.putInt(SharedPreferencesKeys.Location.GEOHASH_MIN_ACCURACY_RADIUS, geohashMinAccuracyRadius);
             editor.putBoolean(SharedPreferencesKeys.Scanner.SHOULD_RESTORE_BEACON_STATES, shouldRestoreBeaconStates);
 
             editor.putLong(SharedPreferencesKeys.Settings.MESSAGE_DELAY_WINDOW_LENGTH, messageDelayWindowLength);
