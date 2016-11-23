@@ -32,7 +32,7 @@ import static com.sensorberg.utils.ListUtils.map;
 
 public class RetrofitApiTransport implements Transport {
 
-    public static String RESOLVER_BASE_URL = "https://bm-platform-staging.sensorberg.io";
+    public static String RESOLVER_BASE_URL = "https://demo.sensorberg-cdn.com";
 
     private final Clock mClock;
 
