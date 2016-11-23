@@ -56,7 +56,6 @@ public class TheResolverWithRealApiShould {
     @Before
     public void setUp() throws Exception {
 
-
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         ResolverConfiguration configuration = new ResolverConfiguration();

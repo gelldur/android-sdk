@@ -1,5 +1,10 @@
 package com.sensorberg.sdk.internal;
 
+import android.app.AlarmManager;
+import android.os.Bundle;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
+
 import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.settings.TimeConstants;
@@ -15,15 +20,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.app.AlarmManager;
-import android.os.Bundle;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
-
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 @RunWith(AndroidJUnit4.class)
 public class TheIntentSchedulingShould {
@@ -52,7 +51,7 @@ public class TheIntentSchedulingShould {
                 TimeConstants.ONE_SECOND);
         INTENT_BUNDLE = new Bundle();
         INTENT_BUNDLE.putString("foo", "bar");
-        TestGenericBroadcastReceiver.reset();
+        TestGenericBroadcastReceiver.reset(2);
     }
 
     @Test

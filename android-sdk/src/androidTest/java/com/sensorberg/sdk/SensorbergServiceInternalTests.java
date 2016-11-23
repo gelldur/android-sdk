@@ -1,5 +1,11 @@
 package com.sensorberg.sdk;
 
+import android.content.Intent;
+import android.os.Handler;
+import android.os.Messenger;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
+
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
 import com.sensorberg.sdk.internal.interfaces.Clock;
@@ -11,6 +17,7 @@ import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolverConfiguration;
 import com.sensorberg.sdk.test.TestGenericBroadcastReceiver;
 import com.sensorberg.sdk.test.TestGenericBroadcastReceiver2;
+import com.sensorberg.sdk.testUtils.TestBluetoothPlatform;
 
 import org.fest.assertions.api.Assertions;
 import org.junit.After;
@@ -18,12 +25,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-
-import android.content.Intent;
-import android.os.Handler;
-import android.os.Messenger;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -73,6 +74,7 @@ public class SensorbergServiceInternalTests {
         tested.onCreate();
         fileManager = spy(fileManager);
         tested.fileManager = fileManager;
+        tested.bluetoothPlatform = new TestBluetoothPlatform();
         tested.transport = Mockito.mock(Transport.class);
 
         Intent startIntent = SensorbergServiceIntents.getStartServiceIntent(InstrumentationRegistry.getContext(), TestConstants.API_TOKEN_DEFAULT);
