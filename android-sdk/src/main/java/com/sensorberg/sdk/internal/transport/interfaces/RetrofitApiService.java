@@ -16,16 +16,16 @@ import retrofit2.http.Url;
 
 public interface RetrofitApiService {
 
-    @GET("/layout")
+    @GET("/api/v2/sdk/gateways/{apiKey}/interactions.json")
     @Headers("Cache-Control: max-age=0")
-    Call<BaseResolveResponse> updateBeaconLayout();
+    Call<BaseResolveResponse> updateBeaconLayout(@Path("apiKey") String apiKey);
 
-    @GET("/layout")
-    Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo);
+    @GET("/api/v2/sdk/gateways/{apiKey}/interactions.json")
+    Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo, @Path("apiKey") String apiKey);
 
-    @POST("/layout")
+    @POST("/api/v2/sdk/events.json")
     Call<ResolveResponse> publishHistory(@Body HistoryBody body);
 
-    @GET("/applications/{apiKey}/settings/android")
+    @GET("/api/v2/sdk/gateways/{apiKey}/settings.json?platform=android")
     Call<SettingsResponse> getSettings(@Path("apiKey") String apiKey);
 }

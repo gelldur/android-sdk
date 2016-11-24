@@ -15,7 +15,7 @@ publishing {
         aar(MavenPublication) {
             groupId = group
             artifactId archivesBaseName
-            version = version + "-" + branchName() + "-SNAPSHOT"
+            version = branchName() + "-SNAPSHOT"
             artifact "${project.buildDir}/outputs/aar/${project.name}-release.aar"
 
             pom.withXml {

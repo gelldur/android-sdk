@@ -6,6 +6,7 @@ import com.sensorberg.sdk.SensorbergServiceIntents;
 import com.sensorberg.sdk.SensorbergServiceMessage;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
 import com.sensorberg.sdk.internal.interfaces.Platform;
+import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.receivers.ScannerBroadcastReceiver;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 
@@ -19,9 +20,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Messenger;
 
-import java.net.URL;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -212,5 +213,41 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
         intent.setAction(SensorbergServiceMessage.EXTRA_LOCATION_PERMISSION);
         intent.putExtra("type", flagType);
         context.sendBroadcast(intent);
+    }
+
+    /**
+     * Call this to let SDK know you've attempted to show the {@link com.sensorberg.sdk.action.Action} to the user.
+     * This is for situations when you are not certain if user have seen the Action,
+     * like showing notification on the status bar.
+     * @param actionUUID UUID of the {@link com.sensorberg.sdk.action.Action} that was attempted to be shown.
+     * @param context Caller's context.
+     */
+    public static void notifyActionShowAttempt(UUID actionUUID, Context context) {
+        Intent intent = SensorbergServiceIntents.getConversionIntent(context, actionUUID, ActionConversion.TYPE_IGNORED);
+        context.startService(intent);
+    }
+
+    /**
+     * Call this to let SDK know you've confirmed that user has seen the {@link com.sensorberg.sdk.action.Action} and acted on it.
+     * This is for situation where e.g. user tapped the notification and was redirected to website.
+     * @param actionUUID UUID of the {@link com.sensorberg.sdk.action.Action} that user has seen and acted on.
+     * @param context Caller's context.
+     */
+    public static void notifyActionSuccess(UUID actionUUID, Context context) {
+        Intent intent = SensorbergServiceIntents.getConversionIntent(context, actionUUID, ActionConversion.TYPE_SUCCESS);
+        context.startService(intent);
+    }
+
+    /**
+     * Call this to let SDK know the user haven't seen and will not be able to see the {@link com.sensorberg.sdk.action.Action} in future.
+     * This is for situations where e.g. the notification with action is dismissed by the user and you won't show this action to the user again.
+     * Calling this after {@link #notifyActionSuccess(UUID, Context) notifyActionSuccess} has no effect.
+     * @param actionUUID UUID of the {@link com.sensorberg.sdk.action.Action} that user haven't seen and will not see in the future.
+     * @param context Caller's context.
+     */
+    protected static void notifyActionRejected(UUID actionUUID, Context context) {
+        //TODO This is just a stub in case we want to change conversion type based on user dismissing the notification in the future.
+        //Intent intent = SensorbergServiceIntents.getConversionIntent(context, actionUUID, ActionConversion.TYPE_IGNORED);
+        //context.startService(intent);
     }
 }

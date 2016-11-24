@@ -9,6 +9,7 @@ import com.sensorberg.sdk.internal.interfaces.Platform;
 import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
+import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.receivers.GenericBroadcastReceiver;
 import com.sensorberg.sdk.receivers.ScannerBroadcastReceiver;
 import com.sensorberg.sdk.resolver.BeaconEvent;
@@ -313,6 +314,9 @@ public class SensorbergService extends Service {
                 bootstrapper.hostApplicationInBackground();
                 break;
             }
+            case SensorbergServiceMessage.MSG_CONVERSION:
+                updateActionConversion(intent);
+                break;
             case SensorbergServiceMessage.MSG_SET_API_TOKEN: {
                 setApiToken(intent);
                 break;
@@ -367,6 +371,15 @@ public class SensorbergService extends Service {
         } catch (Exception e) {
             logError("Problem showing BeaconEvent: " + e.getMessage());
         }
+    }
+
+    protected void updateActionConversion(Intent intent) {
+        ActionConversion conversion = intent.getParcelableExtra(SensorbergServiceMessage.EXTRA_CONVERSION);
+        if (conversion == null) {
+            logError("Intent missing ActionConversion");
+            return;
+        }
+        bootstrapper.onConversionUpdate(conversion);
     }
 
     protected void setApiToken(Intent intent) {
