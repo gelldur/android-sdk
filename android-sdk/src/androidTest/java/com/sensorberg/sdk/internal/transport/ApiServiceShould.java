@@ -13,7 +13,6 @@ import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
 import com.sensorberg.sdk.model.server.BaseResolveResponse;
-import com.sensorberg.sdk.testUtils.NoClock;
 
 import org.fest.assertions.api.Assertions;
 import org.junit.After;
@@ -24,14 +23,10 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import java.io.File;
-import java.io.SyncFailedException;
-import java.net.UnknownHostException;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import retrofit2.Call;

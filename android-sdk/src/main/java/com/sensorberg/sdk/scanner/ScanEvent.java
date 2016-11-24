@@ -1,11 +1,12 @@
 package com.sensorberg.sdk.scanner;
 
-import com.sensorberg.sdk.model.BeaconId;
-import com.sensorberg.utils.Objects;
-
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.sensorberg.sdk.model.BeaconId;
+import com.sensorberg.utils.Objects;
+
+import lombok.Getter;
 import lombok.ToString;
 
 /**
@@ -27,22 +28,63 @@ public class ScanEvent implements Parcelable {
         }
     };
 
-    private String hardwareAdress;
+    /**
+     * -- GETTER --
+     * Returns the hardware address of this BluetoothDevice.
+     * <p> For example, "00:11:22:AA:BB:CC".
+     *
+     * @return Bluetooth hardware address as string
+     */
+    @Getter private String hardwareAdress;
 
-    private int initialRssi;
+    /**
+     * -- GETTER --
+     * Get the initial RSSI of this event.
+     *
+     * @return the received signal strength in db
+     */
+    @Getter private int initialRssi;
 
-    private int calRssi;
+    /**
+     * -- GETTER --
+     * The provided rssi provided by the beacon. Corresponds to the rssi of an iPhone 5S in 1 meter distance.
+     * This value can be used for disatance calculations
+     *
+     * @return rssi in db
+     */
+    @Getter private int calRssi;
 
-    private final BeaconId beaconId;
+    /**
+     * -- GETTER --
+     * Returns the {@link BeaconId} of the {@link ScanEvent}.
+     *
+     * @return the {@link BeaconId} of the {@link ScanEvent}
+     */
+    @Getter private final BeaconId beaconId;
 
-    private final long eventTime;
+    /**
+     * -- GETTER --
+     * Returns the event time in milliseconds of the {@link ScanEvent}.
+     *
+     * @return the event time in milliseconds of the {@link ScanEvent}
+     */
+    @Getter private final long eventTime;
 
     private final boolean entry;
 
-    protected ScanEvent(BeaconId beaconId, long eventTime, boolean entry) {
+    /**
+     * -- GETTER --
+     * Returns the geohash for this {@link ScanEvent}.
+     *
+     * @return Geohash string or null if there is none.
+     */
+    @Getter private final String geohash;
+
+    protected ScanEvent(BeaconId beaconId, long eventTime, boolean entry, String geohash) {
         this.beaconId = beaconId;
         this.eventTime = eventTime;
         this.entry = entry;
+        this.geohash = geohash;
     }
 
     private ScanEvent(Parcel source) {
@@ -52,10 +94,11 @@ public class ScanEvent implements Parcelable {
         this.hardwareAdress = source.readString();
         this.initialRssi = source.readInt();
         this.calRssi = source.readInt();
+        this.geohash = source.readString();
     }
 
-    public ScanEvent(BeaconId beaconId, long now, boolean entry, String address, int rssi, int calRssi) {
-        this(beaconId, now, entry);
+    public ScanEvent(BeaconId beaconId, long now, boolean entry, String address, int rssi, int calRssi, String geohash) {
+        this(beaconId, now, entry, geohash);
         this.hardwareAdress = address;
         this.initialRssi = rssi;
         this.calRssi = calRssi;
@@ -76,6 +119,7 @@ public class ScanEvent implements Parcelable {
         destination.writeString(hardwareAdress);
         destination.writeInt(initialRssi);
         destination.writeInt(calRssi);
+        destination.writeString(geohash);
     }
 
     @Override
@@ -90,7 +134,7 @@ public class ScanEvent implements Parcelable {
             return (false);
         }
         ScanEvent other = (ScanEvent) object;
-        return Objects.equals(beaconId, other.beaconId) && entry == other.entry;
+        return Objects.equals(beaconId, other.beaconId) && entry == other.entry && Objects.equals(geohash, other.geohash);
     }
 
     @Override
@@ -99,17 +143,10 @@ public class ScanEvent implements Parcelable {
         int result = 1;
         result = prime * result + ((beaconId == null) ? 0 : beaconId.hashCode());
         result = prime * result + (entry ? 1 : 0);
+        result = prime * result + (geohash == null ? 0 : geohash.hashCode());
         return (result);
     }
 
-    /**
-     * Returns the {@link BeaconId} of the {@link ScanEvent}.
-     *
-     * @return the {@link BeaconId} of the {@link ScanEvent}
-     */
-    public BeaconId getBeaconId() {
-        return (beaconId);
-    }
 
     /**
      * Returns the event type: entry or not entry i.e.exit.
@@ -120,46 +157,6 @@ public class ScanEvent implements Parcelable {
         return (entry);
     }
 
-    /**
-     * Returns the event time in milliseconds of the {@link ScanEvent}.
-     *
-     * @return the event time in milliseconds of the {@link ScanEvent}
-     */
-    public long getEventTime() {
-        return (eventTime);
-    }
-
-    /**
-     * The provided rssi provided by the beacon. Corresponds to the rssi of an iPhone 5S in 1 meter distance.
-     * This value can be used for disatance calculations
-     *
-     * @return rssi in db
-     */
-    public int getCalRssi() {
-        return calRssi;
-    }
-
-    /**
-     * Returns the hardware address of this BluetoothDevice.
-     * <p> For example, "00:11:22:AA:BB:CC".
-     *
-     * @return Bluetooth hardware address as string
-     */
-    public String getHardwareAdress() {
-        return hardwareAdress;
-    }
-
-    /**
-     * Get the initial RSSI of this event.
-     *
-     * @return the received signal strength in db
-     */
-
-    public int getInitialRssi() {
-        return initialRssi;
-    }
-
-
     public static class Builder {
 
         private BeaconId beaconId;
@@ -167,6 +164,8 @@ public class ScanEvent implements Parcelable {
         private long eventTime;
 
         private boolean entry;
+
+        private String geohash;
 
         public Builder() {
         }
@@ -186,8 +185,13 @@ public class ScanEvent implements Parcelable {
             return this;
         }
 
+        public Builder withGeohash(String geohash) {
+            this.geohash = geohash;
+            return this;
+        }
+
         public ScanEvent build() {
-            return new ScanEvent(beaconId, eventTime, entry);
+            return new ScanEvent(beaconId, eventTime, entry, geohash);
         }
     }
 

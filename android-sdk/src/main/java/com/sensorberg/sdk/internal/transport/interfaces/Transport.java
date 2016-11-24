@@ -2,6 +2,7 @@ package com.sensorberg.sdk.internal.transport.interfaces;
 
 import com.sensorberg.sdk.internal.interfaces.BeaconHistoryUploadIntervalListener;
 import com.sensorberg.sdk.internal.interfaces.BeaconResponseHandler;
+import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.model.persistence.BeaconAction;
 import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.scanner.ScanEvent;
@@ -37,7 +38,7 @@ public interface Transport {
 
     void loadSettings(TransportSettingsCallback transportSettingsCallback);
 
-    void publishHistory(List<BeaconScan> scans, List<BeaconAction> actions, TransportHistoryCallback callback);
+    void publishHistory(List<BeaconScan> scans, List<BeaconAction> actions, List<ActionConversion> conversions, TransportHistoryCallback callback);
 
     void updateBeaconLayout();
 

@@ -7,6 +7,7 @@ import com.sensorberg.sdk.action.InAppAction;
 import com.sensorberg.sdk.action.UriMessageAction;
 import com.sensorberg.sdk.action.VisitWebsiteAction;
 import com.sensorberg.sdk.model.BeaconId;
+import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolverConfiguration;
 import com.sensorberg.sdk.scanner.ScanEvent;
@@ -105,6 +106,10 @@ public class TestConstants {
                 .withEntry(true)
                 .withEventTime(now)
                 .build();
+    }
+
+    public static ActionConversion ACTION_CONVERSION(int type) {
+        return new ActionConversion(UUID.randomUUID(), type);
     }
 
     //actions

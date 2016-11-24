@@ -16,6 +16,7 @@ import com.sensorberg.sdk.internal.http.HttpStackShouldCacheTheSettings;
 import com.sensorberg.sdk.internal.http.TransportShould;
 import com.sensorberg.sdk.internal.transport.ApiServiceInGeneralShould;
 import com.sensorberg.sdk.internal.transport.ApiServiceShould;
+import com.sensorberg.sdk.location.LocationHelperTest;
 import com.sensorberg.sdk.model.persistence.TheBeaconActionShould;
 import com.sensorberg.sdk.model.persistence.TheBeaconScanShould;
 import com.sensorberg.sdk.model.server.ResolveActionTest;
@@ -120,6 +121,8 @@ public interface TestComponent extends Component {
     void inject(ActionFactoryTest actionFactoryTest);
 
     void inject(TheActionShould theActionShould);
+
+    void inject(LocationHelperTest locationHelperTest);
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     final class Initializer {

@@ -1,14 +1,15 @@
 package com.sensorberg.sdk.action;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import java.util.UUID;
 
+import lombok.Getter;
 import lombok.ToString;
 
 /**
@@ -22,13 +23,46 @@ public abstract class Action implements Parcelable {
 
     public static final String INTENT_KEY = "com.sensorberg.sdk.Action";
 
-    private final ActionType type;
 
-    private final long delayTime;
+    /**
+     * -- GETTER --
+     * Returns the type of the {@link Action}; types below 0x10000000 are reserved for the sensorberg API, i.e. use 0x1000000 or above for custom
+     * types.
+     *
+     * @return the type of the {@link Action}
+     */
+    @Getter private final ActionType type;
 
-    private final UUID uuid;
+    /**
+     * -- GETTER --
+     * Get the time that was specified by the backend, which should be used to delay the message.
+     * If you implement you own Action handling, you need to take care of this! Default is @{NO_DELAY} when
+     * no delay was set.
+     *
+     * @return time in milli seconds
+     */
 
-    private final String payload;
+    @Getter private final long delayTime;
+
+    /**
+     *  -- GETTER --
+     * the server uuid of this action. can be  used to identify an action
+     *
+     * @return the uuid
+     */
+    @Getter private final UUID uuid;
+
+    /**
+     * -- GETTER --
+     * get the raw Payload, serialized as a String as entered in the campaign management.
+     *
+     * Note: This could be any kind of JSON value. Encoded you may find a @{org.json.JSONArray},
+     *
+     * @return Payload or null if none was set
+     * @{org.json.JSONObject}, @{java.lang.String}, @{java.lang.Double} ... See <a href="http://json.org/">http://json.org/</a>
+     */
+
+    @Getter private final String payload;
 
     protected Action(ActionType type, long delayTime, UUID uuid, String payload) {
         this.type = type;
@@ -55,47 +89,6 @@ public abstract class Action implements Parcelable {
         destination.writeString(payload);
     }
 
-    /**
-     * Returns the type of the {@link Action}; types below 0x10000000 are reserved for the sensorberg API, i.e. use 0x1000000 or above for custom
-     * types.
-     *
-     * @return the type of the {@link Action}
-     */
-    public ActionType getType() {
-        return (type);
-    }
-
-    /**
-     * the server uuid of this action. can be  used to identify an action
-     *
-     * @return the uuid
-     */
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    /**
-     * Get the time that was specified by the backend, which should be used to delay the message.
-     * If you implement you own Action handling, you need to take care of this! Default is @{NO_DELAY} when
-     * no delay was set.
-     *
-     * @return time in milli seconds
-     */
-    public long getDelayTime() {
-        return delayTime;
-    }
-
-    /**
-     * get the raw Payload, serialized as a String as entered in the campaign management.
-     *
-     * Note: This could be any kind of JSON value. Encoded you may find a @{org.json.JSONArray},
-     *
-     * @return Payload or null if none was set
-     * @{org.json.JSONObject}, @{java.lang.String}, @{java.lang.Double} ... See <a href="http://json.org/">http://json.org/</a>
-     */
-    public String getPayload() {
-        return payload;
-    }
 
     /**
      * Convenience Method that returns the Payload as a @{org.json.JSONObject} if it is in fact an @{org.json.JSONObject}

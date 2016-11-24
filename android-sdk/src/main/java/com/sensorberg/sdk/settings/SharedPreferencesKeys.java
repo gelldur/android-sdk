@@ -23,6 +23,17 @@ public final class SharedPreferencesKeys {
         }
     }
 
+    public static final class Location {
+
+        public static final String GEOHASH_MAX_AGE = "com.sensorberg.preferences.location.geohashMaxAge";
+
+        public static final String GEOHASH_MIN_ACCURACY_RADIUS = "com.sensorberg.preferences.location.geohashMinAccuracyRadius";
+
+        private Location() {
+            throw new IllegalAccessError("Utility class");
+        }
+    }
+
     public static final class Settings {
 
         public static final String REVISION = "com.sensorberg.preferences.settings.revision";

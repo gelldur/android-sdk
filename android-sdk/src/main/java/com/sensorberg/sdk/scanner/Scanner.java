@@ -1,5 +1,8 @@
 package com.sensorberg.sdk.scanner;
 
+import android.os.Bundle;
+
+import com.sensorberg.SensorbergSdk;
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.SensorbergServiceMessage;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
@@ -7,16 +10,18 @@ import com.sensorberg.sdk.internal.interfaces.Clock;
 import com.sensorberg.sdk.internal.interfaces.FileManager;
 import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
+import com.sensorberg.sdk.location.LocationHelper;
 import com.sensorberg.sdk.settings.SettingsManager;
 
-import android.os.Bundle;
+import javax.inject.Inject;
 
 public class Scanner extends AbstractScanner {
     public static final String SCANNER_EVENT = "com.sensorberg.sdk.scanner.SDKScanner.SCANNER_EVENT";
 
     public Scanner(SettingsManager stgMgr, boolean shouldRestoreBeaconStates, Clock clock, FileManager fileManager,
-            ServiceScheduler scheduler, HandlerManager handlerManager, BluetoothPlatform bluetoothPlatform) {
+                   ServiceScheduler scheduler, HandlerManager handlerManager, BluetoothPlatform bluetoothPlatform) {
         super(stgMgr, shouldRestoreBeaconStates, clock, fileManager, scheduler, handlerManager, bluetoothPlatform);
+        SensorbergSdk.getComponent().inject(this);
     }
 
     @Override

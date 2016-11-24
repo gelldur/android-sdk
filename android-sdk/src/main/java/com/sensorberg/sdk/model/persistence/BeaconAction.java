@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import com.sensorberg.sdk.resolver.BeaconEvent;
+import com.sensorberg.utils.Objects;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -36,6 +37,12 @@ public class BeaconAction {
     @SerializedName("pid")
     private String pid;
 
+    @Expose
+    @Getter
+    @Setter
+    @SerializedName("location")
+    private String geohash;
+
 
     public BeaconAction() {
     }
@@ -51,6 +58,7 @@ public class BeaconAction {
         value.setActionId(beaconEvent.getAction().getUuid().toString());
         value.setTimeOfPresentation(beaconEvent.getPresentationTime());
         value.setTrigger(beaconEvent.getTrigger());
+        value.setGeohash(beaconEvent.getGeohash());
 
         if (beaconEvent.getBeaconId() != null) {
             value.setPid(beaconEvent.getBeaconId().getPid());
@@ -79,6 +87,9 @@ public class BeaconAction {
         if (!actionId.equals(that.actionId)) {
             return false;
         }
+        if (!Objects.equals(geohash, that.geohash)) {
+            return false;
+        }
         return !(pid != null ? !pid.equals(that.pid) : that.pid != null);
 
     }
@@ -89,6 +100,7 @@ public class BeaconAction {
         result = 31 * result + (int) (timeOfPresentation ^ (timeOfPresentation >>> 32));
         result = 31 * result + trigger;
         result = 31 * result + (pid != null ? pid.hashCode() : 0);
+        result = 31 * result + (geohash != null ? geohash.hashCode() : 0);
         return result;
     }
 }

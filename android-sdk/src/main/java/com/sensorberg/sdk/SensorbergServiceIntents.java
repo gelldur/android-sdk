@@ -1,5 +1,6 @@
 package com.sensorberg.sdk;
 
+import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.scanner.Scanner;
 
@@ -7,6 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Messenger;
+
+import java.util.UUID;
 
 public class SensorbergServiceIntents {
 
@@ -68,6 +71,13 @@ public class SensorbergServiceIntents {
         serviceIntent.putExtra(SensorbergServiceMessage.EXTRA_GENERIC_INDEX, index);
 
         return serviceIntent;
+    }
+
+    public static Intent getConversionIntent(Context ctx, UUID uuid, int type) {
+        Intent intent = getServiceIntentWithMessage(ctx, SensorbergServiceMessage.MSG_CONVERSION);
+        ActionConversion conversion = new ActionConversion(uuid, type);
+        intent.putExtra(SensorbergServiceMessage.EXTRA_CONVERSION, conversion);
+        return intent;
     }
 
     public static Intent getAdvertisingIdentifierIntent(Context ctx, String adId) {

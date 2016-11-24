@@ -5,6 +5,7 @@ import com.google.gson.annotations.SerializedName;
 
 import com.sensorberg.sdk.scanner.ScanEvent;
 import com.sensorberg.sdk.scanner.ScanEventType;
+import com.sensorberg.utils.Objects;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -31,6 +32,12 @@ public class BeaconScan {
     @SerializedName("dt")
     private long createdAt;
 
+    @Expose
+    @Getter
+    @Setter
+    @SerializedName("location")
+    private String geohash;
+
     public BeaconScan() {
     }
 
@@ -45,6 +52,7 @@ public class BeaconScan {
         value.setTrigger(scanEvent.isEntry() ? ScanEventType.ENTRY.getMask() : ScanEventType.EXIT.getMask());
         value.setPid(scanEvent.getBeaconId().getPid());
         value.setCreatedAt(scanEvent.getEventTime());
+        value.setGeohash(scanEvent.getGeohash());
         return value;
     }
 
@@ -65,6 +73,9 @@ public class BeaconScan {
         if (createdAt != that.createdAt) {
             return false;
         }
+        if (!Objects.equals(geohash, that.geohash)) {
+            return false;
+        }
         return !(pid != null ? !pid.equals(that.pid) : that.pid != null);
 
     }
@@ -74,6 +85,7 @@ public class BeaconScan {
         int result = trigger;
         result = 31 * result + (pid != null ? pid.hashCode() : 0);
         result = 31 * result + (int) (createdAt ^ (createdAt >>> 32));
+        result = 31 * result + (geohash != null ? geohash.hashCode() : 0);
         return result;
     }
 }

@@ -1,17 +1,16 @@
 package com.sensorberg.sdk.internal.transport;
 
 import com.google.gson.Gson;
-
 import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
-import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiService;
+import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiServiceV0;
+import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiServiceV1;
+import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiServiceV2;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.model.HistoryBody;
 import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
 import com.sensorberg.sdk.model.server.BaseResolveResponse;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.utils.Objects;
-
-import android.content.Context;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,7 +41,11 @@ public class RetrofitApiServiceImpl {
 
     private String mApiToken;
 
-    private final RetrofitApiService mApiService;
+    private final RetrofitApiServiceV0 mApiServiceV0;
+    private final RetrofitApiServiceV1 mApiServiceV1;
+    private final RetrofitApiServiceV2 mApiServiceV2;
+
+    private final int version;
 
     private OkHttpClient mClient;
     private HttpLoggingInterceptor httpLoggingInterceptor;
@@ -57,7 +60,25 @@ public class RetrofitApiServiceImpl {
                 .addConverterFactory(GsonConverterFactory.create(mGson))
                 .build();
 
-        mApiService = restAdapter.create(RetrofitApiService.class);
+        this.version = RetrofitApiTransport.BACKEND_VERSION;
+        if (version == 0) {
+            mApiServiceV0 = restAdapter.create(RetrofitApiServiceV0.class);
+            mApiServiceV1 = null;
+            mApiServiceV2 = null;
+        } else if (version == 1) {
+            mApiServiceV0 = null;
+            mApiServiceV1 = restAdapter.create(RetrofitApiServiceV1.class);;
+            mApiServiceV2 = null;
+        } else if (version == 2) {
+            mApiServiceV0 = null;
+            mApiServiceV1 = null;
+            mApiServiceV2 = restAdapter.create(RetrofitApiServiceV2.class);
+        } else {
+            mApiServiceV0 = null;
+            mApiServiceV1 = null;
+            mApiServiceV2 = null;
+            throw new IllegalArgumentException("Sorry, only available beackend versions are 0, 1, 2");
+        }
     }
 
     private final Interceptor headerAuthorizationInterceptor = new Interceptor() {
@@ -119,15 +140,33 @@ public class RetrofitApiServiceImpl {
     }
 
     public Call<BaseResolveResponse> updateBeaconLayout() {
-        return mApiService.updateBeaconLayout();
+        if (version == 0) {
+            return mApiServiceV0.updateBeaconLayout();
+        } else if (version == 1) {
+            return mApiServiceV1.updateBeaconLayout(mApiToken);
+        } else {
+            return mApiServiceV2.updateBeaconLayout(mApiToken);
+        }
     }
 
     public Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo) {
-        return mApiService.getBeacon(beaconId, networkInfo);
+        if (version == 0) {
+            return mApiServiceV0.getBeacon(beaconId, networkInfo);
+        } else if (version == 1) {
+            return mApiServiceV1.getBeacon(beaconId, networkInfo, mApiToken);
+        } else {
+            return mApiServiceV2.getBeacon(beaconId, networkInfo, mApiToken);
+        }
     }
 
     public Call<ResolveResponse> publishHistory(@Body HistoryBody body) {
-        return mApiService.publishHistory(body);
+        if (version == 0) {
+            return mApiServiceV0.publishHistory(body);
+        } else if (version == 1) {
+            return mApiServiceV1.publishHistory(body);
+        } else {
+            return mApiServiceV2.publishHistory(body);
+        }
     }
 
     public Call<SettingsResponse> getSettings() {
@@ -135,7 +174,13 @@ public class RetrofitApiServiceImpl {
     }
 
     public Call<SettingsResponse> getSettings(@Url String url) {
-        return mApiService.getSettings(url);
+        if (version == 0) {
+            return mApiServiceV0.getSettings(url);
+        } else if (version == 1) {
+            return mApiServiceV1.getSettings(url);
+        } else {
+            return mApiServiceV2.getSettings(url);
+        }
     }
 
     public boolean setApiToken(String newToken) {
