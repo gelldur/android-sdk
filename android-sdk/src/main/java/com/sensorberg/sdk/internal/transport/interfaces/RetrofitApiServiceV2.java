@@ -12,9 +12,8 @@ import retrofit2.http.Header;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
-import retrofit2.http.Url;
 
-public interface RetrofitApiService {
+public interface RetrofitApiServiceV2 {
 
     @GET("/api/v2/sdk/gateways/{apiKey}/interactions.json")
     @Headers("Cache-Control: max-age=0")

@@ -184,7 +184,7 @@ public class ProvidersModule {
     @Singleton
     public RetrofitApiServiceImpl provideRealRetrofitApiService(Context context, Gson gson,
             @Named("androidPlatformIdentifier") PlatformIdentifier platformIdentifier) {
-        return new RetrofitApiServiceImpl(context.getCacheDir(), gson, platformIdentifier, RetrofitApiTransport.RESOLVER_BASE_URL);
+        return new RetrofitApiServiceImpl(context.getCacheDir(), gson, platformIdentifier, RetrofitApiTransport.RESOLVER_BASE_URL, RetrofitApiTransport.BACKEND_VERSION);
     }
 
     @Provides

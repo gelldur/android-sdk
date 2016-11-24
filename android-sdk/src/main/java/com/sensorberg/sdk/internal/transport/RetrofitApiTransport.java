@@ -34,6 +34,8 @@ public class RetrofitApiTransport implements Transport {
 
     public static String RESOLVER_BASE_URL = "https://demo.sensorberg-cdn.com";
 
+    public static int BACKEND_VERSION = 0;
+
     private final Clock mClock;
 
     private RetrofitApiServiceImpl apiService;

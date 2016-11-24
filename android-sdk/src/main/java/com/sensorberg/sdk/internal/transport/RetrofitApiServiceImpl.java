@@ -1,10 +1,10 @@
 package com.sensorberg.sdk.internal.transport;
 
 import com.google.gson.Gson;
-import com.sensorberg.sdk.BuildConfig;
 import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
-import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiServiceNew;
-import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiServiceOld;
+import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiServiceV0;
+import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiServiceV1;
+import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiServiceV2;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.model.HistoryBody;
 import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
@@ -41,13 +41,16 @@ public class RetrofitApiServiceImpl {
 
     private String mApiToken;
 
-    private final RetrofitApiServiceNew mApiServiceNew;
-    private final RetrofitApiServiceOld mApiServiceOld;
+    private final RetrofitApiServiceV0 mApiServiceV0;
+    private final RetrofitApiServiceV1 mApiServiceV1;
+    private final RetrofitApiServiceV2 mApiServiceV2;
+
+    private final int version;
 
     private OkHttpClient mClient;
     private HttpLoggingInterceptor httpLoggingInterceptor;
 
-    public RetrofitApiServiceImpl(File cacheFolder, Gson gson, PlatformIdentifier platformId, String baseUrl) {
+    public RetrofitApiServiceImpl(File cacheFolder, Gson gson, PlatformIdentifier platformId, String baseUrl, int version) {
         mGson = gson;
         mPlatformIdentifier = platformId;
 
@@ -57,12 +60,24 @@ public class RetrofitApiServiceImpl {
                 .addConverterFactory(GsonConverterFactory.create(mGson))
                 .build();
 
-        if (BuildConfig.NEW_BACKEND) {
-            mApiServiceNew = restAdapter.create(RetrofitApiServiceNew.class);
-            mApiServiceOld = null;
+        this.version = version;
+        if (version == 0) {
+            mApiServiceV0 = restAdapter.create(RetrofitApiServiceV0.class);
+            mApiServiceV1 = null;
+            mApiServiceV2 = null;
+        } else if (version == 1) {
+            mApiServiceV0 = null;
+            mApiServiceV1 = restAdapter.create(RetrofitApiServiceV1.class);;
+            mApiServiceV2 = null;
+        } else if (version == 2) {
+            mApiServiceV0 = null;
+            mApiServiceV1 = null;
+            mApiServiceV2 = restAdapter.create(RetrofitApiServiceV2.class);
         } else {
-            mApiServiceOld = restAdapter.create(RetrofitApiServiceOld.class);
-            mApiServiceNew = null;
+            mApiServiceV0 = null;
+            mApiServiceV1 = null;
+            mApiServiceV2 = null;
+            throw new IllegalArgumentException("Sorry, only available beackend versions are 0, 1, 2");
         }
     }
 
@@ -125,26 +140,32 @@ public class RetrofitApiServiceImpl {
     }
 
     public Call<BaseResolveResponse> updateBeaconLayout() {
-        if (BuildConfig.NEW_BACKEND) {
-            return mApiServiceNew.updateBeaconLayout(mApiToken);
+        if (version == 0) {
+            return mApiServiceV0.updateBeaconLayout();
+        } else if (version == 1) {
+            return mApiServiceV1.updateBeaconLayout(mApiToken);
         } else {
-            return mApiServiceOld.updateBeaconLayout();
+            return mApiServiceV2.updateBeaconLayout(mApiToken);
         }
     }
 
     public Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo) {
-        if (BuildConfig.NEW_BACKEND) {
-            return mApiServiceNew.getBeacon(beaconId, networkInfo, mApiToken);
+        if (version == 0) {
+            return mApiServiceV0.getBeacon(beaconId, networkInfo);
+        } else if (version == 1) {
+            return mApiServiceV1.getBeacon(beaconId, networkInfo, mApiToken);
         } else {
-            return mApiServiceOld.getBeacon(beaconId, networkInfo);
+            return mApiServiceV2.getBeacon(beaconId, networkInfo, mApiToken);
         }
     }
 
     public Call<ResolveResponse> publishHistory(@Body HistoryBody body) {
-        if (BuildConfig.NEW_BACKEND) {
-            return mApiServiceNew.publishHistory(body);
+        if (version == 0) {
+            return mApiServiceV0.publishHistory(body);
+        } else if (version == 1) {
+            return mApiServiceV1.publishHistory(body);
         } else {
-            return mApiServiceOld.publishHistory(body);
+            return mApiServiceV2.publishHistory(body);
         }
     }
 
@@ -153,10 +174,12 @@ public class RetrofitApiServiceImpl {
     }
 
     public Call<SettingsResponse> getSettings(@Url String url) {
-        if (BuildConfig.NEW_BACKEND) {
-            return mApiServiceNew.getSettings(url);
+        if (version == 0) {
+            return mApiServiceV0.getSettings(url);
+        } else if (version == 1) {
+            return mApiServiceV1.getSettings(url);
         } else {
-            return mApiServiceOld.getSettings(url);
+            return mApiServiceV2.getSettings(url);
         }
     }
 

@@ -13,7 +13,7 @@ import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 
-public interface RetrofitApiServiceOld {
+public interface RetrofitApiServiceV0 {
 
     @GET("/layout")
     @Headers("Cache-Control: max-age=0")

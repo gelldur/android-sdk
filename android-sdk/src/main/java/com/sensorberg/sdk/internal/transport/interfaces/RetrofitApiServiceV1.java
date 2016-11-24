@@ -13,18 +13,18 @@ import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 
-public interface RetrofitApiServiceNew {
+public interface RetrofitApiServiceV1 {
 
-    @GET("/api/v2/sdk/gateways/{apiKey}/interactions.json")
+    @GET("/api/v1/sdk/gateways/{apiKey}/interactions.json")
     @Headers("Cache-Control: max-age=0")
     Call<BaseResolveResponse> updateBeaconLayout(@Path("apiKey") String apiKey);
 
-    @GET("/api/v2/sdk/gateways/{apiKey}/interactions.json")
+    @GET("/api/v1/sdk/gateways/{apiKey}/interactions.json")
     Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo, @Path("apiKey") String apiKey);
 
-    @POST("/api/v2/sdk/events.json")
+    @POST("/api/v1/sdk/events.json")
     Call<ResolveResponse> publishHistory(@Body HistoryBody body);
 
-    @GET("/api/v2/sdk/gateways/{apiKey}/settings.json?platform=android")
+    @GET("/api/v1/sdk/gateways/{apiKey}/settings.json?platform=android")
     Call<SettingsResponse> getSettings(@Path("apiKey") String apiKey);
 }
