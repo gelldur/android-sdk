@@ -68,6 +68,7 @@ android {
         targetSdkVersion project.ext.targetSdkVersion
         buildConfigField "String", "SDK_VERSION", "\"" + project.ext.SDK_VERSION + "\""
         buildConfigField "String", "SDK_GIT_SHA1", gitSha1()
+        buildConfigField "boolean", "NEW_BACKEND", "true"
         consumerProguardFiles 'proguard-proguarded.txt'
 		testInstrumentationRunner "com.sensorberg.sdk.test.SensorbergTestRunner"
     }
@@ -101,6 +102,13 @@ android {
         }
         release {
             testCoverageEnabled false
+            versionNameSuffix "-RAILS"
+        }
+        releaseOld.initWith(release)
+        releaseOld {
+            buildConfigField "boolean", "NEW_BACKEND", "false"
+            buildConfigField "String", "RESOLVER_URL", resolverURL ? wrapInQuotes(resolverURL) : "null"
+            versionNameSuffix "-JAVA"
         }
     }
 }

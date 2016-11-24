@@ -1,17 +1,16 @@
 package com.sensorberg.sdk.internal.transport;
 
 import com.google.gson.Gson;
-
+import com.sensorberg.sdk.BuildConfig;
 import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
-import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiService;
+import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiServiceNew;
+import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiServiceOld;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.model.HistoryBody;
 import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
 import com.sensorberg.sdk.model.server.BaseResolveResponse;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.utils.Objects;
-
-import android.content.Context;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,7 +41,8 @@ public class RetrofitApiServiceImpl {
 
     private String mApiToken;
 
-    private final RetrofitApiService mApiService;
+    private final RetrofitApiServiceNew mApiServiceNew;
+    private final RetrofitApiServiceOld mApiServiceOld;
 
     private OkHttpClient mClient;
     private HttpLoggingInterceptor httpLoggingInterceptor;
@@ -57,7 +57,13 @@ public class RetrofitApiServiceImpl {
                 .addConverterFactory(GsonConverterFactory.create(mGson))
                 .build();
 
-        mApiService = restAdapter.create(RetrofitApiService.class);
+        if (BuildConfig.NEW_BACKEND) {
+            mApiServiceNew = restAdapter.create(RetrofitApiServiceNew.class);
+            mApiServiceOld = null;
+        } else {
+            mApiServiceOld = restAdapter.create(RetrofitApiServiceOld.class);
+            mApiServiceNew = null;
+        }
     }
 
     private final Interceptor headerAuthorizationInterceptor = new Interceptor() {
@@ -119,15 +125,27 @@ public class RetrofitApiServiceImpl {
     }
 
     public Call<BaseResolveResponse> updateBeaconLayout() {
-        return mApiService.updateBeaconLayout(mApiToken);
+        if (BuildConfig.NEW_BACKEND) {
+            return mApiServiceNew.updateBeaconLayout(mApiToken);
+        } else {
+            return mApiServiceOld.updateBeaconLayout();
+        }
     }
 
     public Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo) {
-        return mApiService.getBeacon(beaconId, networkInfo, mApiToken);
+        if (BuildConfig.NEW_BACKEND) {
+            return mApiServiceNew.getBeacon(beaconId, networkInfo, mApiToken);
+        } else {
+            return mApiServiceOld.getBeacon(beaconId, networkInfo);
+        }
     }
 
     public Call<ResolveResponse> publishHistory(@Body HistoryBody body) {
-        return mApiService.publishHistory(body);
+        if (BuildConfig.NEW_BACKEND) {
+            return mApiServiceNew.publishHistory(body);
+        } else {
+            return mApiServiceOld.publishHistory(body);
+        }
     }
 
     public Call<SettingsResponse> getSettings() {
@@ -135,7 +153,11 @@ public class RetrofitApiServiceImpl {
     }
 
     public Call<SettingsResponse> getSettings(@Url String url) {
-        return mApiService.getSettings(url);
+        if (BuildConfig.NEW_BACKEND) {
+            return mApiServiceNew.getSettings(url);
+        } else {
+            return mApiServiceOld.getSettings(url);
+        }
     }
 
     public boolean setApiToken(String newToken) {
