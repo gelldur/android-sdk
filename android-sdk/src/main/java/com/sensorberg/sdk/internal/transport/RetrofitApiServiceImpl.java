@@ -50,7 +50,7 @@ public class RetrofitApiServiceImpl {
     private OkHttpClient mClient;
     private HttpLoggingInterceptor httpLoggingInterceptor;
 
-    public RetrofitApiServiceImpl(File cacheFolder, Gson gson, PlatformIdentifier platformId, String baseUrl, int version) {
+    public RetrofitApiServiceImpl(File cacheFolder, Gson gson, PlatformIdentifier platformId, String baseUrl) {
         mGson = gson;
         mPlatformIdentifier = platformId;
 
@@ -60,7 +60,7 @@ public class RetrofitApiServiceImpl {
                 .addConverterFactory(GsonConverterFactory.create(mGson))
                 .build();
 
-        this.version = version;
+        this.version = RetrofitApiTransport.BACKEND_VERSION;
         if (version == 0) {
             mApiServiceV0 = restAdapter.create(RetrofitApiServiceV0.class);
             mApiServiceV1 = null;
