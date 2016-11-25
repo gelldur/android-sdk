@@ -1,5 +1,7 @@
 package com.sensorberg.sdk;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.sensorberg.SensorbergSdk;
 import com.sensorberg.sdk.action.Action;
 import com.sensorberg.sdk.action.ActionType;
@@ -36,12 +38,19 @@ import com.sensorberg.utils.ListUtils;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.SyncStatusObserver;
 import android.os.Parcelable;
 
+import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -71,6 +80,8 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
 
     protected final Set<String> proximityUUIDs = new HashSet<>();
 
+    protected SortedMap<String, String> attributes;
+
     @Inject
     protected Context context;
 
@@ -87,6 +98,12 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
 
     protected BluetoothPlatform bluetoothPlatform;
 
+    @Inject
+    protected SharedPreferences preferences;
+
+    @Inject
+    protected Gson gson;
+
     public InternalApplicationBootstrapper(Transport transport, ServiceScheduler scheduler, HandlerManager handlerManager,
                                            Clock clk, BluetoothPlatform btPlatform, ResolverConfiguration resolverConfiguration) {
         super(scheduler);
@@ -98,11 +115,13 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
         clock = clk;
         bluetoothPlatform = btPlatform;
 
+        attributes = loadAttributes();
+
         beaconActionHistoryPublisher.setResolverListener(resolverListener);
 
         scanner = new Scanner(settingsManager, settingsManager.isShouldRestoreBeaconStates(), clock, fileManager, scheduler, handlerManager,
                 btPlatform);
-        resolver = new Resolver(resolverConfiguration, handlerManager, transport);
+        resolver = new Resolver(resolverConfiguration, handlerManager, transport, attributes);
         resolver.setListener(resolverListener);
 
         scanner.addScannerListener(this);
@@ -168,6 +187,32 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     public void onConversionUpdate(ActionConversion conversion) {
         conversion.setGeohash(locationHelper.getGeohash());
         beaconActionHistoryPublisher.onConversionUpdate(conversion);
+    }
+
+    public void setAttributes(HashMap<String, String> incoming) {
+        attributes = new TreeMap<>();
+        attributes.putAll(incoming);
+        resolver.setAttributes(attributes);
+        saveAttributes(attributes);
+    }
+
+    private void saveAttributes(Map<String, String> attributes) {
+        String attrs = gson.toJson(attributes);
+        Logger.log.logAttributes("Saved "+attributes.size()+" attributes");
+        preferences.edit().putString(Constants.SharedPreferencesKeys.Data.TARGETING_ATTRIBUTES, attrs).apply();
+    }
+
+    private SortedMap<String, String> loadAttributes() {
+        String attrsJson = preferences.getString(Constants.SharedPreferencesKeys.Data.TARGETING_ATTRIBUTES, "");
+        SortedMap<String, String> map;
+        if (!attrsJson.isEmpty()) {
+            Type mapType = new TypeToken<TreeMap<String, String>>() {}.getType();
+            map = Collections.synchronizedSortedMap((TreeMap<String, String>) gson.fromJson(attrsJson, mapType));
+        } else {
+            map = Collections.synchronizedSortedMap(new TreeMap<String, String>());
+        }
+        Logger.log.logAttributes("Read "+map.size()+" attributes");
+        return map;
     }
 
     public void presentBeaconEvent(BeaconEvent beaconEvent) {
@@ -247,7 +292,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
         scanner.hostApplicationInForeground();
         updateSettings();
         //we do not care if sync is disabled, the app is in the foreground so we cache!
-        transport.updateBeaconLayout();
+        transport.updateBeaconLayout(attributes);
         beaconActionHistoryPublisher.publishHistory();
     }
 
@@ -288,7 +333,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
 
     public void updateBeaconLayout() {
         if (isSyncEnabled()) {
-            transport.updateBeaconLayout();
+            transport.updateBeaconLayout(attributes);
         }
     }
 

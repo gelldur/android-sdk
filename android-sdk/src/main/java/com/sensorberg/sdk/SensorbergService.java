@@ -27,6 +27,8 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.text.TextUtils;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -316,6 +318,9 @@ public class SensorbergService extends Service {
             case SensorbergServiceMessage.MSG_CONVERSION:
                 updateActionConversion(intent);
                 break;
+            case SensorbergServiceMessage.MSG_ATTRIBUTES:
+                updateAttributes(intent);
+                break;
             case SensorbergServiceMessage.MSG_SET_API_TOKEN: {
                 setApiToken(intent);
                 break;
@@ -380,6 +385,21 @@ public class SensorbergService extends Service {
         }
         bootstrapper.onConversionUpdate(conversion);
     }
+
+    protected void updateAttributes(Intent intent) {
+        Serializable extra = intent.getSerializableExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES);
+        if (extra != null) {
+            try {
+                HashMap<String, String> map = (HashMap<String, String>) extra;
+                bootstrapper.setAttributes(map);
+            } catch (ClassCastException ex) {
+                logError("Intent contains no attributes data", ex);
+            }
+        } else {
+            logError("Intent has no valid attributes");
+        }
+    }
+
 
     protected void setApiToken(Intent intent) {
         if (intent.hasExtra(SensorbergServiceMessage.MSG_SET_API_TOKEN_TOKEN)) {

@@ -19,12 +19,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import java.util.List;
+import java.util.TreeMap;
 
 import javax.inject.Inject;
 
@@ -56,7 +58,7 @@ public class TheResolverWithMockApiShould {
         testHandlerManager.getCustomClock().setNowInMillis(new DateTime(2015, 7, 7, 1, 1, 1).getMillis());
         Transport testTransportWithMockService = new RetrofitApiTransport(mockRetrofitApiService, testHandlerManager.getCustomClock());
 
-        tested = new Resolver(resolverConfiguration, testHandlerManager, testTransportWithMockService);
+        tested = new Resolver(resolverConfiguration, testHandlerManager, testTransportWithMockService, null);
     }
 
     @Test
@@ -64,7 +66,7 @@ public class TheResolverWithMockApiShould {
         ResolveResponse resolveResponse = gson
                 .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.resolve_response_enter_exit_action, InstrumentationRegistry
                         .getContext()), ResolveResponse.class);
-        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString()))
+        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Matchers.<TreeMap<String, String>>any()))
                 .thenReturn(Calls.response(resolveResponse));
 
         ResolverListener testListener = new ResolverListener() {
@@ -88,7 +90,7 @@ public class TheResolverWithMockApiShould {
         ResolveResponse resolveResponse = gson
                 .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.resolve_response_inapp_action, InstrumentationRegistry
                         .getContext()), ResolveResponse.class);
-        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString()))
+        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Matchers.<TreeMap<String, String>>any()))
                 .thenReturn(Calls.response(resolveResponse));
 
         ResolverListener mockListener = new ResolverListener() {
@@ -113,7 +115,7 @@ public class TheResolverWithMockApiShould {
         ResolveResponse resolveResponse = gson
                 .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.resolve_response_delayed_action, InstrumentationRegistry
                         .getContext()), ResolveResponse.class);
-        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString()))
+        Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Matchers.<TreeMap<String, String>>any()))
                 .thenReturn(Calls.response(resolveResponse));
 
         ResolverListener mockListener = mock(ResolverListener.class);

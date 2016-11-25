@@ -44,6 +44,8 @@ public class SensorbergServiceMessage {
 
     public static final int MSG_CONVERSION = 200;
 
+    public static final int MSG_ATTRIBUTES = 300;
+
     public static final String MSG_SET_API_TOKEN_TOKEN = "com.sensorberg.android.sdk.message.setApiToken.apiTokenString";
 
     public static final String MSG_PRESENT_ACTION_BEACONEVENT = "com.sensorberg.android.sdk.message.presentBeaconEvent.beaconEvent";
@@ -70,6 +72,8 @@ public class SensorbergServiceMessage {
     public static final String EXTRA_LOCATION_PERMISSION = "com.sensorberg.android.sdk.intent.permissionState";
 
     public static final String EXTRA_CONVERSION = "com.sensorberg.android.sdk.intent.conversion";
+
+    public static final String EXTRA_ATTRIBUTES = "com.sensorberg.android.sdk.intent.attributes";
 
     private SensorbergServiceMessage() {
         throw new IllegalAccessError("Utility class");
@@ -114,6 +118,10 @@ public class SensorbergServiceMessage {
                 return "MSG_SET_API_ADVERTISING_IDENTIFIER";
             case MSG_LOCATION_SERVICES_IS_SET:
                 return "MSG_LOCATION_SERVICES_IS_SET";
+            case MSG_CONVERSION:
+                return "MSG_CONVERSION";
+            case MSG_ATTRIBUTES:
+                return "MSG_ATTRIBUTES";
             default:
                 return "unknown message" + what;
         }

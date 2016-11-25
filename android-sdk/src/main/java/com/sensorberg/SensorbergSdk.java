@@ -9,6 +9,7 @@ import com.sensorberg.sdk.internal.interfaces.Platform;
 import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.receivers.ScannerBroadcastReceiver;
 import com.sensorberg.sdk.resolver.BeaconEvent;
+import com.sensorberg.utils.AttributeValidator;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -20,6 +21,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Messenger;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.UUID;
@@ -249,5 +252,27 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
         //TODO This is just a stub in case we want to change conversion type based on user dismissing the notification in the future.
         //Intent intent = SensorbergServiceIntents.getConversionIntent(context, actionUUID, ActionConversion.TYPE_IGNORED);
         //context.startService(intent);
+    }
+
+    /**
+     * Pass here key-values params that are used for message targeting
+     * Key and values are limited to alphanumerical characters and underscore (_)
+     * To clear the list pass null.
+     * @param attributes Map of attributes that will be passed.
+     */
+    public static void setAttributes(Map<String, String> attributes) {
+        HashMap<String, String> map;
+        if (attributes != null) {
+            map = new HashMap<>(attributes);
+        } else {
+            map = new HashMap<>();
+        }
+        if (AttributeValidator.isInputValid(map)) {
+            Intent intent = SensorbergServiceIntents.getServiceIntentWithMessage(context, SensorbergServiceMessage.MSG_ATTRIBUTES);
+            intent.putExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES, map);
+            context.startService(intent);
+        } else {
+            Logger.log.logError("Attributes can contain only alphanumerical characters and underscore");
+        }
     }
 }
