@@ -176,7 +176,7 @@ public class TheInternalBootstrapperIntegration {
             BaseResolveResponse updateLayoutResponse = gson
                     .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.response_resolve_precaching,
                             InstrumentationRegistry.getContext()), BaseResolveResponse.class);
-            Mockito.when(mockRetrofitApiService.updateBeaconLayout()).thenReturn(Calls.response(updateLayoutResponse));
+            Mockito.when(mockRetrofitApiService.updateBeaconLayout(null)).thenReturn(Calls.response(updateLayoutResponse));
 
             ResolveResponse getBeaconResponse = gson.fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.response_resolve_precaching,
                     InstrumentationRegistry.getContext()), ResolveResponse.class);
@@ -195,7 +195,7 @@ public class TheInternalBootstrapperIntegration {
         Mockito.verify(spiedTransportWithMockService, Mockito.timeout(5000).times(1))
                 .getBeacon(Mockito.any(ScanEvent.class), Mockito.any(BeaconResponseHandler.class));
         Mockito.verify(spiedTransportWithMockService, Mockito.timeout(5000).times(1))
-                .updateBeaconLayout();
+                .updateBeaconLayout(null);
 
         //TODO this does get called in real code and during debugging, but Mockito says it doesn't
 //        Mockito.verify(spiedInternalApplicationBootstrapper, Mockito.timeout(5000).times(1))
@@ -206,7 +206,7 @@ public class TheInternalBootstrapperIntegration {
     public void test_precaching_of_account_proximityUUIDS() throws IOException, JSONException, InterruptedException {
         BaseResolveResponse resolveResponse = gson.fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.response_resolve_precaching,
                 InstrumentationRegistry.getContext()), BaseResolveResponse.class);
-        Mockito.when(mockRetrofitApiService.updateBeaconLayout()).thenReturn(Calls.response(resolveResponse));
+        Mockito.when(mockRetrofitApiService.updateBeaconLayout(null)).thenReturn(Calls.response(resolveResponse));
 
         Assertions.assertThat(spiedInternalApplicationBootstrapper.proximityUUIDs).hasSize(0);
 
