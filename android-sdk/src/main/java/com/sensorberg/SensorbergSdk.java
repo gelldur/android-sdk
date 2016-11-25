@@ -255,9 +255,10 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
     }
 
     /**
-     * Call this to pass list of key-value params that will be passed to the backend with every layout request.
+     * Pass here key-values params that are used for message targeting
+     * Key and values are limited to alphanumerical characters and underscore (_)
      * To clear the list pass null.
-     * @param attributes Map of attributes that will be passed to the backend.
+     * @param attributes Map of attributes that will be passed.
      */
     public static void setAttributes(Map<String, String> attributes) {
         HashMap<String, String> map;
