@@ -3,8 +3,6 @@ package com.sensorberg.sdk.receivers;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
-import android.util.Log;
 
 import com.sensorberg.sdk.SensorbergServiceMessage;
 import com.sensorberg.sdk.internal.PermissionChecker;
