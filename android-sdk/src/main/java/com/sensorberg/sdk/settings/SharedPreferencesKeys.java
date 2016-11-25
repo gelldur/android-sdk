@@ -70,6 +70,8 @@ public final class SharedPreferencesKeys {
 
         public static final String ADVERTISING_IDENTIFIER = "com.sensorberg.preferences.network.advertisingIdentifier";
 
+        public static final String BEACON_REPORT_LEVEL = "com.sensorberg.preferences.network.beaconReportLevel";
+
         private Network() {
             throw new IllegalAccessError("Utility class");
         }

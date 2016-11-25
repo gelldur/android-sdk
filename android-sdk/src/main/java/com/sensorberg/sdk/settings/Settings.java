@@ -89,6 +89,21 @@ public class Settings {
     @SerializedName("scanner.restoreBeaconStates")
     private boolean shouldRestoreBeaconStates = DefaultSettings.DEFAULT_SHOULD_RESTORE_BEACON_STATE;
 
+    /**
+     * Beacon report level.
+     * REPORT_ALL = 0;
+     * REPORT_ONLY_CONTAINED = 1;
+     * REPORT_NONE = 2;
+     */
+    @Getter
+    @Expose
+    @SerializedName("network.beaconReportLevel")
+    private int beaconReportLevel = DefaultSettings.DEFAULT_BEACON_REPORT_LEVEL;
+
+    public static final int BEACON_REPORT_LEVEL_ALL = 0;
+    public static final int BEACON_REPORT_LEVEL_ONLY_CONTAINED = 1;
+    public static final int BEACON_REPORT_LEVEL_NONE = 2;
+
     @Getter
     private Long revision = null;
 
@@ -128,6 +143,8 @@ public class Settings {
                     .getLong(SharedPreferencesKeys.Network.BEACON_LAYOUT_UPDATE_INTERVAL, DefaultSettings.DEFAULT_HISTORY_UPLOAD_INTERVAL);
             shouldRestoreBeaconStates = preferences.getBoolean(SharedPreferencesKeys.Scanner.SHOULD_RESTORE_BEACON_STATES,
                     DefaultSettings.DEFAULT_SHOULD_RESTORE_BEACON_STATE);
+            beaconReportLevel = preferences.getInt(SharedPreferencesKeys.Network.BEACON_REPORT_LEVEL,
+                    DefaultSettings.DEFAULT_BEACON_REPORT_LEVEL);
         }
     }
 
@@ -146,6 +163,7 @@ public class Settings {
         maxRetries = newSettings.getMaxRetries();
         millisBetweenRetries = newSettings.getMillisBetweenRetries();
         shouldRestoreBeaconStates = newSettings.isShouldRestoreBeaconStates();
+        beaconReportLevel = newSettings.getBeaconReportLevel();
 
         if (rev >= 0) {
             revision = rev;
@@ -195,6 +213,7 @@ public class Settings {
             editor.putLong(SharedPreferencesKeys.Network.TIME_BETWEEN_RESOLVE_RETRIES, millisBetweenRetries);
             editor.putLong(SharedPreferencesKeys.Network.HISTORY_UPLOAD_INTERVAL, historyUploadInterval);
             editor.putLong(SharedPreferencesKeys.Network.BEACON_LAYOUT_UPDATE_INTERVAL, layoutUpdateInterval);
+            editor.putInt(SharedPreferencesKeys.Network.BEACON_REPORT_LEVEL, beaconReportLevel);
 
             editor.apply();
         }
