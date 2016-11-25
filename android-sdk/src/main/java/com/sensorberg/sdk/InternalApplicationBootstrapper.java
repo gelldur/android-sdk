@@ -27,6 +27,8 @@ import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 import com.sensorberg.sdk.scanner.ScanEvent;
 import com.sensorberg.sdk.scanner.Scanner;
 import com.sensorberg.sdk.scanner.ScannerListener;
+import com.sensorberg.sdk.settings.DefaultSettings;
+import com.sensorberg.sdk.settings.Settings;
 import com.sensorberg.sdk.settings.SettingsManager;
 import com.sensorberg.sdk.settings.SettingsUpdateCallback;
 import com.sensorberg.utils.ListUtils;
@@ -142,15 +144,24 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
 
     @Override
     public void onScanEventDetected(ScanEvent scanEvent) {
-        beaconActionHistoryPublisher.onScanEventDetected(scanEvent);
+
+        int reportLevel = settingsManager.getBeaconReportLevel();
+
+        if (reportLevel == Settings.BEACON_REPORT_LEVEL_ALL) {
+            beaconActionHistoryPublisher.onScanEventDetected(scanEvent);
+        }
 
         boolean contained;
         synchronized (proximityUUIDsMonitor) {
             contained = proximityUUIDs.isEmpty() || proximityUUIDs.contains(scanEvent.getBeaconId().getProximityUUIDWithoutDashes());
         }
         if (contained) {
-            resolver.resolve(scanEvent);
 
+            if (reportLevel == Settings.BEACON_REPORT_LEVEL_ONLY_CONTAINED) {
+                beaconActionHistoryPublisher.onScanEventDetected(scanEvent);
+            }
+
+            resolver.resolve(scanEvent);
         }
     }
 

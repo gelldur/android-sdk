@@ -1,5 +1,7 @@
 package com.sensorberg.sdk.settings;
 
+import static com.sensorberg.sdk.settings.Settings.BEACON_REPORT_LEVEL_ALL;
+
 public class DefaultSettings {
 
     public static final boolean DEFAULT_SHOULD_RESTORE_BEACON_STATE = true;
@@ -31,4 +33,6 @@ public class DefaultSettings {
     public static final long DEFAULT_MILLIS_BEETWEEN_RETRIES = 5 * TimeConstants.ONE_SECOND;
 
     public static final int DEFAULT_MAX_RETRIES = 3;
+
+    public static final int DEFAULT_BEACON_REPORT_LEVEL = BEACON_REPORT_LEVEL_ALL;
 }

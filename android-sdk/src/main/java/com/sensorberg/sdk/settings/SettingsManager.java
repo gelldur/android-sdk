@@ -142,6 +142,18 @@ public class SettingsManager {
         return getSettings().getHistoryUploadInterval();
     }
 
+    /**
+     * Beacon report level.
+     * REPORT_ALL = 0;
+     * REPORT_ONLY_CONTAINED = 1;
+     * REPORT_NONE = 2;
+     *
+     * @return the current set beacon report level
+     */
+    public int getBeaconReportLevel() {
+        return getSettings().getBeaconReportLevel();
+    }
+
     public long getMessageDelayWindowLength() {
         return getSettings().getMessageDelayWindowLength();
     }
