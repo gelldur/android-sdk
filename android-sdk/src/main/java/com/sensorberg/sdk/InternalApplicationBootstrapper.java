@@ -178,19 +178,9 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
         beaconActionHistoryPublisher.onConversionUpdate(conversion);
     }
 
-    public void onAttributesSet(HashMap<String, String> incoming) {
+    public void setAttributes(HashMap<String, String> incoming) {
         attributes = new TreeMap<>();
         attributes.putAll(incoming);
-        saveAttributes(attributes);
-    }
-
-    public void onAttributesAdd(HashMap<String, String> incoming) {
-        attributes.putAll(incoming);
-        saveAttributes(attributes);
-    }
-
-    public void onAttributesRemove(HashSet<String> incoming) {
-        attributes.keySet().removeAll(incoming);
         saveAttributes(attributes);
     }
 

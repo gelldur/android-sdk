@@ -73,11 +73,7 @@ public class SensorbergServiceMessage {
 
     public static final String EXTRA_CONVERSION = "com.sensorberg.android.sdk.intent.conversion";
 
-    public static final String EXTRA_ATTRIBUTES_SET = "com.sensorberg.android.sdk.intent.attributes.set";
-
-    public static final String EXTRA_ATTRIBUTES_ADD = "com.sensorberg.android.sdk.intent.attributes.add";
-
-    public static final String EXTRA_ATTRIBUTES_REMOVE = "com.sensorberg.android.sdk.intent.attributes.remove";
+    public static final String EXTRA_ATTRIBUTES = "com.sensorberg.android.sdk.intent.attributes";
 
     private SensorbergServiceMessage() {
         throw new IllegalAccessError("Utility class");

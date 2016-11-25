@@ -20,11 +20,10 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Messenger;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -257,28 +256,10 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
     public static void setAttributes(Map<String, String> attributes) {
         Intent intent = SensorbergServiceIntents.getServiceIntentWithMessage(context, SensorbergServiceMessage.MSG_ATTRIBUTES);
         if(attributes != null) {
-            intent.putExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_SET, new TreeMap<>(attributes));
+            intent.putExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES, new HashMap<>(attributes));
         } else {
-            intent.putExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_SET, new TreeMap<>());
+            intent.putExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES, new HashMap<>());
         }
-        context.startService(intent);
-    }
-
-    public static void addAttributes(Map<String, String> attributes) {
-        if (attributes == null) {
-            return;
-        }
-        Intent intent = SensorbergServiceIntents.getServiceIntentWithMessage(context, SensorbergServiceMessage.MSG_ATTRIBUTES);
-        intent.putExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_ADD, new TreeMap<>(attributes));
-        context.startService(intent);
-    }
-
-    public static void removeAttributes(Set<String> keys) {
-        if (keys == null) {
-            return;
-        }
-        Intent intent = SensorbergServiceIntents.getServiceIntentWithMessage(context, SensorbergServiceMessage.MSG_ATTRIBUTES);
-        intent.putExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_REMOVE, new TreeSet<>(keys));
         context.startService(intent);
     }
 }

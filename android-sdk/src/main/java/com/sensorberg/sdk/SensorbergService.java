@@ -28,6 +28,7 @@ import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.Log;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -387,21 +388,16 @@ public class SensorbergService extends Service {
     }
 
     protected void updateAttributes(Intent intent) {
-        try {
-            if (intent.hasExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_SET)) {
-                HashMap<String, String> map = (HashMap<String, String>) intent.getSerializableExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_SET);
-                bootstrapper.onAttributesSet(map);
-            } else if (intent.hasExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_ADD)) {
-                HashMap<String, String> map = (HashMap<String, String>) intent.getSerializableExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_ADD);
-                bootstrapper.onAttributesAdd(map);
-            } else if (intent.hasExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_REMOVE)) {
-                HashSet set = (HashSet<String>) intent.getSerializableExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_REMOVE);
-                bootstrapper.onAttributesRemove(set);
-            } else {
-                logError("Intent has no valid operation on attributes");
+        Serializable extra = intent.getSerializableExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES);
+        if (extra != null) {
+            try {
+                HashMap<String, String> map = (HashMap<String, String>) extra;
+                bootstrapper.setAttributes(map);
+            } catch (ClassCastException ex) {
+                logError("Intent contains no attributes data", ex);
             }
-        } catch (ClassCastException ex) {
-            logError("Intent contains no attributes data", ex);
+        } else {
+            logError("Intent has no valid attributes");
         }
     }
 
