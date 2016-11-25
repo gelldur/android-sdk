@@ -144,9 +144,9 @@ public class RetrofitApiServiceImpl {
         if (version == 0) {
             return mApiServiceV0.updateBeaconLayout();
         } else if (version == 1) {
-            return mApiServiceV1.updateBeaconLayout(mApiToken);
+            return mApiServiceV1.updateBeaconLayout(mApiToken, attributes);
         } else {
-            return mApiServiceV2.updateBeaconLayout(mApiToken);
+            return mApiServiceV2.updateBeaconLayout(mApiToken, attributes);
         }
     }
 
