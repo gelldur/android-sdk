@@ -24,7 +24,8 @@ import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
+
+import com.sensorberg.sdk.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -217,25 +218,25 @@ public class LocalBroadcastManager {
 
             final boolean debug = DEBUG || ((intent.getFlags() & Intent.FLAG_DEBUG_LOG_RESOLUTION) != 0);
             if (debug) {
-                Log.v(TAG, "Resolving type " + type + " scheme " + scheme + " of intent " + intent);
+                Logger.log.verbose("Resolving type " + type + " scheme " + scheme + " of intent " + intent);
             }
 
             ArrayList<ReceiverRecord> entries = mActions.get(intent.getAction());
             if (entries != null) {
                 if (debug) {
-                    Log.v(TAG, "Action list: " + entries);
+                    Logger.log.verbose("Action list: " + entries);
                 }
 
                 ArrayList<ReceiverRecord> receivers = null;
                 for (int i = 0; i < entries.size(); i++) {
                     ReceiverRecord receiver = entries.get(i);
                     if (debug) {
-                        Log.v(TAG, "Matching against filter " + receiver.filter);
+                        Logger.log.verbose("Matching against filter " + receiver.filter);
                     }
 
                     if (receiver.broadcasting) {
                         if (debug) {
-                            Log.v(TAG, "  Filter's target already added");
+                            Logger.log.verbose("  Filter's target already added");
                         }
                         continue;
                     }
@@ -244,7 +245,7 @@ public class LocalBroadcastManager {
                             categories, "LocalBroadcastManager");
                     if (match >= 0) {
                         if (debug) {
-                            Log.v(TAG, "  Filter matched!  match=0x" +
+                            Logger.log.verbose("  Filter matched!  match=0x" +
                                     Integer.toHexString(match));
                         }
                         if (receivers == null) {
@@ -272,7 +273,7 @@ public class LocalBroadcastManager {
                                     reason = "unknown reason";
                                     break;
                             }
-                            Log.v(TAG, "  Filter did not match: " + reason);
+                            Logger.log.verbose("  Filter did not match: " + reason);
                         }
                     }
                 }

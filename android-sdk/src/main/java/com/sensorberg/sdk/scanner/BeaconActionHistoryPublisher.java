@@ -2,7 +2,6 @@ package com.sensorberg.sdk.scanner;
 
 import android.content.SharedPreferences;
 import android.os.Message;
-import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -144,7 +143,7 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     public void onConversionUpdate(ActionConversion incoming) {
         ActionConversion existing = actionConversions.get(incoming.getAction());
         if (existing != null && incoming.getType() <= existing.getType()) {
-            Log.w("Conversion", "Conversion "+existing.getAction()+" type change rejected. " +
+            Logger.log.verbose("Conversion "+existing.getAction()+" type change rejected. " +
                     "Type can be changed only to higher. " +
                     "Existing type: "+existing.getType()+" Incoming type: "+incoming.getType());
             return;

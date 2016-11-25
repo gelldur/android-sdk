@@ -9,8 +9,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.util.Log;
 
+import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.action.Action;
 import com.sensorberg.sdk.action.InAppAction;
 import com.sensorberg.sdk.action.UriMessageAction;
@@ -64,19 +64,19 @@ public abstract class ActionReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         //Basic validation
         if (intent == null) {
-            Log.w(TAG, "Received null intent");
+            Logger.log.debug("Received null intent");
             return;
         }
         String intentAction = intent.getAction();
         if (intentAction == null) {
-            Log.w(TAG, "Received intent without intent action string");
+            Logger.log.debug("Received intent without intent action string");
             return;
         }
         //Recognize kind of intent and act accordingly
         if (intentAction.equals(ACTION_PRESENT)) {
             Action sdkAction = intent.getExtras().getParcelable(Action.INTENT_KEY);
             if (sdkAction == null) {
-                Log.w(TAG, "Received intent without SDK Action");
+                Logger.log.debug("Received intent without SDK Action");
                 return;
             }
             BeaconId beaconId = intent.getExtras().getParcelable(BeaconId.INTENT_KEY);
@@ -90,11 +90,11 @@ public abstract class ActionReceiver extends BroadcastReceiver {
         } else if (intentAction.equals(ACTION_CONVERSION_SUCCESS) || intentAction.equals(ACTION_CONVERSION_DELETE)) {
             Action action = intent.getParcelableExtra(EXTRA_ACTION);
             if (action == null) {
-                Log.w(TAG, "Received "+ACTION_CONVERSION_SUCCESS+" intent is missing SDK Action");
+                Logger.log.debug("Received "+ACTION_CONVERSION_SUCCESS+" intent is missing SDK Action");
             }
             BeaconId beaconId = intent.getParcelableExtra(EXTRA_BEACON);
             if (beaconId == null) {
-                Log.w(TAG, "Received "+ACTION_CONVERSION_SUCCESS+" intent is missing BeaconId");
+                Logger.log.debug("Received "+ACTION_CONVERSION_SUCCESS+" intent is missing BeaconId");
             }
             Uri uri = intent.getParcelableExtra(EXTRA_URI);
             Bundle bundle = intent.getBundleExtra(EXTRA_BUNDLE);
@@ -104,7 +104,7 @@ public abstract class ActionReceiver extends BroadcastReceiver {
                 onNotificationDeleted(action, beaconId, uri, bundle, context);
             }
         } else {
-            Log.w(TAG, "Received intent with unknown intent action string: "+intentAction);
+            Logger.log.debug("Received intent with unknown intent action string: "+intentAction);
         }
     }
 
@@ -246,10 +246,10 @@ public abstract class ActionReceiver extends BroadcastReceiver {
         Intent intent = new Intent(actionString);
         intent.setClass(context, this.getClass());
         if (action == null) {
-            Log.w(TAG, "Missing SDK Action! Action will be null in onNotificationSuccess");
+            Logger.log.debug("Missing SDK Action! Action will be null in onNotificationSuccess");
         }
         if (beaconId == null) {
-            Log.w(TAG, "Missing BeaconId! BeaconId will be null in onNotificationSuccess");
+            Logger.log.debug("Missing BeaconId! BeaconId will be null in onNotificationSuccess");
         }
         intent.putExtra(EXTRA_ACTION, action);
         intent.putExtra(EXTRA_BEACON, (Parcelable) beaconId);

@@ -22,6 +22,7 @@ import android.content.SharedPreferences;
 import android.support.test.runner.AndroidJUnit4;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -121,5 +122,21 @@ public class TheInternalApplicationBootstrapperShould {
 
     public void shouldReturnSyncEnabled() {
         Assertions.assertThat(tested.isSyncEnabled()).isTrue();
+    }
+
+    @Test
+    public void shouldPersistAttributesForTargeting() {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("K1", "V1");
+        map.put("K2", "V2");
+
+        tested.setAttributes(map);
+
+        tested = null;
+        tested = new InternalApplicationBootstrapper(new DumbSucessTransport(), testServiceScheduler, testHandlerManager,
+                testHandlerManager.getCustomClock(), bluetoothPlatform, new ResolverConfiguration());
+
+        Assertions.assertThat(tested.attributes.get("K1")).isEqualTo("V1");
+        Assertions.assertThat(tested.attributes.get("K2")).isEqualTo("V2");
     }
 }
