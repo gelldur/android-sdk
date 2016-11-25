@@ -11,11 +11,12 @@ import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.scanner.ScanEvent;
 
 import java.util.List;
+import java.util.SortedMap;
 
 public class DumbSucessTransport implements Transport {
 
     @Override
-    public void updateBeaconLayout() {
+    public void updateBeaconLayout(SortedMap<String, String> attributes) {
 
     }
 

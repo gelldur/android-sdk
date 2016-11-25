@@ -23,6 +23,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import java.io.File;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -32,6 +34,8 @@ import okhttp3.mockwebserver.MockWebServer;
 import retrofit2.Call;
 import retrofit2.Response;
 import util.TestConstants;
+
+import static org.junit.Assert.assertEquals;
 
 @RunWith(AndroidJUnit4.class)
 public class ApiServiceShould {
@@ -79,7 +83,7 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout();
+        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(null);
         Response<BaseResolveResponse> response = call.execute();
 
         Assertions.assertThat(response.raw().request().headers()).isNotNull();
@@ -93,7 +97,7 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout();
+        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(null);
 
         Assertions.assertThat(realPlatformIdentifier.getAdvertiserIdentifier()).isNull();
         Response<BaseResolveResponse> responseWithAdvertiserId = call.clone().execute();
@@ -108,7 +112,7 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout();
+        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(null);
         realPlatformIdentifier.setAdvertisingIdentifier("TEST_ADID");
 
         Assertions.assertThat(realPlatformIdentifier.getAdvertiserIdentifier()).isNotNull();
@@ -125,7 +129,7 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout();
+        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(null);
         Response<BaseResolveResponse> response = call.execute();
 
         Assertions.assertThat(response.raw().request().headers()).isNotNull();
@@ -139,7 +143,7 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout();
+        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(null);
         Response<BaseResolveResponse> response = call.execute();
 
         Assertions.assertThat(response.raw().request().headers()).isNotNull();
@@ -163,5 +167,17 @@ public class ApiServiceShould {
 
         Assertions.assertThat(response2.raw().cacheResponse()).isNotNull();
         Assertions.assertThat(response2.raw().networkResponse()).isNull();
+    }
+
+    @Test
+    public void apiservice_should_have_user_targeting() throws Exception {
+        SortedMap<String, String> attributes = new TreeMap<>();
+        attributes.put("param_A", "value_1");
+        attributes.put("a_param", "value_2");
+        attributes.put("b_param", "value_3");
+        attributes.put("param_B", "value_4");
+        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(attributes);
+        String url = call.request().url().query();
+        assertEquals("User params are not appended or not in order", url, "a_param=value_2&b_param=value_3&param_A=value_1&param_B=value_4");
     }
 }
