@@ -10,6 +10,7 @@ import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.scanner.ScanEvent;
 
 import java.util.List;
+import java.util.SortedMap;
 
 import lombok.Setter;
 
@@ -22,14 +23,17 @@ public final class Resolver implements RunLoop.MessageHandlerCallback {
     private final RunLoop runLoop;
 
     @Setter
+    protected SortedMap<String, String> attributes;
+
+    @Setter
     private ResolverListener listener = ResolverListener.NONE;
 
-    public Resolver(ResolverConfiguration configuration, HandlerManager handlerManager, Transport transport) {
+    public Resolver(ResolverConfiguration configuration, HandlerManager handlerManager, Transport transport, SortedMap<String, String> attributes) {
         this.configuration = configuration;
         runLoop = handlerManager.getResolverRunLoop(this);
         this.transport = transport;
         transport.setApiToken(configuration.apiToken);
-
+        this.attributes = attributes;
     }
 
     @Override
@@ -53,7 +57,7 @@ public final class Resolver implements RunLoop.MessageHandlerCallback {
 
     public void queryServer(final ScanEvent scanEvent) {
         Logger.log.beaconResolveState(scanEvent, "starting to resolve request");
-        transport.getBeacon(scanEvent, new BeaconResponseHandler() {
+        transport.getBeacon(scanEvent, attributes, new BeaconResponseHandler() {
             @Override
             public void onSuccess(List<BeaconEvent> beaconEvents) {
                 listener.onResolutionsFinished(beaconEvents);

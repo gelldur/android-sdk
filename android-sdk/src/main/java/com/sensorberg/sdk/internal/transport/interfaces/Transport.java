@@ -33,7 +33,7 @@ public interface Transport {
 
     void setProximityUUIDUpdateHandler(ProximityUUIDUpdateHandler proximityUUIDUpdateHandler);
 
-    void getBeacon(ScanEvent scanEvent, BeaconResponseHandler beaconResponseHandler);
+    void getBeacon(ScanEvent scanEvent, SortedMap<String, String> attributes, BeaconResponseHandler beaconResponseHandler);
 
     boolean setApiToken(String apiToken);
 

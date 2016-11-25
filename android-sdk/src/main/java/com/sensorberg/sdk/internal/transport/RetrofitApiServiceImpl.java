@@ -154,13 +154,16 @@ public class RetrofitApiServiceImpl {
         }
     }
 
-    public Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo) {
+    public Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo, SortedMap<String, String> attributes) {
+        if (attributes == null) {
+            attributes = new TreeMap<>();
+        }
         if (version == 0) {
             return mApiServiceV0.getBeacon(beaconId, networkInfo);
         } else if (version == 1) {
-            return mApiServiceV1.getBeacon(beaconId, networkInfo, mApiToken);
+            return mApiServiceV1.getBeacon(beaconId, networkInfo, mApiToken, attributes);
         } else {
-            return mApiServiceV2.getBeacon(beaconId, networkInfo, mApiToken);
+            return mApiServiceV2.getBeacon(beaconId, networkInfo, mApiToken, attributes);
         }
     }
 

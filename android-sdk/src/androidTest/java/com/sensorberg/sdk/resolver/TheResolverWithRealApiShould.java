@@ -65,7 +65,7 @@ public class TheResolverWithRealApiShould {
         String baseUrl = BuildConfig.RESOLVER_URL != null ? BuildConfig.RESOLVER_URL : RetrofitApiTransport.RESOLVER_BASE_URL;
         RetrofitApiServiceImpl retrofitServiceWithOutCache = new RetrofitApiServiceImpl(null, gson, platformIdentifier, baseUrl);
         transport = new RetrofitApiTransport(retrofitServiceWithOutCache, clock);
-        tested = new Resolver(configuration, testHandlerManager, transport);
+        tested = new Resolver(configuration, testHandlerManager, transport, null);
 
     }
 

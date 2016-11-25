@@ -37,19 +37,16 @@ public class ActionConversion implements Parcelable {
 
     @Expose
     @Getter
-    @Setter
     @SerializedName("action")
     private final String action;
 
     @Expose
     @Getter
-    @Setter
     @SerializedName("dt")
     private final long date;
 
     @Expose
     @Getter
-    @Setter
     @SerializedName("type")
     private final int type;
 

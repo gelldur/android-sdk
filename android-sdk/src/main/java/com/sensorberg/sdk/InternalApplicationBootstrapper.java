@@ -119,7 +119,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
 
         scanner = new Scanner(settingsManager, settingsManager.isShouldRestoreBeaconStates(), clock, fileManager, scheduler, handlerManager,
                 btPlatform);
-        resolver = new Resolver(resolverConfiguration, handlerManager, transport);
+        resolver = new Resolver(resolverConfiguration, handlerManager, transport, attributes);
         resolver.setListener(resolverListener);
 
         scanner.addScannerListener(this);
@@ -181,6 +181,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     public void setAttributes(HashMap<String, String> incoming) {
         attributes = new TreeMap<>();
         attributes.putAll(incoming);
+        resolver.setAttributes(attributes);
         saveAttributes(attributes);
     }
 

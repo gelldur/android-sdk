@@ -30,6 +30,7 @@ import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import android.content.IntentFilter;
@@ -143,7 +144,7 @@ public class TheInternalBootstrapperIntegration {
     @Test
     public void test_an_instant_action_workflow() throws Exception {
         //enqueue the layout with a beacon for report immediately
-        Mockito.when(mockRetrofitApiService.getBeacon( Mockito.anyString(), Mockito.anyString()))
+        Mockito.when(mockRetrofitApiService.getBeacon( Mockito.anyString(), Mockito.anyString(), Matchers.<TreeMap<String, String>>any()))
                 .thenReturn(Calls.response(RESOLVE_RESPONSE_WITH_REPORT_IMMEDIATELY));
 
         //enqueue the reporting result
@@ -160,7 +161,7 @@ public class TheInternalBootstrapperIntegration {
 
         //we should have exactly one notification
         Mockito.verify(spiedTransportWithMockService, Mockito.timeout(5000).times(1))
-                .getBeacon(Mockito.any(ScanEvent.class), Mockito.any(BeaconResponseHandler.class));
+                .getBeacon(Mockito.any(ScanEvent.class), Matchers.<TreeMap<String, String>>any(), Mockito.any(BeaconResponseHandler.class));
 
         //TODO this does get called in real code and during debugging, but Mockito says it doesn't
 //        Mockito.verify(spiedTransportWithMockService, Mockito.timeout(5000).times(1))
@@ -177,11 +178,11 @@ public class TheInternalBootstrapperIntegration {
             BaseResolveResponse updateLayoutResponse = gson
                     .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.response_resolve_precaching,
                             InstrumentationRegistry.getContext()), BaseResolveResponse.class);
-            Mockito.when(mockRetrofitApiService.updateBeaconLayout(new TreeMap<String, String>())).thenReturn(Calls.response(updateLayoutResponse));
+            Mockito.when(mockRetrofitApiService.updateBeaconLayout(Matchers.<TreeMap<String, String>>any())).thenReturn(Calls.response(updateLayoutResponse));
 
             ResolveResponse getBeaconResponse = gson.fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.response_resolve_precaching,
                     InstrumentationRegistry.getContext()), ResolveResponse.class);
-            Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString()))
+            Mockito.when(mockRetrofitApiService.getBeacon(Mockito.anyString(), Mockito.anyString(), Matchers.<TreeMap<String, String>>any()))
                     .thenReturn(Calls.response(getBeaconResponse));
         } catch (Exception e) {
             Assertions.fail(e.toString());
@@ -194,9 +195,9 @@ public class TheInternalBootstrapperIntegration {
         spiedInternalApplicationBootstrapper.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(0));
 
         Mockito.verify(spiedTransportWithMockService, Mockito.timeout(5000).times(1))
-                .getBeacon(Mockito.any(ScanEvent.class), Mockito.any(BeaconResponseHandler.class));
+                .getBeacon(Mockito.any(ScanEvent.class), Matchers.<TreeMap<String, String>>any(), Mockito.any(BeaconResponseHandler.class));
         Mockito.verify(spiedTransportWithMockService, Mockito.timeout(5000).times(1))
-                .updateBeaconLayout(new TreeMap<String, String>());
+                .updateBeaconLayout(Matchers.<TreeMap<String, String>>any());
 
         //TODO this does get called in real code and during debugging, but Mockito says it doesn't
 //        Mockito.verify(spiedInternalApplicationBootstrapper, Mockito.timeout(5000).times(1))
@@ -207,7 +208,7 @@ public class TheInternalBootstrapperIntegration {
     public void test_precaching_of_account_proximityUUIDS() throws IOException, JSONException, InterruptedException {
         BaseResolveResponse resolveResponse = gson.fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.response_resolve_precaching,
                 InstrumentationRegistry.getContext()), BaseResolveResponse.class);
-        Mockito.when(mockRetrofitApiService.updateBeaconLayout(new TreeMap<String, String>())).thenReturn(Calls.response(resolveResponse));
+        Mockito.when(mockRetrofitApiService.updateBeaconLayout(Matchers.<TreeMap<String, String>>any())).thenReturn(Calls.response(resolveResponse));
 
         Assertions.assertThat(spiedInternalApplicationBootstrapper.proximityUUIDs).hasSize(0);
 

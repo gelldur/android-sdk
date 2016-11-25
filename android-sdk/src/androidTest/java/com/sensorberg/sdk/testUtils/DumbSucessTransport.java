@@ -36,7 +36,7 @@ public class DumbSucessTransport implements Transport {
     }
 
     @Override
-    public void getBeacon(ScanEvent scanEvent, BeaconResponseHandler beaconResponseHandler) {
+    public void getBeacon(ScanEvent scanEvent, SortedMap<String, String> attributes, BeaconResponseHandler beaconResponseHandler) {
         beaconResponseHandler.onFailure(new IllegalArgumentException("this transport is dumb"));
     }
 
