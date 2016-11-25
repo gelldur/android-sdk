@@ -26,7 +26,6 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -343,11 +342,11 @@ public class SensorbergService extends Service {
             }
             case SensorbergServiceMessage.MSG_LOCATION_SERVICES_IS_SET: {
                 if (intent.getBooleanExtra(SensorbergServiceMessage.EXTRA_LOCATION_PERMISSION, false)) {
-                    Log.i("Location Permission", "scanner should stop");
+                    Logger.log.debug("Location Permission. Scanner should stop");
                     bootstrapper.stopScanning();
                 } else {
                     bootstrapper.startScanning();
-                    Log.i("Location Permission", "scanner should start");
+                    Logger.log.debug("Location Permission. Scanner should start");
                 }
             }
         }

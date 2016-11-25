@@ -48,6 +48,8 @@ public class Logger {
 
         void verbose(String message);
 
+        void debug(String message);
+
         void logBeaconHistoryPublisherState(String s);
     }
 
@@ -122,6 +124,11 @@ public class Logger {
         }
 
         @Override
+        public void debug(String message) {
+
+        }
+
+        @Override
         public void logBeaconHistoryPublisherState(String s) {
 
         }
@@ -191,6 +198,11 @@ public class Logger {
         @Override
         public void verbose(String message) {
             android.util.Log.v(TAG, message);
+        }
+
+        @Override
+        public void debug(String message) {
+            android.util.Log.d(TAG, message);
         }
 
         @Override
