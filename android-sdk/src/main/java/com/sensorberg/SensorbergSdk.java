@@ -9,6 +9,7 @@ import com.sensorberg.sdk.internal.interfaces.Platform;
 import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.receivers.ScannerBroadcastReceiver;
 import com.sensorberg.sdk.resolver.BeaconEvent;
+import com.sensorberg.utils.AttributeValidator;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -253,13 +254,24 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
         //context.startService(intent);
     }
 
+    /**
+     * Call this to pass list of key-value params that will be passed to the backend with every layout request.
+     * To clear the list pass null.
+     * @param attributes Map of attributes that will be passed to the backend.
+     */
     public static void setAttributes(Map<String, String> attributes) {
-        Intent intent = SensorbergServiceIntents.getServiceIntentWithMessage(context, SensorbergServiceMessage.MSG_ATTRIBUTES);
-        if(attributes != null) {
-            intent.putExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES, new HashMap<>(attributes));
+        HashMap<String, String> map;
+        if (attributes != null) {
+            map = new HashMap<>(attributes);
         } else {
-            intent.putExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES, new HashMap<>());
+            map = new HashMap<>();
         }
-        context.startService(intent);
+        if (AttributeValidator.isInputValid(map)) {
+            Intent intent = SensorbergServiceIntents.getServiceIntentWithMessage(context, SensorbergServiceMessage.MSG_ATTRIBUTES);
+            intent.putExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES, map);
+            context.startService(intent);
+        } else {
+            Logger.log.logError("Attributes can contain only alphanumerical characters and underscore");
+        }
     }
 }
