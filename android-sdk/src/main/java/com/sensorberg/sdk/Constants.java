@@ -32,6 +32,10 @@ public class Constants {
             public static final String BEACON_LAYOUT_UPDATE_INTERVAL = "com.sensorberg.preferences.settings.timeBetweenBeaconLayoutUpdates";
             public static final String ADVERTISING_IDENTIFIER = "com.sensorberg.preferences.network.advertisingIdentifier";
         }
+
+        public static final class Data {
+            public static final String TARGETING_ATTRIBUTES = "com.sensorberg.preferences.data.targeting";
+        }
     }
 
     public static final class Time{

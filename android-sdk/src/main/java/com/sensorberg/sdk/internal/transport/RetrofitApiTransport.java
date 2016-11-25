@@ -21,6 +21,7 @@ import com.sensorberg.sdk.scanner.ScanEvent;
 import java.net.HttpURLConnection;
 import java.util.Collections;
 import java.util.List;
+import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
 import lombok.Setter;
@@ -174,9 +175,9 @@ public class RetrofitApiTransport implements Transport {
     }
 
     @Override
-    public void updateBeaconLayout() {
+    public void updateBeaconLayout(SortedMap<String, String> attributes) {
 
-        Call<BaseResolveResponse> call = getApiService().updateBeaconLayout();
+        Call<BaseResolveResponse> call = getApiService().updateBeaconLayout(attributes);
 
         call.enqueue(new Callback<BaseResolveResponse>() {
             @Override

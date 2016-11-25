@@ -49,6 +49,8 @@ public class Logger {
         void verbose(String message);
 
         void logBeaconHistoryPublisherState(String s);
+
+        void logAttributes(String s);
     }
 
     public static void enableVerboseLogging() {
@@ -123,6 +125,11 @@ public class Logger {
 
         @Override
         public void logBeaconHistoryPublisherState(String s) {
+
+        }
+
+        @Override
+        public void logAttributes(String s) {
 
         }
     };
@@ -224,6 +231,11 @@ public class Logger {
         @Override
         public void applicationStateChanged(String message) {
             android.util.Log.d(TAG, "application has changed state:" + message);
+        }
+
+        @Override
+        public void logAttributes(String s) {
+            android.util.Log.d(TAG, "Attributes: " + s);
         }
     }
 

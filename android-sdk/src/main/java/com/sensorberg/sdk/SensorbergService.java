@@ -28,6 +28,7 @@ import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.Log;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -317,6 +318,9 @@ public class SensorbergService extends Service {
             case SensorbergServiceMessage.MSG_CONVERSION:
                 updateActionConversion(intent);
                 break;
+            case SensorbergServiceMessage.MSG_ATTRIBUTES:
+                updateAttributes(intent);
+                break;
             case SensorbergServiceMessage.MSG_SET_API_TOKEN: {
                 setApiToken(intent);
                 break;
@@ -381,6 +385,26 @@ public class SensorbergService extends Service {
         }
         bootstrapper.onConversionUpdate(conversion);
     }
+
+    protected void updateAttributes(Intent intent) {
+        try {
+            if (intent.hasExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_SET)) {
+                HashMap<String, String> map = (HashMap<String, String>) intent.getSerializableExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_SET);
+                bootstrapper.onAttributesSet(map);
+            } else if (intent.hasExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_ADD)) {
+                HashMap<String, String> map = (HashMap<String, String>) intent.getSerializableExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_ADD);
+                bootstrapper.onAttributesAdd(map);
+            } else if (intent.hasExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_REMOVE)) {
+                HashSet set = (HashSet<String>) intent.getSerializableExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_REMOVE);
+                bootstrapper.onAttributesRemove(set);
+            } else {
+                logError("Intent has no valid operation on attributes");
+            }
+        } catch (ClassCastException ex) {
+            logError("Intent contains no attributes data", ex);
+        }
+    }
+
 
     protected void setApiToken(Intent intent) {
         if (intent.hasExtra(SensorbergServiceMessage.MSG_SET_API_TOKEN_TOKEN)) {

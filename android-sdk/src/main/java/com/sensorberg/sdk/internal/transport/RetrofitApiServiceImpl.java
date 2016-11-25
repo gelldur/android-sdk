@@ -14,6 +14,7 @@ import com.sensorberg.utils.Objects;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Cache;
@@ -139,7 +140,7 @@ public class RetrofitApiServiceImpl {
         }
     }
 
-    public Call<BaseResolveResponse> updateBeaconLayout() {
+    public Call<BaseResolveResponse> updateBeaconLayout(SortedMap<String, String> attributes) {
         if (version == 0) {
             return mApiServiceV0.updateBeaconLayout();
         } else if (version == 1) {

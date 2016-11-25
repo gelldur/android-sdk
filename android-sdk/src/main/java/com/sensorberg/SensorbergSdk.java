@@ -20,8 +20,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Messenger;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -249,5 +252,33 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
         //TODO This is just a stub in case we want to change conversion type based on user dismissing the notification in the future.
         //Intent intent = SensorbergServiceIntents.getConversionIntent(context, actionUUID, ActionConversion.TYPE_IGNORED);
         //context.startService(intent);
+    }
+
+    public static void setAttributes(Map<String, String> attributes) {
+        Intent intent = SensorbergServiceIntents.getServiceIntentWithMessage(context, SensorbergServiceMessage.MSG_ATTRIBUTES);
+        if(attributes != null) {
+            intent.putExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_SET, new TreeMap<>(attributes));
+        } else {
+            intent.putExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_SET, new TreeMap<>());
+        }
+        context.startService(intent);
+    }
+
+    public static void addAttributes(Map<String, String> attributes) {
+        if (attributes == null) {
+            return;
+        }
+        Intent intent = SensorbergServiceIntents.getServiceIntentWithMessage(context, SensorbergServiceMessage.MSG_ATTRIBUTES);
+        intent.putExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_ADD, new TreeMap<>(attributes));
+        context.startService(intent);
+    }
+
+    public static void removeAttributes(Set<String> keys) {
+        if (keys == null) {
+            return;
+        }
+        Intent intent = SensorbergServiceIntents.getServiceIntentWithMessage(context, SensorbergServiceMessage.MSG_ATTRIBUTES);
+        intent.putExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES_REMOVE, new TreeSet<>(keys));
+        context.startService(intent);
     }
 }

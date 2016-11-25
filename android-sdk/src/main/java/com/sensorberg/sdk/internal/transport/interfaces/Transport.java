@@ -8,6 +8,7 @@ import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.scanner.ScanEvent;
 
 import java.util.List;
+import java.util.SortedMap;
 
 public interface Transport {
 
@@ -40,7 +41,7 @@ public interface Transport {
 
     void publishHistory(List<BeaconScan> scans, List<BeaconAction> actions, List<ActionConversion> conversions, TransportHistoryCallback callback);
 
-    void updateBeaconLayout();
+    void updateBeaconLayout(SortedMap<String, String> attributes);
 
     void setBeaconHistoryUploadIntervalListener(BeaconHistoryUploadIntervalListener listener);
 
