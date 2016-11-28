@@ -24,6 +24,13 @@ publishing {
                 license.appendNode('name', 'The Apache Software License, Version 2.0')
                 license.appendNode('url', 'http://www.apache.org/licenses/LICENSE-2.0.txt')
                 license.appendNode('distribution', 'repo')
+                def dependenciesNode = asNode().appendNode('dependencies')
+                configurations.compile.allDependencies.each { dependency ->
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', dependency.group)
+                    dependencyNode.appendNode('artifactId', dependency.name)
+                    dependencyNode.appendNode('version', dependency.version)
+                }
             }
         }
     }
@@ -39,7 +46,6 @@ artifactory {
             username = System.getenv("ARTIFACTORY_USER")// snapshot_properties.getProperty('artifactory_user')
             password = System.getenv("ARTIFACTORY_PASSWORD")// snapshot_properties.getProperty('artifactory_password')
             maven = true
-            
         }
         defaults {
             publishArtifacts = true
@@ -55,7 +61,6 @@ artifactory {
             username = System.getenv("ARTIFACTORY_USER")// snapshot_properties.getProperty('artifactory_user')
             password = System.getenv("ARTIFACTORY_PASSWORD")// snapshot_properties.getProperty('artifactory_password')
             maven = true
-            
         }
     }
 }
