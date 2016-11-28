@@ -163,7 +163,7 @@ public class RetrofitApiServiceImpl {
         } else if (version == 1) {
             return mApiServiceV1.getBeacon(beaconId, networkInfo, mApiToken, attributes);
         } else {
-            return mApiServiceV2.getBeacon(beaconId, networkInfo, mApiToken, attributes);
+            return mApiServiceV2.getBeacon(mApiToken, attributes);
         }
     }
 
@@ -173,7 +173,7 @@ public class RetrofitApiServiceImpl {
         } else if (version == 1) {
             return mApiServiceV1.publishHistory(body);
         } else {
-            return mApiServiceV2.publishHistory(body);
+            return mApiServiceV2.publishHistory(mApiToken, body);
         }
     }
 

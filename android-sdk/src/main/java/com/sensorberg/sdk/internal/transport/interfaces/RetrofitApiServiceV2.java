@@ -23,10 +23,10 @@ public interface RetrofitApiServiceV2 {
     Call<BaseResolveResponse> updateBeaconLayout(@Path("apiKey") String apiKey, @QueryMap SortedMap<String, String> attributes);
 
     @GET("/api/v2/sdk/gateways/{apiKey}/interactions.json")
-    Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo, @Path("apiKey") String apiKey, @QueryMap SortedMap<String, String> attributes);
+    Call<ResolveResponse> getBeacon(@Path("apiKey") String apiKey, @QueryMap SortedMap<String, String> attributes);
 
-    @POST("/api/v2/sdk/events.json")
-    Call<ResolveResponse> publishHistory(@Body HistoryBody body);
+    @POST("/api/v2/sdk/gateways/{apiKey}/analytics.json")
+    Call<ResolveResponse> publishHistory(@Path("apiKey") String apiKey, @Body HistoryBody body);
 
     @GET("/api/v2/sdk/gateways/{apiKey}/settings.json?platform=android")
     Call<SettingsResponse> getSettings(@Path("apiKey") String apiKey);
