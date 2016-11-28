@@ -23,6 +23,17 @@ public final class SharedPreferencesKeys {
         }
     }
 
+    public static final class Location {
+
+        public static final String GEOHASH_MAX_AGE = "com.sensorberg.preferences.location.geohashMaxAge";
+
+        public static final String GEOHASH_MIN_ACCURACY_RADIUS = "com.sensorberg.preferences.location.geohashMinAccuracyRadius";
+
+        private Location() {
+            throw new IllegalAccessError("Utility class");
+        }
+    }
+
     public static final class Settings {
 
         public static final String REVISION = "com.sensorberg.preferences.settings.revision";
@@ -58,6 +69,8 @@ public final class SharedPreferencesKeys {
         public static final String BEACON_LAYOUT_UPDATE_INTERVAL = "com.sensorberg.preferences.settings.timeBetweenBeaconLayoutUpdates";
 
         public static final String ADVERTISING_IDENTIFIER = "com.sensorberg.preferences.network.advertisingIdentifier";
+
+        public static final String BEACON_REPORT_LEVEL = "com.sensorberg.preferences.network.beaconReportLevel";
 
         private Network() {
             throw new IllegalAccessError("Utility class");

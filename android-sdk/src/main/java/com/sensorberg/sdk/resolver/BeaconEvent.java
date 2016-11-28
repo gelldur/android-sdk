@@ -66,6 +66,10 @@ public class BeaconEvent implements Parcelable {
     @Setter
     private long presentationTime;
 
+    @Getter
+    @Setter
+    private String geohash;
+
     private BeaconEvent(Action action, long resolvedTime, long presentationTime, long suppressionTime, boolean sendOnlyOnce, Date deliverAt,
                         int trigger, BeaconId beaconId, boolean reportImmediately) {
         this.action = action;

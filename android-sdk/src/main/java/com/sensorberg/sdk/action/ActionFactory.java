@@ -3,6 +3,7 @@ package com.sensorberg.sdk.action;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -26,6 +27,7 @@ public class ActionFactory {
         int URL_MESSAGE = 1;
         int VISIT_WEBSITE = 2;
         int IN_APP = 3;
+        int SILENT = 4;
     }
 
     private static final String SUBJECT = "subject";
@@ -34,29 +36,13 @@ public class ActionFactory {
 
     private static final String URL = "url";
 
-    private static final String DELAY_TIME = "delayTime";
-
-    private static final String CONTENT = "content";
-
-    private static final String TYPE = "type";
-
     private static final String PAYLOAD = "payload";
 
 
-    public static Action actionFromJSONObject(JsonObject contentJSON) throws JSONException {
-        int actionType = contentJSON.get(TYPE).getAsInt();
-        UUID actionUUID = UUID.fromString(contentJSON.get("id").getAsString());
-
-        long delayMilliseconds = (contentJSON.get(DELAY_TIME) != null ? contentJSON.get(DELAY_TIME).getAsLong() : Action.NO_DELAY) * 1000;
-
-        String messageString = contentJSON.get(CONTENT).getAsString();
-        JsonParser parser = new JsonParser();
-        JsonObject message = parser.parse(messageString).getAsJsonObject();
-
-        return getAction(actionType, message, actionUUID, delayMilliseconds);
-    }
-
     public static Action getAction(int actionType, JsonObject message, UUID actionUUID, long delay) throws JSONException {
+        if (actionType == ServerType.SILENT){
+            return new SilentAction(actionUUID);
+        }
         if (message == null) {
             return null;
         }
@@ -71,8 +57,12 @@ public class ActionFactory {
             }
         }
 
-        String subject = message.get(SUBJECT) == null ? null : message.get(SUBJECT).getAsString();
-        String body = message.get(BODY) == null ? null : message.get(BODY).getAsString();
+        JsonElement subjectJsonElement = message.get(SUBJECT);
+        String subject = subjectJsonElement == null || subjectJsonElement.isJsonNull() ? null : subjectJsonElement.getAsString();
+
+        JsonElement bodyJsonElement = message.get(BODY);
+        String body = bodyJsonElement == null || bodyJsonElement.isJsonNull() ? null : bodyJsonElement.getAsString();
+
         String url = getUriFromJson(message.get(URL), actionType);
 
         switch (actionType) {
@@ -107,6 +97,7 @@ public class ActionFactory {
                         Uri.parse(url),
                         delay
                 );
+                break;
             }
         }
         return value;
@@ -133,7 +124,7 @@ public class ActionFactory {
      * @return - Returns the verified URI string. If not valid or empty will return an empty string.
      */
     public static String getUriFromJson(JsonElement jsonElement, int messageType) {
-        String urlToCheck = jsonElement == null ? "" : jsonElement.getAsString();
+        String urlToCheck = jsonElement == null || jsonElement.isJsonNull() ? "" : jsonElement.getAsString();
         String returnUrl = "";
 
         //we allow deep links for in app actions and URL messages; we enforce valid network URLs

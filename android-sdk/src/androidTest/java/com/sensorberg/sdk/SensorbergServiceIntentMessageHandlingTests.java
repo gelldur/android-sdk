@@ -4,6 +4,7 @@ import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.scanner.ScannerEvent;
 import com.sensorberg.sdk.test.TestGenericBroadcastReceiver;
 import com.sensorberg.sdk.test.TestGenericBroadcastReceiver2;
+import com.sensorberg.sdk.testUtils.TestBluetoothPlatform;
 
 import org.fest.assertions.api.Assertions;
 import org.junit.After;
@@ -33,6 +34,7 @@ public class SensorbergServiceIntentMessageHandlingTests {
 
         tested = spy(new SensorbergService());
         tested.onCreate();
+        tested.bluetoothPlatform = new TestBluetoothPlatform();
 
         Intent startIntent = SensorbergServiceIntents.getStartServiceIntent(InstrumentationRegistry.getContext(), TestConstants.API_TOKEN_DEFAULT);
 

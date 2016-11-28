@@ -74,6 +74,7 @@ public class TheSettingsShould {
         Assertions.assertThat(tested.getExitTimeoutMillis()).isEqualTo(DefaultSettings.DEFAULT_EXIT_TIMEOUT_MILLIS);
         Assertions.assertThat(tested.getForeGroundScanTime()).isEqualTo(DefaultSettings.DEFAULT_FOREGROUND_SCAN_TIME);
         Assertions.assertThat(tested.getForeGroundWaitTime()).isEqualTo(DefaultSettings.DEFAULT_FOREGROUND_WAIT_TIME);
+        Assertions.assertThat(tested.getBeaconReportLevel()).isEqualTo(DefaultSettings.DEFAULT_BEACON_REPORT_LEVEL);
     }
 
     @Test

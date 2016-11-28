@@ -1,8 +1,8 @@
 {
     "activated": true,
-    "content": "{\"subject\":\"this is a subject\",\"body\":\"This is a message\",\"url\":\"something://\",\"payload\":1.2345}",
+    "content": {"subject":"this is a subject","body":"This is a message","url":"something://","payload":1.2345},
     "createdTime": 1418139320000,
-    "id": "69f6cebb-6c2c-4942-84f9-7df1f2100f13",
+    "eid": "69f6cebb-6c2c-4942-84f9-7df1f2100f13",
     "name": null,
     "type": 1,
     "updateTime": 1418139320000,

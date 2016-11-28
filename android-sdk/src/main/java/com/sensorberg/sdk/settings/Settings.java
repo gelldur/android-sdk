@@ -1,10 +1,10 @@
 package com.sensorberg.sdk.settings;
 
 
+import android.content.SharedPreferences;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-
-import android.content.SharedPreferences;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -50,6 +50,16 @@ public class Settings {
 
     @Getter
     @Expose
+    @SerializedName("location.geohashMaxAge")
+    private long geohashMaxAge = DefaultSettings.DEFAULT_GEOHASH_MAX_AGE;
+
+    @Getter
+    @Expose
+    @SerializedName("location.geohashMinAccuracyRadius")
+    private int geohashMinAccuracyRadius = DefaultSettings.DEFAULT_GEOHASH_MIN_ACCURACY_RADIUS;
+
+    @Getter
+    @Expose
     @SerializedName("network.millisBetweenRetries")
     private long millisBetweenRetries = DefaultSettings.DEFAULT_MILLIS_BEETWEEN_RETRIES;
 
@@ -79,6 +89,21 @@ public class Settings {
     @SerializedName("scanner.restoreBeaconStates")
     private boolean shouldRestoreBeaconStates = DefaultSettings.DEFAULT_SHOULD_RESTORE_BEACON_STATE;
 
+    /**
+     * Beacon report level.
+     * REPORT_ALL = 0;
+     * REPORT_ONLY_CONTAINED = 1;
+     * REPORT_NONE = 2;
+     */
+    @Getter
+    @Expose
+    @SerializedName("network.beaconReportLevel")
+    private int beaconReportLevel = DefaultSettings.DEFAULT_BEACON_REPORT_LEVEL;
+
+    public static final int BEACON_REPORT_LEVEL_ALL = 0;
+    public static final int BEACON_REPORT_LEVEL_ONLY_CONTAINED = 1;
+    public static final int BEACON_REPORT_LEVEL_NONE = 2;
+
     @Getter
     private Long revision = null;
 
@@ -97,6 +122,10 @@ public class Settings {
                     .getLong(SharedPreferencesKeys.Scanner.BACKGROUND_SCAN_TIME, DefaultSettings.DEFAULT_BACKGROUND_SCAN_TIME);
             backgroundWaitTime = preferences
                     .getLong(SharedPreferencesKeys.Scanner.BACKGROUND_WAIT_TIME, DefaultSettings.DEFAULT_BACKGROUND_WAIT_TIME);
+            geohashMaxAge = preferences
+                    .getLong(SharedPreferencesKeys.Location.GEOHASH_MAX_AGE, DefaultSettings.DEFAULT_GEOHASH_MAX_AGE);
+            geohashMinAccuracyRadius = preferences
+                    .getInt(SharedPreferencesKeys.Location.GEOHASH_MIN_ACCURACY_RADIUS, DefaultSettings.DEFAULT_GEOHASH_MIN_ACCURACY_RADIUS);
             cleanBeaconMapRestartTimeout = preferences.getLong(SharedPreferencesKeys.Scanner.CLEAN_BEACON_MAP_RESTART_TIMEOUT,
                     DefaultSettings.DEFAULT_CLEAN_BEACONMAP_ON_RESTART_TIMEOUT);
             revision = preferences.getLong(SharedPreferencesKeys.Settings.REVISION, Long.MIN_VALUE);
@@ -114,6 +143,8 @@ public class Settings {
                     .getLong(SharedPreferencesKeys.Network.BEACON_LAYOUT_UPDATE_INTERVAL, DefaultSettings.DEFAULT_HISTORY_UPLOAD_INTERVAL);
             shouldRestoreBeaconStates = preferences.getBoolean(SharedPreferencesKeys.Scanner.SHOULD_RESTORE_BEACON_STATES,
                     DefaultSettings.DEFAULT_SHOULD_RESTORE_BEACON_STATE);
+            beaconReportLevel = preferences.getInt(SharedPreferencesKeys.Network.BEACON_REPORT_LEVEL,
+                    DefaultSettings.DEFAULT_BEACON_REPORT_LEVEL);
         }
     }
 
@@ -123,6 +154,8 @@ public class Settings {
         foreGroundWaitTime = newSettings.getForeGroundWaitTime();
         backgroundScanTime = newSettings.getBackgroundScanTime();
         backgroundWaitTime = newSettings.getBackgroundWaitTime();
+        geohashMaxAge = newSettings.getGeohashMaxAge();
+        geohashMinAccuracyRadius = newSettings.getGeohashMinAccuracyRadius();
 
         cleanBeaconMapRestartTimeout = newSettings.getCleanBeaconMapRestartTimeout();
 
@@ -130,6 +163,7 @@ public class Settings {
         maxRetries = newSettings.getMaxRetries();
         millisBetweenRetries = newSettings.getMillisBetweenRetries();
         shouldRestoreBeaconStates = newSettings.isShouldRestoreBeaconStates();
+        beaconReportLevel = newSettings.getBeaconReportLevel();
 
         if (rev >= 0) {
             revision = rev;
@@ -168,6 +202,8 @@ public class Settings {
             editor.putLong(SharedPreferencesKeys.Scanner.FORE_GROUND_WAIT_TIME, foreGroundWaitTime);
             editor.putLong(SharedPreferencesKeys.Scanner.BACKGROUND_SCAN_TIME, backgroundScanTime);
             editor.putLong(SharedPreferencesKeys.Scanner.BACKGROUND_WAIT_TIME, backgroundWaitTime);
+            editor.putLong(SharedPreferencesKeys.Location.GEOHASH_MAX_AGE, geohashMaxAge);
+            editor.putInt(SharedPreferencesKeys.Location.GEOHASH_MIN_ACCURACY_RADIUS, geohashMinAccuracyRadius);
             editor.putBoolean(SharedPreferencesKeys.Scanner.SHOULD_RESTORE_BEACON_STATES, shouldRestoreBeaconStates);
 
             editor.putLong(SharedPreferencesKeys.Settings.MESSAGE_DELAY_WINDOW_LENGTH, messageDelayWindowLength);
@@ -177,6 +213,7 @@ public class Settings {
             editor.putLong(SharedPreferencesKeys.Network.TIME_BETWEEN_RESOLVE_RETRIES, millisBetweenRetries);
             editor.putLong(SharedPreferencesKeys.Network.HISTORY_UPLOAD_INTERVAL, historyUploadInterval);
             editor.putLong(SharedPreferencesKeys.Network.BEACON_LAYOUT_UPDATE_INTERVAL, layoutUpdateInterval);
+            editor.putInt(SharedPreferencesKeys.Network.BEACON_REPORT_LEVEL, beaconReportLevel);
 
             editor.apply();
         }

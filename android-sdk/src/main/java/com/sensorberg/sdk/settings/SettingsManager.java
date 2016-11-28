@@ -110,6 +110,14 @@ public class SettingsManager {
         return getSettings().getBackgroundScanTime();
     }
 
+    public long getGeohashMaxAge() {
+        return getSettings().getGeohashMaxAge();
+    }
+
+    public int getGeohashMinAccuracyRadius() {
+        return getSettings().getGeohashMinAccuracyRadius();
+    }
+
     public boolean isShouldRestoreBeaconStates() {
         return getSettings().isShouldRestoreBeaconStates();
     }
@@ -132,6 +140,18 @@ public class SettingsManager {
 
     public long getHistoryUploadInterval() {
         return getSettings().getHistoryUploadInterval();
+    }
+
+    /**
+     * Beacon report level.
+     * REPORT_ALL = 0;
+     * REPORT_ONLY_CONTAINED = 1;
+     * REPORT_NONE = 2;
+     *
+     * @return the current set beacon report level
+     */
+    public int getBeaconReportLevel() {
+        return getSettings().getBeaconReportLevel();
     }
 
     public long getMessageDelayWindowLength() {

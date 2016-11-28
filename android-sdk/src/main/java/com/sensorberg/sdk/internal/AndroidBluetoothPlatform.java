@@ -9,7 +9,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.util.Log;
 
 public class AndroidBluetoothPlatform implements BluetoothPlatform {
 
@@ -67,11 +66,18 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
         if (isBluetoothLowEnergySupported() && crashCallBackWrapper != null) {
             if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_ON
                     && permissionChecker.hasScanPermissionCheckAndroid6()) {
-                Log.i("bluetooth adapter", Integer.toString(bluetoothAdapter.getState()));
-                //noinspection deprecation old API compatability
-                bluetoothAdapter.startLeScan(crashCallBackWrapper);
-                crashCallBackWrapper.setCallback(scanCallback);
-                leScanRunning = true;
+                try {
+                    //noinspection deprecation old API compatability
+                    bluetoothAdapter.startLeScan(crashCallBackWrapper);
+                    crashCallBackWrapper.setCallback(scanCallback);
+                    leScanRunning = true;
+                } catch (IllegalStateException e) {
+                    // even with the adapter state checking two lines above,
+                    // this still crashes https://sensorberg.atlassian.net/browse/AND-248
+                    Logger.log.logError("System bug throwing error.", e);
+                    leScanRunning = false;
+                    crashCallBackWrapper.setCallback(null);
+                }
             }
         }
     }
@@ -83,7 +89,7 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
             try {
                 //noinspection deprecation old API compatability
                 bluetoothAdapter.stopLeScan(crashCallBackWrapper);
-            } catch (NullPointerException sentBySysteminternally) {
+            } catch (Exception sentBySysteminternally) {
                 Logger.log.logError("System bug throwing a NullPointerException internally.", sentBySysteminternally);
             } finally {
                 leScanRunning = false;

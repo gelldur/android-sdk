@@ -13,6 +13,7 @@ import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback
 import com.sensorberg.sdk.internal.transport.interfaces.TransportSettingsCallback;
 import com.sensorberg.sdk.internal.transport.model.HistoryBody;
 import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
+import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.model.persistence.BeaconAction;
 import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.model.server.ResolveResponse;
@@ -28,6 +29,7 @@ import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import android.support.test.InstrumentationRegistry;
@@ -36,6 +38,7 @@ import android.support.test.runner.AndroidJUnit4;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -80,10 +83,10 @@ public class TransportShould {
         tested.setBeaconHistoryUploadIntervalListener(mockListener);
 
         ResolveResponse resolveResponse = new ResolveResponse.Builder().withReportTrigger(1337).build();
-        Mockito.when(mockRetrofitApiService.getBeacon(anyString(), anyString()))
+        Mockito.when(mockRetrofitApiService.getBeacon(anyString(), anyString(), Matchers.<TreeMap<String, String>>any()))
                 .thenReturn(Calls.response(resolveResponse));
 
-        tested.getBeacon(TestConstants.BEACON_SCAN_ENTRY_EVENT(clock.now()), BeaconResponseHandler.NONE);
+        tested.getBeacon(TestConstants.BEACON_SCAN_ENTRY_EVENT(clock.now()), null, BeaconResponseHandler.NONE);
         Mockito.verify(mockListener).historyUploadIntervalChanged(1337L * 1000);
     }
 
@@ -115,10 +118,10 @@ public class TransportShould {
         ResolveResponse response = gson.fromJson(
                 Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.resolve_response_005, InstrumentationRegistry.getContext()),
                 ResolveResponse.class);
-        Mockito.when(mockRetrofitApiService.getBeacon(anyString(), anyString())).thenReturn(Calls.response(response));
+        Mockito.when(mockRetrofitApiService.getBeacon(anyString(), anyString(), Matchers.<TreeMap<String, String>>any())).thenReturn(Calls.response(response));
 
         Assertions.assertThat(response).isNotNull();
-        tested.getBeacon(TestConstants.BEACON_SCAN_ENTRY_EVENT(clock.now()), new BeaconResponseHandler() {
+        tested.getBeacon(TestConstants.BEACON_SCAN_ENTRY_EVENT(clock.now()), null, new BeaconResponseHandler() {
             @Override
             public void onSuccess(List<BeaconEvent> foundBeaconEvents) {
                 Assertions
@@ -163,6 +166,7 @@ public class TransportShould {
     public void test_publish_data_to_the_server() throws Exception {
         List<BeaconScan> scans = new ArrayList<>();
         List<BeaconAction> actions = new ArrayList<>();
+        List<ActionConversion> conversions = new ArrayList<>();
 
         BeaconScan scan1 = BeaconScan.from(TestConstants.BEACON_SCAN_ENTRY_EVENT(System.currentTimeMillis() - TimeConstants.ONE_HOUR));
         scan1.setCreatedAt(System.currentTimeMillis() - TimeConstants.ONE_HOUR);
@@ -171,7 +175,7 @@ public class TransportShould {
         Mockito.when(mockRetrofitApiService.publishHistory(any(HistoryBody.class)))
                 .thenReturn(Calls.response(new ResolveResponse.Builder().build()));
 
-        tested.publishHistory(scans, actions, new TransportHistoryCallback() {
+        tested.publishHistory(scans, actions, conversions, new TransportHistoryCallback() {
             @Override
             public void onFailure(Exception volleyError) {
                 Assert.fail();
@@ -183,9 +187,10 @@ public class TransportShould {
             }
 
             @Override
-            public void onSuccess(List<BeaconScan> scans, List<BeaconAction> actions) {
+            public void onSuccess(List<BeaconScan> scans, List<BeaconAction> actions, List<ActionConversion> conversions) {
                 Assertions.assertThat(scans).isNotNull();
                 Assertions.assertThat(scans.size()).isEqualTo(1);
+                Assertions.assertThat(conversions).isNotNull();
             }
         });
     }

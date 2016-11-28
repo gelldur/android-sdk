@@ -9,6 +9,7 @@ import com.sensorberg.sdk.internal.interfaces.Platform;
 import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
+import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.receivers.GenericBroadcastReceiver;
 import com.sensorberg.sdk.receivers.ScannerBroadcastReceiver;
 import com.sensorberg.sdk.resolver.BeaconEvent;
@@ -16,7 +17,6 @@ import com.sensorberg.sdk.resolver.ResolverConfiguration;
 
 import android.annotation.TargetApi;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,9 +26,9 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.text.TextUtils;
-import android.util.Log;
-import android.widget.Toast;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -119,7 +119,7 @@ public class SensorbergService extends Service {
         Logger.log.serviceHandlesMessage(
                 SensorbergServiceMessage.stringFrom(intent.getIntExtra(SensorbergServiceMessage.EXTRA_GENERIC_TYPE, -1)));
 
-        handleDebuggingIntent(intent, this, true);
+        handleDebuggingIntent(intent);
 
         if (handleIntentEvenIfNoBootstrapperPresent(intent)) {
             return stopSensorbergService();
@@ -172,22 +172,18 @@ public class SensorbergService extends Service {
         return START_NOT_STICKY;
     }
 
-    protected void handleDebuggingIntent(Intent intent, Context context, boolean showMessage) {
+    protected void handleDebuggingIntent(Intent intent) {
         switch (intent.getIntExtra(SensorbergServiceMessage.EXTRA_GENERIC_TYPE, -1)) {
             case SensorbergServiceMessage.MSG_TYPE_DISABLE_LOGGING: {
+                Logger.log.verbose("Logging Disabled");
                 Logger.log = Logger.QUIET_LOG;
                 transport.setLoggingEnabled(false);
-                if (showMessage) {
-                    Toast.makeText(context, "Log disabled " + context.getPackageName(), Toast.LENGTH_SHORT).show();
-                }
                 break;
             }
             case SensorbergServiceMessage.MSG_TYPE_ENABLE_LOGGING: {
+                Logger.log.verbose("Logging Enabled");
                 Logger.enableVerboseLogging();
                 transport.setLoggingEnabled(true);
-                if (showMessage) {
-                    Toast.makeText(context, "Log enabled " + context.getPackageName(), Toast.LENGTH_SHORT).show();
-                }
                 break;
             }
         }
@@ -319,6 +315,12 @@ public class SensorbergService extends Service {
                 bootstrapper.hostApplicationInBackground();
                 break;
             }
+            case SensorbergServiceMessage.MSG_CONVERSION:
+                updateActionConversion(intent);
+                break;
+            case SensorbergServiceMessage.MSG_ATTRIBUTES:
+                updateAttributes(intent);
+                break;
             case SensorbergServiceMessage.MSG_SET_API_TOKEN: {
                 setApiToken(intent);
                 break;
@@ -345,11 +347,11 @@ public class SensorbergService extends Service {
             }
             case SensorbergServiceMessage.MSG_LOCATION_SERVICES_IS_SET: {
                 if (intent.getBooleanExtra(SensorbergServiceMessage.EXTRA_LOCATION_PERMISSION, false)) {
-                    Log.i("Location Permission", "scanner should stop");
+                    Logger.log.debug("Location Permission. Scanner should stop");
                     bootstrapper.stopScanning();
                 } else {
                     bootstrapper.startScanning();
-                    Log.i("Location Permission", "scanner should start");
+                    Logger.log.debug("Location Permission. Scanner should start");
                 }
             }
         }
@@ -374,6 +376,30 @@ public class SensorbergService extends Service {
             logError("Problem showing BeaconEvent: " + e.getMessage());
         }
     }
+
+    protected void updateActionConversion(Intent intent) {
+        ActionConversion conversion = intent.getParcelableExtra(SensorbergServiceMessage.EXTRA_CONVERSION);
+        if (conversion == null) {
+            logError("Intent missing ActionConversion");
+            return;
+        }
+        bootstrapper.onConversionUpdate(conversion);
+    }
+
+    protected void updateAttributes(Intent intent) {
+        Serializable extra = intent.getSerializableExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES);
+        if (extra != null) {
+            try {
+                HashMap<String, String> map = (HashMap<String, String>) extra;
+                bootstrapper.setAttributes(map);
+            } catch (ClassCastException ex) {
+                logError("Intent contains no attributes data", ex);
+            }
+        } else {
+            logError("Intent has no valid attributes");
+        }
+    }
+
 
     protected void setApiToken(Intent intent) {
         if (intent.hasExtra(SensorbergServiceMessage.MSG_SET_API_TOKEN_TOKEN)) {
@@ -435,7 +461,9 @@ public class SensorbergService extends Service {
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     @Override
     public void onTaskRemoved(Intent rootIntent) {
-        bootstrapper.saveAllDataBeforeDestroy();
+        if (bootstrapper != null) {
+            bootstrapper.saveAllDataBeforeDestroy();
+        }
         Logger.log.logServiceState("onTaskRemoved");
         super.onTaskRemoved(rootIntent);
     }

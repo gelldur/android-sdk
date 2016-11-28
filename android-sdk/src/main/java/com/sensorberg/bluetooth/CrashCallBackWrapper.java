@@ -25,7 +25,7 @@ public class CrashCallBackWrapper implements BluetoothAdapter.LeScanCallback{
 
     private final BluetoothCrashResolver bluetoothCrashResolver;
 
-    private BluetoothAdapter.LeScanCallback callback;
+    private BluetoothAdapter.LeScanCallback callback = NONE;
 
     /**
      * default constructor, internally setting up the {@link com.radiusnetworks.bluetooth.BluetoothCrashResolver}

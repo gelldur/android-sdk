@@ -1,32 +1,36 @@
 package com.sensorberg.sdk.scanner;
 
-import com.sensorberg.sdk.Logger;
-import com.sensorberg.sdk.internal.interfaces.Platform;
-import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
-import com.sensorberg.sdk.internal.interfaces.Clock;
-import com.sensorberg.sdk.internal.interfaces.FileManager;
-import com.sensorberg.sdk.internal.interfaces.HandlerManager;
-import com.sensorberg.sdk.internal.interfaces.RunLoop;
-import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
-import com.sensorberg.sdk.model.BeaconId;
-import com.sensorberg.sdk.settings.DefaultSettings;
-import com.sensorberg.sdk.settings.SettingsManager;
-import com.sensorberg.sdk.settings.TimeConstants;
-
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.os.Build;
 import android.os.Message;
-import android.util.Log;
 import android.util.Pair;
+
+import com.sensorberg.SensorbergSdk;
+import com.sensorberg.sdk.Logger;
+import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
+import com.sensorberg.sdk.internal.interfaces.Clock;
+import com.sensorberg.sdk.internal.interfaces.FileManager;
+import com.sensorberg.sdk.internal.interfaces.HandlerManager;
+import com.sensorberg.sdk.internal.interfaces.Platform;
+import com.sensorberg.sdk.internal.interfaces.RunLoop;
+import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
+import com.sensorberg.sdk.location.LocationHelper;
+import com.sensorberg.sdk.model.BeaconId;
+import com.sensorberg.sdk.settings.DefaultSettings;
+import com.sensorberg.sdk.settings.SettingsManager;
+import com.sensorberg.sdk.settings.TimeConstants;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
 
+import javax.inject.Inject;
+
 import lombok.Getter;
+import lombok.Setter;
 
 public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback, Platform.ForegroundStateListener {
 
@@ -70,7 +74,10 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
 
     private long lastScanStart;
 
-    private RssiListener rssiListener = RssiListener.NONE;
+    @Inject
+    LocationHelper locationHelper;
+
+    @Getter @Setter private RssiListener rssiListener = RssiListener.NONE;
 
     AbstractScanner(SettingsManager stgMgr, boolean shouldRestoreBeaconStates, Clock clk, FileManager fileManager,
             ServiceScheduler scheduler, HandlerManager handlerManager, BluetoothPlatform btPlatform) {
@@ -83,6 +90,8 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
 
         File beaconFile = shouldRestoreBeaconStates ? fileManager.getFile("enteredBeaconsCache") : null;
         enteredBeacons = new BeaconMap(fileManager, beaconFile);
+
+        SensorbergSdk.getComponent().inject(this);
     }
 
 
@@ -107,7 +116,7 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
                         //might be negative!!!
                         long timeSinceWeSawTheBeacon = now - lastBreakLength - beaconEntry.getLastBeaconTime();
                         if (timeSinceWeSawTheBeacon > settingsManager.getExitTimeoutMillis()) {
-                            ScanEvent scanEvent = new ScanEvent(beaconId, now, false);
+                            ScanEvent scanEvent = new ScanEvent(beaconId, now, false, locationHelper.getGeohash());
                             runLoop.sendMessage(ScannerEvent.EVENT_DETECTED, scanEvent);
                             Logger.log.beaconResolveState(scanEvent,
                                     " exited (time since we saw the beacon: " + (int) (timeSinceWeSawTheBeacon / 1000) + " seconds)");
@@ -150,7 +159,7 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
                 if (entry == null) {
                     int calRssi = beacon.second;
                     String address = device != null ? device.getAddress() : null;
-                    ScanEvent scanEvent = new ScanEvent(beaconId, now, true, address, rssi, calRssi);
+                    ScanEvent scanEvent = new ScanEvent(beaconId, now, true, address, rssi, calRssi, locationHelper.getGeohash());
                     runLoop.sendMessage(ScannerEvent.EVENT_DETECTED, scanEvent);
                     entry = new EventEntry(now, ScanEventType.ENTRY.getMask());
                     Logger.log.beaconResolveState(scanEvent, "entered");
@@ -196,7 +205,7 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
                 lastBreakLength = clock.now() - lastExitCheckTimestamp;
                 Logger.log.scannerStateChange("starting to scan again, scan break was " + lastBreakLength + "millis");
                 if (scanning) {
-                    Log.i("scannerStatusUnpause", Boolean.toString(scanning));
+                    Logger.log.debug("ScannerStatusUnpause" + Boolean.toString(scanning));
                     Logger.log.scannerStateChange("scanning for" + scanTime + "millis");
                     bluetoothPlatform.startLeScan(scanCallback);
                     scheduleExecution(ScannerEvent.PAUSE_SCAN, scanTime);
@@ -263,19 +272,12 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
         }
     }
 
-    public RssiListener getRssiListener() {
-        return rssiListener;
-    }
-
-    public void setRssiListener(RssiListener rssiListener) {
-        this.rssiListener = rssiListener;
-    }
 
     /**
      * Starts scanning.
      */
     public void start() {
-        Log.i("Scan: ", "Scanner started");
+        Logger.log.debug("Scan: Scanner started");
         runLoop.sendMessage(ScannerEvent.LOGICAL_SCAN_START_REQUESTED);
     }
 
@@ -284,7 +286,7 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
      * Stop the scanning.
      */
     public void stop() {
-        Log.i("Scan: ", "Scanner stopped");
+        Logger.log.debug("Scan: Scanner stopped");
         runLoop.sendMessage(ScannerEvent.SCAN_STOP_REQUESTED);
     }
 
