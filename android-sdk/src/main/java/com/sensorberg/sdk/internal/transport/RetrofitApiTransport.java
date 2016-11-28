@@ -159,9 +159,11 @@ public class RetrofitApiTransport implements Transport {
         call.enqueue(new Callback<ResolveResponse>() {
             @Override
             public void onResponse(Call<ResolveResponse> call, Response<ResolveResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
+                if (response.isSuccessful()) {
                     callback.onSuccess(scans, actions, conversions);
-                    callback.onInstantActions(response.body().getInstantActionsAsBeaconEvent());
+                    if (response.body() != null) {
+                        callback.onInstantActions(response.body().getInstantActionsAsBeaconEvent());
+                    }
                 } else {
                     callback.onFailure(new Exception("No Content, Invalid Api Key"));
                 }
