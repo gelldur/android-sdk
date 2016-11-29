@@ -1,5 +1,7 @@
 package com.sensorberg.sdk.internal.transport;
 
+import com.google.gson.Gson;
+import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.internal.interfaces.BeaconHistoryUploadIntervalListener;
 import com.sensorberg.sdk.internal.interfaces.BeaconResponseHandler;
 import com.sensorberg.sdk.internal.interfaces.Clock;
@@ -154,15 +156,21 @@ public class RetrofitApiTransport implements Transport {
     public void publishHistory(final List<BeaconScan> scans, final List<BeaconAction> actions, final List<ActionConversion> conversions, final TransportHistoryCallback callback) {
 
         HistoryBody body = new HistoryBody(scans, actions, conversions, mClock);
-        Call<ResolveResponse> call = getApiService().publishHistory(body);
+        Call<String> call = getApiService().publishHistory(body);
 
-        call.enqueue(new Callback<ResolveResponse>() {
+        call.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<ResolveResponse> call, Response<ResolveResponse> response) {
+            public void onResponse(Call<String> call, Response<String> response) {
                 if (response.isSuccessful()) {
                     callback.onSuccess(scans, actions, conversions);
                     if (response.body() != null) {
-                        callback.onInstantActions(response.body().getInstantActionsAsBeaconEvent());
+                        try {
+                            ResolveResponse resolveResponse = apiService.mGson.fromJson(response.body(), ResolveResponse.class);
+                            callback.onInstantActions(resolveResponse.getInstantActionsAsBeaconEvent());
+                        } catch (Exception e) {
+                            // gson serialization exception
+                            Logger.log.logError("Failed to de-serialize publishHistory response body", e);
+                        }
                     }
                 } else {
                     callback.onFailure(new Exception("No Content, Invalid Api Key"));
@@ -170,7 +178,7 @@ public class RetrofitApiTransport implements Transport {
             }
 
             @Override
-            public void onFailure(Call<ResolveResponse> call, Throwable t) {
+            public void onFailure(Call<String> call, Throwable t) {
                 callback.onFailure(new Exception(t));
             }
         });

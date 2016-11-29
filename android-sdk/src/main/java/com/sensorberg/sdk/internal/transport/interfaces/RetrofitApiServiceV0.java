@@ -23,7 +23,7 @@ public interface RetrofitApiServiceV0 {
     Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo);
 
     @POST("/layout")
-    Call<ResolveResponse> publishHistory(@Body HistoryBody body);
+    Call<String> publishHistory(@Body HistoryBody body);
 
     @GET("/applications/{apiKey}/settings/android")
     Call<SettingsResponse> getSettings(@Path("apiKey") String apiKey);

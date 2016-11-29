@@ -26,7 +26,7 @@ public interface RetrofitApiServiceV1 {
     Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo, @Path("apiKey") String apiKey, @QueryMap SortedMap<String, String> attributes);
 
     @POST("/api/v1/sdk/events.json")
-    Call<ResolveResponse> publishHistory(@Body HistoryBody body);
+    Call<String> publishHistory(@Body HistoryBody body);
 
     @GET("/api/v1/sdk/gateways/{apiKey}/settings.json?platform=android")
     Call<SettingsResponse> getSettings(@Path("apiKey") String apiKey);

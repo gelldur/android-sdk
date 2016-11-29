@@ -37,7 +37,7 @@ public class RetrofitApiServiceImpl {
 
     private static final long HTTP_RESPONSE_DISK_CACHE_MAX_SIZE = 5 * 1024L * 1024L; //5MB
 
-    private final Gson mGson;
+    final Gson mGson;
 
     private final PlatformIdentifier mPlatformIdentifier;
 
@@ -167,7 +167,7 @@ public class RetrofitApiServiceImpl {
         }
     }
 
-    public Call<ResolveResponse> publishHistory(@Body HistoryBody body) {
+    public Call<String> publishHistory(@Body HistoryBody body) {
         if (version == 0) {
             return mApiServiceV0.publishHistory(body);
         } else if (version == 1) {
