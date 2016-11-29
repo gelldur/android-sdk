@@ -10,7 +10,6 @@ import java.util.SortedMap;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
-import retrofit2.http.Header;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
@@ -26,7 +25,7 @@ public interface RetrofitApiServiceV2 {
     Call<ResolveResponse> getBeacon(@Path("apiKey") String apiKey, @QueryMap SortedMap<String, String> attributes);
 
     @POST("/api/v2/sdk/gateways/{apiKey}/analytics.json")
-    Call<ResolveResponse> publishHistory(@Path("apiKey") String apiKey, @Body HistoryBody body);
+    Call<Void> publishHistory(@Path("apiKey") String apiKey, @Body HistoryBody body);
 
     @GET("/api/v2/sdk/gateways/{apiKey}/settings.json?platform=android")
     Call<SettingsResponse> getSettings(@Path("apiKey") String apiKey);

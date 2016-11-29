@@ -83,6 +83,10 @@ public class RetrofitApiServiceImpl {
         }
     }
 
+    final boolean isV2() {
+        return mApiServiceV2 != null;
+    }
+
     private final Interceptor headerAuthorizationInterceptor = new Interceptor() {
         @Override
         public okhttp3.Response intercept(Chain chain) throws IOException {
@@ -167,7 +171,7 @@ public class RetrofitApiServiceImpl {
         }
     }
 
-    public Call<ResolveResponse> publishHistory(@Body HistoryBody body) {
+    public Call publishHistory(@Body HistoryBody body) {
         if (version == 0) {
             return mApiServiceV0.publishHistory(body);
         } else if (version == 1) {

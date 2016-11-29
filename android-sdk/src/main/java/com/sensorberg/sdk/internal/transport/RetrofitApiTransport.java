@@ -152,6 +152,35 @@ public class RetrofitApiTransport implements Transport {
 
     @Override
     public void publishHistory(final List<BeaconScan> scans, final List<BeaconAction> actions, final List<ActionConversion> conversions, final TransportHistoryCallback callback) {
+        if (apiService.isV2()) {
+            publishHistoryV2(scans, actions, conversions, callback);
+        } else {
+            publishHistoryVx(scans, actions, conversions, callback);
+        }
+    }
+
+    private void publishHistoryV2(final List<BeaconScan> scans, final List<BeaconAction> actions, final List<ActionConversion> conversions, final TransportHistoryCallback callback) {
+        HistoryBody body = new HistoryBody(scans, actions, conversions, mClock);
+        Call<Void> call = getApiService().publishHistory(body);
+
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    callback.onSuccess(scans, actions, conversions);
+                } else {
+                    callback.onFailure(new Exception("No Content, Invalid Api Key"));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                callback.onFailure(new Exception(t));
+            }
+        });
+    }
+
+    private void publishHistoryVx(final List<BeaconScan> scans, final List<BeaconAction> actions, final List<ActionConversion> conversions, final TransportHistoryCallback callback) {
 
         HistoryBody body = new HistoryBody(scans, actions, conversions, mClock);
         Call<ResolveResponse> call = getApiService().publishHistory(body);
