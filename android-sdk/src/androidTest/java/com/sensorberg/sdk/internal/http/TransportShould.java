@@ -43,6 +43,8 @@ import java.util.TreeMap;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import okhttp3.MediaType;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.mock.Calls;
 import util.TestConstants;
@@ -173,7 +175,7 @@ public class TransportShould {
         scans.add(scan1);
 
         Mockito.when(mockRetrofitApiService.publishHistory(any(HistoryBody.class)))
-                .thenReturn(Calls.response(new ResolveResponse.Builder().build()));
+                .thenReturn(Calls.response(PUBLISH_HISTORY_RESPONSE));
 
         tested.publishHistory(scans, actions, conversions, new TransportHistoryCallback() {
             @Override
@@ -204,4 +206,6 @@ public class TransportShould {
         spiedTransport.loadSettings(transportSettingsCallback);
         Mockito.verify(spiedTransport, times(1)).enqueueWithRetry(any(Call.class), any(retrofit2.Callback.class));
     }
+
+    private static final ResponseBody PUBLISH_HISTORY_RESPONSE = ResponseBody.create(MediaType.parse("application/json"), "");
 }

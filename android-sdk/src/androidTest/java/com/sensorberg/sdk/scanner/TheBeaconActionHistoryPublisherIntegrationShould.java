@@ -27,6 +27,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import okhttp3.MediaType;
+import okhttp3.ResponseBody;
 import retrofit2.mock.Calls;
 import util.TestConstants;
 
@@ -78,7 +80,7 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
     @Test
     public void test_should_send_history_to_the_server() throws Exception {
         Mockito.when(mockRetrofitApiService.publishHistory(Mockito.any(HistoryBody.class)))
-                .thenReturn(Calls.response(new ResolveResponse.Builder().build()));
+                .thenReturn(Calls.response(PUBLISH_HISTORY_RESPONSE));
 
         tested.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(100));
         tested.publishHistory();
@@ -89,12 +91,13 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
     @Test
     public void test_should_send_no_history_to_the_server_when_nothing_happend() throws Exception {
         Mockito.when(mockRetrofitApiService.publishHistory(Mockito.any(HistoryBody.class)))
-                .thenReturn(Calls.response(new ResolveResponse.Builder().build()));
+                .thenReturn(Calls.response(PUBLISH_HISTORY_RESPONSE));
 
         tested.publishHistory();
 
         verify(mockRetrofitApiService, never()).publishHistory(Mockito.any(HistoryBody.class));
     }
 
+    private static final ResponseBody PUBLISH_HISTORY_RESPONSE = ResponseBody.create(MediaType.parse("application/json"), "");
 
 }
