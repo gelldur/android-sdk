@@ -5,6 +5,7 @@ import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
 import com.sensorberg.sdk.model.server.BaseResolveResponse;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -23,7 +24,7 @@ public interface RetrofitApiServiceV0 {
     Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo);
 
     @POST("/layout")
-    Call<ResolveResponse> publishHistory(@Body HistoryBody body);
+    Call<ResponseBody> publishHistory(@Body HistoryBody body);
 
     @GET("/applications/{apiKey}/settings/android")
     Call<SettingsResponse> getSettings(@Path("apiKey") String apiKey);
