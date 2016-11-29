@@ -255,12 +255,13 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
     }
 
     /**
-     * Pass here key-values params that are used for message targeting
-     * Key and values are limited to alphanumerical characters and underscore (_)
+     * Pass here key-values params that are used for message targeting.
+     * Valid key and values are limited to alphanumerical characters and underscore (_).
      * To clear the list pass null.
      * @param attributes Map of attributes that will be passed.
+     * @throws IllegalArgumentException if invalid key/value was passed.
      */
-    public static void setAttributes(Map<String, String> attributes) {
+    public static void setAttributes(Map<String, String> attributes) throws IllegalArgumentException {
         HashMap<String, String> map;
         if (attributes != null) {
             map = new HashMap<>(attributes);
@@ -272,7 +273,7 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
             intent.putExtra(SensorbergServiceMessage.EXTRA_ATTRIBUTES, map);
             context.startService(intent);
         } else {
-            Logger.log.logError("Attributes can contain only alphanumerical characters and underscore");
+            throw new IllegalArgumentException("Attributes can contain only alphanumerical characters and underscore");
         }
     }
 }
