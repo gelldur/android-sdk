@@ -59,8 +59,9 @@ public class TheResolverWithRealApiShould {
 
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
+        RetrofitApiTransport.RESOLVER_BASE_URL = "https://staging.sensorberg-cdn.io";
         ResolverConfiguration configuration = new ResolverConfiguration();
-        configuration.setApiToken("f257de3b91d141aa93b6a9b39c97b83df257de3b91d141aa93b6a9b39c97b83d");
+        configuration.setApiToken("50f912c903b59e10802537b1499172bbe6a38bab1c2a075639024f0975c3c35f");
 
         String baseUrl = BuildConfig.RESOLVER_URL != null ? BuildConfig.RESOLVER_URL : RetrofitApiTransport.RESOLVER_BASE_URL;
         RetrofitApiServiceImpl retrofitServiceWithOutCache = new RetrofitApiServiceImpl(null, gson, platformIdentifier, baseUrl);
@@ -71,14 +72,7 @@ public class TheResolverWithRealApiShould {
 
 
     /**
-     * https://manage.sensorberg.com/#/campaign/edit/ab68d4ee-8b2d-4f40-adc2-a7ebc9505e89
-     * https://manage.sensorberg.com/#/campaign/edit/5dc7f22f-dbcf-4065-8b28-e81b0149fcc8
-     * https://manage.sensorberg.com/#/campaign/edit/292ba508-226e-41c3-aac7-969fa712c435
-     *
-     * https://bm-frontend-staging.sensorberg.io/#/campaign/edit/ab68d4ee-8b2d-4f40-adc2-a7ebc9505e89
-     * https://bm-frontend-staging.sensorberg.io/#/campaign/edit/5dc7f22f-dbcf-4065-8b28-e81b0149fcc8
-     * https://bm-frontend-staging.sensorberg.io/#/campaign/edit/292ba508-226e-41c3-aac7-969fa712c435
-     *
+     * for BE integration check Ronaldo Pace user SDK_TEST app
      */
     @Test
     public void test_resolve_in_app_function() throws Exception {
@@ -109,9 +103,7 @@ public class TheResolverWithRealApiShould {
     }
 
     /**
-     *  https://manage.sensorberg.com/#/campaign/edit/6edd5ff0-d63a-4968-b7fa-b448d1c3a0e9
-     *
-     *  https://staging-manage.sensorberg.com/#/campaign/edit/be0c8822-937c-49ee-9890-13fb8ecbad05
+     * for BE integration check Ronaldo Pace user SDK_TEST app
      */
     @Test
     public void test_beacon_with_delay() throws Exception {
