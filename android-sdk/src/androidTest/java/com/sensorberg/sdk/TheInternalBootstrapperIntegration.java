@@ -46,6 +46,8 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import okhttp3.MediaType;
+import okhttp3.ResponseBody;
 import retrofit2.mock.Calls;
 import util.TestConstants;
 import util.Utils;
@@ -90,16 +92,7 @@ public class TheInternalBootstrapperIntegration {
 
     private static final String ANOTHER_UUID = UUID.randomUUID().toString();
 
-    private static final ResolveResponse PUBLISH_HISTORY_RESPONSE = new ResolveResponse.Builder()
-            .withInstantActions(Arrays.asList(
-                    new ResolveAction.Builder()
-                            .withBeacons(Arrays.asList(TestConstants.ANY_BEACON_ID.getPid()))
-                            .withType(ActionFactory.ServerType.IN_APP)
-                            .withUuid(ANY_UUID)
-                            .withContent(ANY_IN_APP_JSON)
-                            .build()
-            ))
-            .build();
+    private static final ResponseBody PUBLISH_HISTORY_RESPONSE = ResponseBody.create(MediaType.parse("application/json"), "");
 
     private ResolveResponse RESOLVE_RESPONSE_WITH_REPORT_IMMEDIATELY = new ResolveResponse.Builder()
             .withActions(Arrays.asList(

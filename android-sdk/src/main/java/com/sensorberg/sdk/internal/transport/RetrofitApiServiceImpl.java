@@ -23,6 +23,7 @@ import okhttp3.Headers;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -37,7 +38,7 @@ public class RetrofitApiServiceImpl {
 
     private static final long HTTP_RESPONSE_DISK_CACHE_MAX_SIZE = 5 * 1024L * 1024L; //5MB
 
-    private final Gson mGson;
+    final Gson mGson;
 
     private final PlatformIdentifier mPlatformIdentifier;
 
@@ -163,17 +164,17 @@ public class RetrofitApiServiceImpl {
         } else if (version == 1) {
             return mApiServiceV1.getBeacon(beaconId, networkInfo, mApiToken, attributes);
         } else {
-            return mApiServiceV2.getBeacon(beaconId, networkInfo, mApiToken, attributes);
+            return mApiServiceV2.getBeacon(mApiToken, attributes);
         }
     }
 
-    public Call<ResolveResponse> publishHistory(@Body HistoryBody body) {
+    public Call<ResponseBody> publishHistory(@Body HistoryBody body) {
         if (version == 0) {
             return mApiServiceV0.publishHistory(body);
         } else if (version == 1) {
             return mApiServiceV1.publishHistory(body);
         } else {
-            return mApiServiceV2.publishHistory(body);
+            return mApiServiceV2.publishHistory(mApiToken, body);
         }
     }
 

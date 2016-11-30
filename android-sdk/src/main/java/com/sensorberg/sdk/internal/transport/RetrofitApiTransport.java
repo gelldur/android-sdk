@@ -1,5 +1,6 @@
 package com.sensorberg.sdk.internal.transport;
 
+import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.internal.interfaces.BeaconHistoryUploadIntervalListener;
 import com.sensorberg.sdk.internal.interfaces.BeaconResponseHandler;
 import com.sensorberg.sdk.internal.interfaces.Clock;
@@ -25,6 +26,7 @@ import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 
 import lombok.Setter;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -153,22 +155,40 @@ public class RetrofitApiTransport implements Transport {
     @Override
     public void publishHistory(final List<BeaconScan> scans, final List<BeaconAction> actions, final List<ActionConversion> conversions, final TransportHistoryCallback callback) {
 
-        HistoryBody body = new HistoryBody(scans, actions, conversions, mClock);
-        Call<ResolveResponse> call = getApiService().publishHistory(body);
+        /**
+         * Unfortunately from V1 to V2 our servers changed the response to `publishHistory`
+         * V1 replied a ResolveResponse
+         * V2 replies with 200 and an empty body (which is better)
+         * This change breaks the strongly typed philosophy of Retrofit
+         * and until we can abandon V0 and V1, below is the hacky code needed.
+         */
 
-        call.enqueue(new Callback<ResolveResponse>() {
+        HistoryBody body = new HistoryBody(scans, actions, conversions, mClock);
+        Call<ResponseBody> call = getApiService().publishHistory(body);
+
+        call.enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<ResolveResponse> call, Response<ResolveResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
                     callback.onSuccess(scans, actions, conversions);
-                    callback.onInstantActions(response.body().getInstantActionsAsBeaconEvent());
+                    if (response.body() != null) {
+                        try {
+                            ResolveResponse resolveResponse = apiService.mGson.fromJson(response.body().charStream(), ResolveResponse.class);
+                            if (resolveResponse != null) {
+                                callback.onInstantActions(resolveResponse.getInstantActionsAsBeaconEvent());
+                            }
+                        } catch (Exception e) {
+                            // gson serialization exception
+                            Logger.log.logError("Failed to de-serialize publishHistory response body", e);
+                        }
+                    }
                 } else {
                     callback.onFailure(new Exception("No Content, Invalid Api Key"));
                 }
             }
 
             @Override
-            public void onFailure(Call<ResolveResponse> call, Throwable t) {
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
                 callback.onFailure(new Exception(t));
             }
         });

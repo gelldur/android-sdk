@@ -7,10 +7,10 @@ import com.sensorberg.sdk.model.server.ResolveResponse;
 
 import java.util.SortedMap;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
-import retrofit2.http.Header;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
@@ -23,10 +23,10 @@ public interface RetrofitApiServiceV2 {
     Call<BaseResolveResponse> updateBeaconLayout(@Path("apiKey") String apiKey, @QueryMap SortedMap<String, String> attributes);
 
     @GET("/api/v2/sdk/gateways/{apiKey}/interactions.json")
-    Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo, @Path("apiKey") String apiKey, @QueryMap SortedMap<String, String> attributes);
+    Call<ResolveResponse> getBeacon(@Path("apiKey") String apiKey, @QueryMap SortedMap<String, String> attributes);
 
-    @POST("/api/v2/sdk/events.json")
-    Call<ResolveResponse> publishHistory(@Body HistoryBody body);
+    @POST("/api/v2/sdk/gateways/{apiKey}/analytics.json")
+    Call<ResponseBody> publishHistory(@Path("apiKey") String apiKey, @Body HistoryBody body);
 
     @GET("/api/v2/sdk/gateways/{apiKey}/settings.json?platform=android")
     Call<SettingsResponse> getSettings(@Path("apiKey") String apiKey);
