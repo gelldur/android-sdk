@@ -1,6 +1,9 @@
 {
   "revision": 1,
   "settings": {
-    "scanner.backgroundWaitTime": 100000
+    "scanner.backgroundWaitTime": 100000,
+    "network.beaconReportLevel": 1,
+    "scanner.minimumAcceptableRssi": -10,
+    "scanner.maximumAcceptableDistanceMeters": 5
   }
 }

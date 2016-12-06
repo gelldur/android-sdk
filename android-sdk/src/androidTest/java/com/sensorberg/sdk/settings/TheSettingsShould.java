@@ -75,6 +75,8 @@ public class TheSettingsShould {
         Assertions.assertThat(tested.getForeGroundScanTime()).isEqualTo(DefaultSettings.DEFAULT_FOREGROUND_SCAN_TIME);
         Assertions.assertThat(tested.getForeGroundWaitTime()).isEqualTo(DefaultSettings.DEFAULT_FOREGROUND_WAIT_TIME);
         Assertions.assertThat(tested.getBeaconReportLevel()).isEqualTo(DefaultSettings.DEFAULT_BEACON_REPORT_LEVEL);
+        Assertions.assertThat(tested.getScannerMinRssi()).isEqualTo(DefaultSettings.DEFAULT_SCANNER_MIN_RSSI);
+        Assertions.assertThat(tested.getScannerMaxDistance()).isEqualTo(DefaultSettings.DEFAULT_SCANNER_MAX_DISTANCE);
     }
 
     @Test
@@ -87,6 +89,9 @@ public class TheSettingsShould {
         Assertions.assertThat(settingsResponse).isNotNull();
         Assertions.assertThat(settingsResponse.getRevision()).isEqualTo(1L);
         Assertions.assertThat(settingsResponse.getSettings().getBackgroundWaitTime()).isEqualTo(100000L);
+        Assertions.assertThat(settingsResponse.getSettings().getBeaconReportLevel()).isEqualTo(1);
+        Assertions.assertThat(settingsResponse.getSettings().getScannerMinRssi()).isEqualTo(-10);
+        Assertions.assertThat(settingsResponse.getSettings().getScannerMaxDistance()).isEqualTo(5);
     }
 
     @Test

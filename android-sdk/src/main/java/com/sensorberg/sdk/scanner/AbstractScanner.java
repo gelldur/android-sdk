@@ -149,15 +149,26 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
     }
 
     private void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+
+        if (rssi < settingsManager.getScannerMinRssi()) {
+            return;
+        }
+
         Pair<BeaconId, Integer> beacon = ScanHelper.getBeaconID(scanRecord);
         if (beacon != null) {
+
+            int calRssi = beacon.second;
+            double distance = getDistanceFromRSSI(rssi, calRssi);
+            if (distance > settingsManager.getScannerMaxDistance()) {
+                return;
+            }
+
             BeaconId beaconId = beacon.first;
             synchronized (enteredBeaconsMonitor) {
                 long now = clock.now();
                 EventEntry entry = enteredBeacons.get(beaconId);
 
                 if (entry == null) {
-                    int calRssi = beacon.second;
                     String address = device != null ? device.getAddress() : null;
                     ScanEvent scanEvent = new ScanEvent(beaconId, now, true, address, rssi, calRssi, locationHelper.getGeohash());
                     runLoop.sendMessage(ScannerEvent.EVENT_DETECTED, scanEvent);
@@ -349,5 +360,16 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
 
         @SuppressWarnings("UnusedParameters")
         void onRssiUpdated(BeaconId beaconId, Integer rssiValue);
+    }
+
+    private static double getDistanceFromRSSI(double rssi, int calRssi) {
+        double dist;
+        double near = rssi / calRssi;
+        if (near < 1.0f) {
+            dist = Math.pow(near, 10);
+        } else {
+            dist =  ((0.89976f) * Math.pow(near, 7.7095f) + 0.111f);
+        }
+        return dist;
     }
 }
