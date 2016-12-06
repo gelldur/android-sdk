@@ -154,6 +154,14 @@ public class SettingsManager {
         return getSettings().getBeaconReportLevel();
     }
 
+    public int getScannerMinRssi() {
+        return getSettings().getScannerMinRssi();
+    }
+
+    public int getScannerMaxDistance() {
+        return getSettings().getScannerMaxDistance();
+    }
+
     public long getMessageDelayWindowLength() {
         return getSettings().getMessageDelayWindowLength();
     }

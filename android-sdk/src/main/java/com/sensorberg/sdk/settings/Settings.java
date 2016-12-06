@@ -89,6 +89,16 @@ public class Settings {
     @SerializedName("scanner.restoreBeaconStates")
     private boolean shouldRestoreBeaconStates = DefaultSettings.DEFAULT_SHOULD_RESTORE_BEACON_STATE;
 
+    @Getter
+    @Expose
+    @SerializedName("scanner.minimumAcceptableRssi")
+    private int scannerMinRssi = DefaultSettings.DEFAULT_SCANNER_MIN_RSSI;
+
+    @Getter
+    @Expose
+    @SerializedName("scanner.maximumAcceptableDistanceMeters")
+    private int scannerMaxDistance = DefaultSettings.DEFAULT_SCANNER_MAX_DISTANCE;
+
     /**
      * Beacon report level.
      * REPORT_ALL = 0;
@@ -145,6 +155,10 @@ public class Settings {
                     DefaultSettings.DEFAULT_SHOULD_RESTORE_BEACON_STATE);
             beaconReportLevel = preferences.getInt(SharedPreferencesKeys.Network.BEACON_REPORT_LEVEL,
                     DefaultSettings.DEFAULT_BEACON_REPORT_LEVEL);
+            scannerMinRssi = preferences.getInt(SharedPreferencesKeys.Scanner.MIN_RSSI,
+                    DefaultSettings.DEFAULT_SCANNER_MIN_RSSI);
+            scannerMaxDistance = preferences.getInt(SharedPreferencesKeys.Scanner.MAX_DISTANCE,
+                    DefaultSettings.DEFAULT_SCANNER_MAX_DISTANCE);
         }
     }
 
@@ -164,6 +178,8 @@ public class Settings {
         millisBetweenRetries = newSettings.getMillisBetweenRetries();
         shouldRestoreBeaconStates = newSettings.isShouldRestoreBeaconStates();
         beaconReportLevel = newSettings.getBeaconReportLevel();
+        scannerMinRssi = newSettings.getScannerMinRssi();
+        scannerMaxDistance = newSettings.getScannerMaxDistance();
 
         if (rev >= 0) {
             revision = rev;
@@ -214,6 +230,8 @@ public class Settings {
             editor.putLong(SharedPreferencesKeys.Network.HISTORY_UPLOAD_INTERVAL, historyUploadInterval);
             editor.putLong(SharedPreferencesKeys.Network.BEACON_LAYOUT_UPDATE_INTERVAL, layoutUpdateInterval);
             editor.putInt(SharedPreferencesKeys.Network.BEACON_REPORT_LEVEL, beaconReportLevel);
+            editor.putInt(SharedPreferencesKeys.Scanner.MIN_RSSI, scannerMinRssi);
+            editor.putInt(SharedPreferencesKeys.Scanner.MAX_DISTANCE, scannerMaxDistance);
 
             editor.apply();
         }

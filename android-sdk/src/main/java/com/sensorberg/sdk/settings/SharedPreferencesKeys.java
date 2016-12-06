@@ -18,6 +18,10 @@ public final class SharedPreferencesKeys {
 
         public static final String SHOULD_RESTORE_BEACON_STATES = "com.sensorberg.preferences.settings.restoreBeaconStates";
 
+        public static final String MIN_RSSI = "com.sensorberg.preferences.settings.scannerMinRssi";
+
+        public static final String MAX_DISTANCE = "com.sensorberg.preferences.settings.scannerMaxDistance";
+
         private Scanner() {
             throw new IllegalAccessError("Utility class");
         }

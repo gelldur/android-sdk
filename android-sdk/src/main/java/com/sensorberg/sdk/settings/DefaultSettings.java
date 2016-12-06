@@ -35,4 +35,8 @@ public class DefaultSettings {
     public static final int DEFAULT_MAX_RETRIES = 3;
 
     public static final int DEFAULT_BEACON_REPORT_LEVEL = BEACON_REPORT_LEVEL_ALL;
+
+    public static final int DEFAULT_SCANNER_MIN_RSSI = Integer.MIN_VALUE;
+
+    public static final int DEFAULT_SCANNER_MAX_DISTANCE = Integer.MAX_VALUE;
 }
