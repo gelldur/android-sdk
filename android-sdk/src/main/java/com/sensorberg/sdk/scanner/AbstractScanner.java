@@ -107,9 +107,9 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
     }
 
     private void checkAndExitEnteredBeacons() {
+        synchronized (enteredBeaconsMonitor) {
         final long now = clock.now();
         lastExitCheckTimestamp = now;
-        synchronized (enteredBeaconsMonitor) {
             if (enteredBeacons.size() > 0) {
                 enteredBeacons.filter(new BeaconMap.Filter() {
                     public boolean filter(EventEntry beaconEntry, BeaconId beaconId) {

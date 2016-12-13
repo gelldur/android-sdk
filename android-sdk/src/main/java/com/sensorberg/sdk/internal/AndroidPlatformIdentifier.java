@@ -1,10 +1,5 @@
 package com.sensorberg.sdk.internal;
 
-import com.sensorberg.sdk.BuildConfig;
-import com.sensorberg.sdk.Logger;
-import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
-import com.sensorberg.sdk.settings.SharedPreferencesKeys;
-
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -14,11 +9,11 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.UUID;
+import com.sensorberg.sdk.BuildConfig;
+import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
+import com.sensorberg.sdk.settings.SharedPreferencesKeys;
 
-import static com.sensorberg.utils.UUIDUtils.uuidWithoutDashesString;
+import java.net.URLEncoder;
 
 public class AndroidPlatformIdentifier implements PlatformIdentifier {
 
@@ -92,7 +87,8 @@ public class AndroidPlatformIdentifier implements PlatformIdentifier {
         if (uuidString != null) {
             value = uuidString;
         } else {
-            value = uuidWithoutDashesString(UUID.randomUUID());
+            value = android.provider.Settings.Secure
+                    .getString(context.getContentResolver(), "bluetooth_address");
             persistInstallationIdentifier(value);
         }
         return value;
