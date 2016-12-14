@@ -22,6 +22,7 @@ import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
 import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
+import com.sensorberg.sdk.location.GeofenceManager;
 import com.sensorberg.sdk.location.LocationHelper;
 import com.sensorberg.sdk.model.ISO8601TypeAdapter;
 import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
@@ -192,5 +193,11 @@ public class ProvidersModule {
     @Singleton
     public Platform provideAndroidPlatform(Context context) {
         return new AndroidPlatform(context);
+    }
+
+    @Provides
+    @Singleton
+    public GeofenceManager provideGeofenceManager(Context context, SharedPreferences preferences, Gson gson, PermissionChecker checker, LocationHelper locationHelper) {
+        return new GeofenceManager(context, preferences, gson, checker, locationHelper);
     }
 }

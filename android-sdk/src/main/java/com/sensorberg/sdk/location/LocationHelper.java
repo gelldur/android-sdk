@@ -2,6 +2,7 @@ package com.sensorberg.sdk.location;
 
 import android.location.Location;
 import android.location.LocationManager;
+import android.provider.Settings;
 
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.settings.SettingsManager;
@@ -36,6 +37,16 @@ public class LocationHelper {
             return location.getGeohash();
         }
         return null;
+    }
+
+    public boolean isLocationEnabled() {
+        for (String provider : manager.getProviders(true)) {
+            if (LocationManager.GPS_PROVIDER.equals(provider)
+                    || LocationManager.NETWORK_PROVIDER.equals(provider)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

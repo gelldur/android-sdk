@@ -1,5 +1,13 @@
 package com.sensorberg.sdk;
 
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SyncStatusObserver;
+import android.os.Parcelable;
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.sensorberg.SensorbergSdk;
@@ -13,8 +21,9 @@ import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.interfaces.MessageDelayWindowLengthListener;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
-import com.sensorberg.sdk.model.BeaconId;
+import com.sensorberg.sdk.location.GeofenceManager;
 import com.sensorberg.sdk.location.LocationHelper;
+import com.sensorberg.sdk.model.BeaconId;
 import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.presenter.LocalBroadcastManager;
 import com.sensorberg.sdk.presenter.ManifestParser;
@@ -29,20 +38,13 @@ import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 import com.sensorberg.sdk.scanner.ScanEvent;
 import com.sensorberg.sdk.scanner.Scanner;
 import com.sensorberg.sdk.scanner.ScannerListener;
-import com.sensorberg.sdk.settings.DefaultSettings;
 import com.sensorberg.sdk.settings.Settings;
 import com.sensorberg.sdk.settings.SettingsManager;
 import com.sensorberg.sdk.settings.SettingsUpdateCallback;
 import com.sensorberg.utils.ListUtils;
 
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SyncStatusObserver;
-import android.os.Parcelable;
-
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,7 +58,8 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-public class InternalApplicationBootstrapper extends MinimalBootstrapper implements ScannerListener, SyncStatusObserver, Transport.ProximityUUIDUpdateHandler {
+public class InternalApplicationBootstrapper extends MinimalBootstrapper implements ScannerListener,
+        SyncStatusObserver, Transport.ProximityUUIDUpdateHandler, GeofenceManager.GeofenceListener {
 
     private static final boolean SURVIVE_REBOOT = true;
 
@@ -80,6 +83,8 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
 
     protected final Set<String> proximityUUIDs = new HashSet<>();
 
+    protected final Set<String> geofenceIDs = new HashSet<>();
+
     protected SortedMap<String, String> attributes;
 
     @Inject
@@ -102,6 +107,9 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     protected SharedPreferences preferences;
 
     @Inject
+    protected GeofenceManager geofenceManager;
+
+    @Inject
     protected Gson gson;
 
     public InternalApplicationBootstrapper(Transport transport, ServiceScheduler scheduler, HandlerManager handlerManager,
@@ -110,6 +118,10 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
         SensorbergSdk.getComponent().inject(this);
 
         this.transport = transport;
+        this.transport.setProximityUUIDUpdateHandler(this);
+
+        geofenceManager.addListener(this);
+
         settingsManager.setSettingsUpdateCallback(settingsUpdateCallbackListener);
         settingsManager.setMessageDelayWindowLengthListener((MessageDelayWindowLengthListener) scheduler);
         clock = clk;
@@ -166,22 +178,32 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
 
         int reportLevel = settingsManager.getBeaconReportLevel();
 
-        if (reportLevel == Settings.BEACON_REPORT_LEVEL_ALL) {
+        if (reportLevel == Settings.BEACON_REPORT_LEVEL_ALL) {  //TODO exclude geofences ?
             beaconActionHistoryPublisher.onScanEventDetected(scanEvent);
         }
 
         boolean contained;
         synchronized (proximityUUIDsMonitor) {
-            contained = proximityUUIDs.isEmpty() || proximityUUIDs.contains(scanEvent.getBeaconId().getProximityUUIDWithoutDashes());
+            contained = proximityUUIDs.isEmpty()
+                    || proximityUUIDs.contains(scanEvent.getBeaconId().getProximityUUIDWithoutDashes())
+                    || geofenceIDs.contains(scanEvent.getBeaconId().getGeofenceId());
         }
         if (contained) {
 
-            if (reportLevel == Settings.BEACON_REPORT_LEVEL_ONLY_CONTAINED) {
+            if (reportLevel == Settings.BEACON_REPORT_LEVEL_ONLY_CONTAINED) {   //TODO exclude geofences ?
                 beaconActionHistoryPublisher.onScanEventDetected(scanEvent);
             }
 
             resolver.resolve(scanEvent);
         }
+    }
+
+    @Override
+    public void onGeofenceEvent(String geofence, boolean entry) {
+        BeaconId hack = new BeaconId("0000000000000000000000000000000000000000", geofence);
+        //TODO check effects of rssi and calRssi
+        ScanEvent scanEvent = new ScanEvent(hack, clock.now(), entry, "00:00:00:00:00:00", -127, 0, locationHelper.getGeohash());
+        onScanEventDetected(scanEvent);
     }
 
     public void onConversionUpdate(ActionConversion conversion) {
@@ -346,8 +368,24 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     public void proximityUUIDListUpdated(List<String> proximityUUIDs) {
         synchronized (proximityUUIDsMonitor) {
             this.proximityUUIDs.clear();
+            this.geofenceIDs.clear();
             for (String proximityUUID : proximityUUIDs) {
-                this.proximityUUIDs.add(proximityUUID.toLowerCase());
+                if (proximityUUID.length() == 32) {
+                    this.proximityUUIDs.add(proximityUUID.toLowerCase());
+                } else if (proximityUUID.length() == 14) {
+                    if (proximityUUID.substring(8, 14).matches("^[0-9]{6}$")) {
+                        this.geofenceIDs.add(proximityUUID.toLowerCase());
+                    } else {
+                        Logger.log.logError("Invalid geohash");
+                    }
+                } else {
+                    Logger.log.logError("Invalid proximityUUID");
+                }
+            }
+            try {
+                geofenceManager.updateGeofences(new ArrayList<>(geofenceIDs));
+            } catch (IllegalArgumentException ex) {
+                Logger.log.logError("Can't register more than 100 geofences", ex);
             }
         }
     }

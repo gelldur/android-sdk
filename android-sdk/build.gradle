@@ -46,6 +46,8 @@ dependencies {
 
     apt "org.projectlombok:lombok:1.16.2"
     provided "org.projectlombok:lombok:1.16.2"
+
+    compile 'com.google.android.gms:play-services-location:10.0.1'
 }
 
 group = "com.sensorberg.sdk"
