@@ -15,13 +15,13 @@ import java.util.List;
 
 public class GeofenceStorage {
 
-    private HashMap<String, Geofence> storage = new HashMap<>();
-
     private SharedPreferences preferences;
-
     private Gson gson;
 
-    private boolean pending = false;
+    private HashMap<String, Geofence> storage = new HashMap<>();
+
+    private boolean hasNew = true;
+    private boolean committed = false;
 
     public GeofenceStorage(SharedPreferences preferences, Gson gson) {
         this.preferences = preferences;
@@ -30,40 +30,41 @@ public class GeofenceStorage {
     }
 
     public void updateGeofences(List<String> geofences) {
-        HashMap<String, Geofence> newGeofences = new HashMap<>(geofences.size());
+        HashMap<String, Geofence> temp = new HashMap<>(geofences.size());
+        hasNew = false;
         if (storage.size() != geofences.size()) {
-            pending = true;
+            setHasNew();
         }
-        for (String fence : geofences) {
-            Geofence existing = storage.get(fence);
+        for (String incoming : geofences) {
+            Geofence existing = storage.get(incoming);
             if (existing == null) {
-                newGeofences.put(fence, buildGeofence(fence));
-                pending = true;
+                temp.put(incoming, buildGeofence(incoming));
+                setHasNew();
             } else {
-                newGeofences.put(fence, existing);
+                temp.put(incoming, existing);
             }
         }
-        storage = newGeofences;
-        store();
-    }
-
-    private void store() {
-        String map = gson.toJson(storage.keySet());
-        preferences.edit().putString(Constants.SharedPreferencesKeys.Data.GEOFENCES, map).apply();
-        preferences.edit().putBoolean(Constants.SharedPreferencesKeys.Data.GEOFENCES_PENDING, pending).apply();
-    }
-
-    private void restore() {
-        pending = preferences.getBoolean(Constants.SharedPreferencesKeys.Data.GEOFENCES_PENDING, false);
-        String mapJson = preferences.getString(Constants.SharedPreferencesKeys.Data.GEOFENCES, "");
-        HashSet<String> restored;
-        if (!mapJson.isEmpty()) {
-            Type mapType = new TypeToken<HashSet<String>>() {}.getType();
-            restored = gson.fromJson(mapJson, mapType);
-            for (String fence : restored) {
-                storage.put(fence, buildGeofence(fence));
-            }
+        if (hasNew) {
+            storage = temp;
+            store();
         }
+    }
+
+    public List<Geofence> getGeofences() {
+        return new ArrayList<>(storage.values());
+    }
+
+    public void setCommitted(boolean committed) {
+        this.committed = committed;
+    }
+
+    public boolean hasUncommitted() {
+        return !committed || hasNew;
+    }
+
+    private void setHasNew() {
+        hasNew = true;
+        committed = false;
     }
 
     private Geofence buildGeofence(String geofenceId) {
@@ -78,16 +79,20 @@ public class GeofenceStorage {
                 .build();
     }
 
-    public List<Geofence> getGeofences() {
-        return new ArrayList<>(storage.values());
+    private void store() {
+        String map = gson.toJson(storage.keySet());
+        preferences.edit().putString(Constants.SharedPreferencesKeys.Data.GEOFENCES, map).apply();
     }
 
-    public boolean hasPending() {
-        return pending;
-    }
-
-    public void setPending(boolean pending) {
-        this.pending = pending;
-        preferences.edit().putBoolean(Constants.SharedPreferencesKeys.Data.GEOFENCES_PENDING, pending).apply();
+    private void restore() {
+        String mapJson = preferences.getString(Constants.SharedPreferencesKeys.Data.GEOFENCES, "");
+        HashSet<String> restored;
+        if (!mapJson.isEmpty()) {
+            Type mapType = new TypeToken<HashSet<String>>() {}.getType();
+            restored = gson.fromJson(mapJson, mapType);
+            for (String fence : restored) {
+                storage.put(fence, buildGeofence(fence));
+            }
+        }
     }
 }

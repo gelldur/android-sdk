@@ -1,5 +1,6 @@
 package com.sensorberg.sdk.location;
 
+import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.test.runner.AndroidJUnit4;
@@ -37,6 +38,9 @@ public class LocationHelperTest {
     @Inject @Named("dummyTransportSettingsManager")
     protected SettingsManager settings;
 
+    @Inject
+    protected Context context;
+
     @Before
     public void setUp() throws Exception {
 
@@ -51,7 +55,7 @@ public class LocationHelperTest {
         when(mockedManager.getProviders(true)).thenReturn(PROVIDERS);
         when(mockedManager.getLastKnownLocation(PROVIDERS.get(0))).thenReturn(l0);
         when(mockedManager.getLastKnownLocation(PROVIDERS.get(1))).thenReturn(l1);
-        tested = new LocationHelper(mockedManager, settings);
+        tested = new LocationHelper(context, mockedManager, settings);
     }
 
     @Test

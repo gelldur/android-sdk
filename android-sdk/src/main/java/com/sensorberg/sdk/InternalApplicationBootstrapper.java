@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SyncStatusObserver;
 import android.os.Parcelable;
-import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -21,6 +20,7 @@ import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.interfaces.MessageDelayWindowLengthListener;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
+import com.sensorberg.sdk.location.GeofenceId;
 import com.sensorberg.sdk.location.GeofenceManager;
 import com.sensorberg.sdk.location.LocationHelper;
 import com.sensorberg.sdk.model.BeaconId;
@@ -178,8 +178,10 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
 
         int reportLevel = settingsManager.getBeaconReportLevel();
 
-        if (reportLevel == Settings.BEACON_REPORT_LEVEL_ALL) {  //TODO exclude geofences ?
-            beaconActionHistoryPublisher.onScanEventDetected(scanEvent);
+        if (reportLevel == Settings.BEACON_REPORT_LEVEL_ALL) {
+            if (scanEvent.getBeaconId().getGeofenceId() == null) {
+                beaconActionHistoryPublisher.onScanEventDetected(scanEvent);
+            }
         }
 
         boolean contained;
@@ -190,8 +192,10 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
         }
         if (contained) {
 
-            if (reportLevel == Settings.BEACON_REPORT_LEVEL_ONLY_CONTAINED) {   //TODO exclude geofences ?
-                beaconActionHistoryPublisher.onScanEventDetected(scanEvent);
+            if (reportLevel == Settings.BEACON_REPORT_LEVEL_ONLY_CONTAINED) {
+                if (scanEvent.getBeaconId().getGeofenceId() == null) {
+                    beaconActionHistoryPublisher.onScanEventDetected(scanEvent);
+                }
             }
 
             resolver.resolve(scanEvent);
@@ -372,20 +376,16 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
             for (String proximityUUID : proximityUUIDs) {
                 if (proximityUUID.length() == 32) {
                     this.proximityUUIDs.add(proximityUUID.toLowerCase());
-                } else if (proximityUUID.length() == 14) {
-                    if (proximityUUID.substring(8, 14).matches("^[0-9]{6}$")) {
-                        this.geofenceIDs.add(proximityUUID.toLowerCase());
-                    } else {
-                        Logger.log.logError("Invalid geohash");
-                    }
+                } else if (GeofenceId.isValid(proximityUUID)) {
+                    this.geofenceIDs.add(proximityUUID.toLowerCase());
                 } else {
-                    Logger.log.logError("Invalid proximityUUID");
+                    Logger.log.logError("Invalid proximityUUID: "+proximityUUID);
                 }
             }
             try {
                 geofenceManager.updateGeofences(new ArrayList<>(geofenceIDs));
             } catch (IllegalArgumentException ex) {
-                Logger.log.logError("Can't register more than 100 geofences", ex);
+                Logger.log.logError(ex.getMessage(), ex);
             }
         }
     }

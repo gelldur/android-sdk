@@ -8,22 +8,20 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofenceStatusCodes;
 import com.google.android.gms.location.GeofencingEvent;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.internal.PermissionChecker;
-import com.sensorberg.sdk.settings.TimeConstants;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -33,31 +31,19 @@ import java.util.List;
  * Class for handling communication with Service.
  */
 public class GeofenceManager extends BroadcastReceiver implements
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-
-    private static final String TAG = GeofenceManager.class.getName();
+        LocationHelper.LocationStateListener, GoogleApiClient.ConnectionCallbacks {
 
     public static final String ACTION = "com.sensorberg.sdk.receiver.GEOFENCE";
 
-    private int retries;
-    public static final int SERVICE_RECONNECT_LIMIT = 3;
-    public static final long SERVICE_RECONNECT_INTERVAL = TimeConstants.ONE_MINUTE;
-
-    public static final long UPDATE_IN_PROGRESS_RETRY_DELAY = TimeConstants.ONE_MINUTE;
-
     private Context context;
-
     private PermissionChecker checker;
-
     private LocationHelper location;
-
-    protected GoogleApiClient googleApiClient;
-
     private GeofenceStorage storage;
+    private PlayServiceManager play;
 
-    private Handler handler;
+    private List<GeofenceListener> listeners = new ArrayList<>();
 
-    private boolean updateInProgress;
+    private boolean updating;
 
     public interface GeofenceListener {
         void onGeofenceEvent(String geofence, boolean entry);
@@ -69,25 +55,28 @@ public class GeofenceManager extends BroadcastReceiver implements
         this.checker = checker;
         this.location = location;
         storage = new GeofenceStorage(preferences, gson);
-        googleApiClient = new GoogleApiClient.Builder(context)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-        googleApiClient.connect();
-        handler = new Handler();
+        play = new PlayServiceManager(context, this);
+        location.addListener(this);
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
-        if (geofencingEvent.hasError()) {
-            Logger.log.logError("Received geofence with error code: "+geofencingEvent.getErrorCode());
+        GeofencingEvent event = GeofencingEvent.fromIntent(intent);
+        if (event == null) {
+            Logger.log.logError("GeofencingEvent is null");
             return;
-        } else {
-            String geofenceId = geofencingEvent.getTriggeringGeofences().get(0).getRequestId();
-            boolean entry = geofencingEvent.getGeofenceTransition() == Geofence.GEOFENCE_TRANSITION_ENTER;
-            notifyListeners(geofenceId, entry);
+        }
+        if (event.hasError() && event.getErrorCode() == GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE) {
+            //If we've registred geofence before, Google Play Service lets us know about removal here.
+            storage.setCommitted(false);
+            return;
+        }
+        try {
+            GeofenceId geofence = GeofenceId.from(event);
+            boolean entry = event.getGeofenceTransition() == Geofence.GEOFENCE_TRANSITION_ENTER;
+            notifyListeners(geofence.getGeofenceId(), entry);
+        } catch (IllegalArgumentException ex) {
+            Logger.log.logError("Received invalid geofence", ex);
         }
     }
 
@@ -100,36 +89,24 @@ public class GeofenceManager extends BroadcastReceiver implements
     }
 
     private boolean checkConditions() {
-        if (!storage.hasPending()) {
-            //We've got same set of geofences.
+        if (!storage.hasUncommitted()) {
+            Logger.log.debug("Geofences update: No changes, aborting.");
             return false;
         }
-        if (updateInProgress) {
-            //Update already in progress, retry in some time just to be sure.
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    updateGeofences();
-                }
-            }, UPDATE_IN_PROGRESS_RETRY_DELAY);
+        if (!play.isConnected()) {
+            Logger.log.logError("Geofences update: Google API client is not connected.");
             return false;
         }
-        if (!googleApiClient.isConnected()) {
-            //Client not connected
-            if (googleApiClient.isConnecting()) {
-                //Already trying to connect
-                return false;
-            } else {
-                Logger.log.logError("Can't update geofences, Google API client is not connected.");
-                return false;
-            }
+        if (updating) {
+            Logger.log.debug("Geofences update: Already in progress.");
+            return false;
         }
         if (!checker.checkForPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
-            Logger.log.logError("Can't update geofences, missing ACCESS_FINE_LOCATION permission");
+            Logger.log.logError("Geofences update: Missing ACCESS_FINE_LOCATION permission");
             return false;
         }
         if (!location.isLocationEnabled()) {
-            Logger.log.logError("Can't update geofences, location is not enabled");
+            Logger.log.logError("Geofences update: Location is not enabled");
             return false;
         }
         return true;
@@ -139,10 +116,10 @@ public class GeofenceManager extends BroadcastReceiver implements
         if (!checkConditions()) {
             return;
         }
-        updateInProgress = true;
+        updating = true;
         try {
             LocationServices.GeofencingApi
-                    .removeGeofences(googleApiClient, getPendingIntent())
+                    .removeGeofences(play.getClient(), getPendingIntent())
                     .setResultCallback(new ResultCallback<Status>() {
                         @Override
                         public void onResult(@NonNull Status status) {
@@ -150,47 +127,43 @@ public class GeofenceManager extends BroadcastReceiver implements
                                 addAllGeofences();
                             } else {
                                 Logger.log.logError("Failed to remove geofences, error code: "+status.getStatusCode());
-                                updateInProgress = false;
+                                updating = false;
                             }
                         }
                     });
         } catch (SecurityException ex) {
             Logger.log.logError("Can't remove geofences, missing ACCESS_FINE_LOCATION permission");
-            updateInProgress = false;
+            updating = false;
         }
     }
 
     private void addAllGeofences() {
+        if (storage.getGeofences().isEmpty()) {
+            updating = false;
+            storage.setCommitted(true);
+            Logger.log.debug("No geofences to add");
+            return;
+        }
         try {
-            updateInProgress = true;
+            updating = true;
             LocationServices.GeofencingApi
-                    .addGeofences(googleApiClient, getGeofencingRequest(), getPendingIntent())
+                    .addGeofences(play.getClient(), getGeofencingRequest(), getPendingIntent())
                     .setResultCallback(new ResultCallback<Status>() {
                         @Override
                         public void onResult(@NonNull Status status) {
                             if (status.isSuccess()) {
-                                storage.setPending(false);
+                                storage.setCommitted(true);
+                                Logger.log.debug("Geofences successfully added: "+storage.getGeofences());
                             } else {
                                 Logger.log.logError("Failed to add geofences, error code: "+status.getStatusCode());
                             }
-                            updateInProgress = false;
+                            updating = false;
                         }
                     });
         } catch (SecurityException ex) {
             Logger.log.logError("Can't add geofences, missing ACCESS_FINE_LOCATION permission");
-            updateInProgress = false;
+            updating = false;
         }
-    }
-
-    public void onLocationAvailable() {
-        //Not used yet, TODO
-        //updateGeofences();
-    }
-
-    public void onLocationPermissionGranted () {
-        //Right now there's no callback for that - on permission change app is killed, then restarted.
-        //This is left in here in case the method for callback appears in Android.
-        //updateGeofences();
     }
 
     private GeofencingRequest getGeofencingRequest() {
@@ -205,6 +178,21 @@ public class GeofenceManager extends BroadcastReceiver implements
         return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
+    public void onLocationStateChanged(boolean enabled) {
+        if (enabled) {
+            //Setting as uncommitted - Google Play Services removes geofences when location is disabled.
+            storage.setCommitted(false);
+            updateGeofences();
+        }
+    }
+
+    public void onLocationPermissionGranted () {
+        //Right now there's no callback for that - on permission change app is killed, then restarted.
+        //This is left in here in case the method for callback appears in Android.
+        //storage.setCommitted(false);
+        //updateGeofences();
+    }
+
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         updateGeofences();
@@ -215,27 +203,9 @@ public class GeofenceManager extends BroadcastReceiver implements
         //Nothing. Google Play Services should reconnect automatically.
     }
 
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Logger.log.logError("Could not connect to Google Services API: "
-                +connectionResult.getErrorMessage()+" code: "+connectionResult.getErrorCode());
-        if (retries < SERVICE_RECONNECT_LIMIT) {
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    retries++;
-                    googleApiClient.connect();
-                }
-            }, SERVICE_RECONNECT_INTERVAL);
-        }
-    }
-
-    private List<GeofenceListener> listeners = new ArrayList<>();
-
     public void addListener(GeofenceListener listener) {
         for (GeofenceListener previous : listeners) {
             if(previous == listener) {
-                //TODO log if already added
                 return;
             }
         }
@@ -259,7 +229,6 @@ public class GeofenceManager extends BroadcastReceiver implements
                 return;
             }
         }
-        //TODO log if not found
     }
 
     private void notifyListeners(String geofenceId, boolean entry) {
