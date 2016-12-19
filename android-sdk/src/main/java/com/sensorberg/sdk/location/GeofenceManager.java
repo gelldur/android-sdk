@@ -72,9 +72,11 @@ public class GeofenceManager extends BroadcastReceiver implements
             return;
         }
         try {
-            GeofenceId geofence = GeofenceId.from(event);
+            List<GeofenceId> geofences = GeofenceId.from(event);
             boolean entry = event.getGeofenceTransition() == Geofence.GEOFENCE_TRANSITION_ENTER;
-            notifyListeners(geofence.getGeofenceId(), entry);
+            for (GeofenceId geofence : geofences) {
+                notifyListeners(geofence.getGeofenceId(), entry);
+            }
         } catch (IllegalArgumentException ex) {
             Logger.log.logError("Received invalid geofence", ex);
         }

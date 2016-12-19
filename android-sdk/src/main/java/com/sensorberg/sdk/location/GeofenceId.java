@@ -2,7 +2,9 @@ package com.sensorberg.sdk.location;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
-import com.sensorberg.sdk.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import lombok.Getter;
 
@@ -39,23 +41,16 @@ public class GeofenceId {
         return null;
     }
 
-    public static GeofenceId from(GeofencingEvent event) {
+    public static List<GeofenceId> from(GeofencingEvent event) {
         String problem = check(event);
         if (problem != null) {
             throw new IllegalArgumentException(problem);
         }
-        String geofenceId = null;
+        ArrayList<GeofenceId> result = new ArrayList<>();
         for (Geofence geofence : event.getTriggeringGeofences()) {
-            if (geofenceId == null) {
-                geofenceId = geofence.getRequestId();
-            } else {
-                Logger.log.logError("GeofencingEvent has more than one triggers: "+geofence.getRequestId());
-            }
+            result.add(new GeofenceId(geofence.getRequestId()));
         }
-        if (geofenceId == null) {
-            throw new IllegalArgumentException("GeofencingEvent has null trigger");
-        }
-        return new GeofenceId(geofenceId);
+        return result;
     }
 
     private static String check(GeofencingEvent event) {

@@ -179,9 +179,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
         int reportLevel = settingsManager.getBeaconReportLevel();
 
         if (reportLevel == Settings.BEACON_REPORT_LEVEL_ALL) {
-            if (scanEvent.getBeaconId().getGeofenceId() == null) {
-                beaconActionHistoryPublisher.onScanEventDetected(scanEvent);
-            }
+            beaconActionHistoryPublisher.onScanEventDetected(scanEvent);
         }
 
         boolean contained;
@@ -191,13 +189,9 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
                     || geofenceIDs.contains(scanEvent.getBeaconId().getGeofenceId());
         }
         if (contained) {
-
             if (reportLevel == Settings.BEACON_REPORT_LEVEL_ONLY_CONTAINED) {
-                if (scanEvent.getBeaconId().getGeofenceId() == null) {
-                    beaconActionHistoryPublisher.onScanEventDetected(scanEvent);
-                }
+                beaconActionHistoryPublisher.onScanEventDetected(scanEvent);
             }
-
             resolver.resolve(scanEvent);
         }
     }
