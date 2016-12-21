@@ -20,7 +20,7 @@ public interface RetrofitApiServiceV2 {
 
     @GET("/api/v2/sdk/gateways/{apiKey}/interactions.json")
     @Headers("Cache-Control: max-age=0")
-    Call<BaseResolveResponse> updateBeaconLayout(@Path("apiKey") String apiKey, @QueryMap SortedMap<String, String> attributes);
+    Call<ResolveResponse> updateBeaconLayout(@Path("apiKey") String apiKey, @QueryMap SortedMap<String, String> attributes);
 
     @GET("/api/v2/sdk/gateways/{apiKey}/interactions.json")
     Call<ResolveResponse> getBeacon(@Path("apiKey") String apiKey, @QueryMap SortedMap<String, String> attributes);

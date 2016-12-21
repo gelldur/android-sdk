@@ -1,5 +1,9 @@
 package com.sensorberg.sdk.internal.transport;
 
+import android.content.SharedPreferences;
+import android.text.TextUtils;
+
+import com.google.gson.Gson;
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.internal.interfaces.BeaconHistoryUploadIntervalListener;
 import com.sensorberg.sdk.internal.interfaces.BeaconResponseHandler;
@@ -10,11 +14,10 @@ import com.sensorberg.sdk.internal.transport.interfaces.TransportSettingsCallbac
 import com.sensorberg.sdk.internal.transport.model.HistoryBody;
 import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
 import com.sensorberg.sdk.model.persistence.ActionConversion;
-import com.sensorberg.sdk.model.server.BaseResolveResponse;
-import com.sensorberg.sdk.model.server.ResolveAction;
-import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.sdk.model.persistence.BeaconAction;
 import com.sensorberg.sdk.model.persistence.BeaconScan;
+import com.sensorberg.sdk.model.server.ResolveAction;
+import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.sdk.receivers.NetworkInfoBroadcastReceiver;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.scanner.ScanEvent;
@@ -37,24 +40,47 @@ public class RetrofitApiTransport implements Transport {
 
     public static String RESOLVER_BASE_URL = "https://demo.sensorberg-cdn.com";
 
+    private static final String KEY_RESOLVE_RESPONSE = "com.sensorberg.preferences.transport.resolved";
+
     public static int BACKEND_VERSION = 2;
 
     private final Clock mClock;
 
     private RetrofitApiServiceImpl apiService;
 
+    private ResolveResponse lastSuccess;
+
+    private SharedPreferences prefs;
+
+    private Gson gson;
+
     @Setter
     private BeaconHistoryUploadIntervalListener beaconHistoryUploadIntervalListener = BeaconHistoryUploadIntervalListener.NONE;
 
     private ProximityUUIDUpdateHandler mProximityUUIDUpdateHandler = ProximityUUIDUpdateHandler.NONE;
 
-    public RetrofitApiTransport(RetrofitApiServiceImpl retrofitApiService, Clock clk) {
+    public RetrofitApiTransport(RetrofitApiServiceImpl retrofitApiService, Clock clk, SharedPreferences sharedPreferences, Gson gson) {
         apiService = retrofitApiService;
         mClock = clk;
+        prefs = sharedPreferences;
+        this.gson = gson;
+        load();
     }
 
     private RetrofitApiServiceImpl getApiService() {
         return apiService;
+    }
+
+    private void load() {
+        String json = prefs.getString(KEY_RESOLVE_RESPONSE, null);
+        if (!TextUtils.isEmpty(json)) {
+            lastSuccess = gson.fromJson(json, ResolveResponse.class);
+        }
+    }
+
+    private void save(ResolveResponse body) {
+        lastSuccess = body;
+        prefs.edit().putString(KEY_RESOLVE_RESPONSE, gson.toJson(lastSuccess)).apply();
     }
 
     @Override
@@ -71,25 +97,39 @@ public class RetrofitApiTransport implements Transport {
         String networkInfo = NetworkInfoBroadcastReceiver.latestNetworkInfo != null
                 ? NetworkInfoBroadcastReceiver.getNetworkInfoString() : "";
 
-        Call<ResolveResponse> call = getApiService().getBeacon(scanEvent.getBeaconId().getPid(), networkInfo, attributes);
+        getApiService()
+                .getBeacon(scanEvent.getBeaconId().getPid(), networkInfo, attributes)
+                .enqueue(new Callback<ResolveResponse>() {
+                    @Override
+                    public void onResponse(Call<ResolveResponse> call, Response<ResolveResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            save(response.body());
+                            onSuccess(response.body());
+                        } else {
+                            onFail(new Throwable("No Content, Invalid Api Key"));
+                        }
+                    }
 
-        call.enqueue(new Callback<ResolveResponse>() {
-            @Override
-            public void onResponse(Call<ResolveResponse> call, Response<ResolveResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    List<BeaconEvent> beaconEvents = checkSuccessfulBeaconResponse(scanEvent, response.body());
-                    beaconResponseHandler.onSuccess(beaconEvents);
-                    checkShouldCallBeaconResponseHandlers(response.body());
-                } else {
-                    beaconResponseHandler.onFailure(new Throwable("No Content, Invalid Api Key"));
-                }
-            }
+                    @Override
+                    public void onFailure(Call<ResolveResponse> call, Throwable t) {
+                        onFail(t);
+                    }
 
-            @Override
-            public void onFailure(Call<ResolveResponse> call, Throwable t) {
-                beaconResponseHandler.onFailure(t);
-            }
-        });
+                    void onSuccess(ResolveResponse resolveResponse) {
+                        List<BeaconEvent> beaconEvents = checkSuccessfulBeaconResponse(scanEvent, resolveResponse);
+                        beaconResponseHandler.onSuccess(beaconEvents);
+                        checkShouldCallBeaconResponseHandlers(resolveResponse);
+                    }
+
+                    void onFail(Throwable t) {
+                        if (lastSuccess == null) {
+                            beaconResponseHandler.onFailure(t);
+                        } else {
+                            onSuccess(lastSuccess);
+                        }
+                    }
+
+                });
     }
 
     private void checkShouldCallBeaconResponseHandlers(ResolveResponse successfulResponse) {
@@ -196,24 +236,37 @@ public class RetrofitApiTransport implements Transport {
 
     @Override
     public void updateBeaconLayout(SortedMap<String, String> attributes) {
+        getApiService()
+                .updateBeaconLayout(attributes)
+                .enqueue(new Callback<ResolveResponse>() {
+                    @Override
+                    public void onResponse(Call<ResolveResponse> call, Response<ResolveResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            save(response.body());
+                            onSuccess(response.body());
+                        } else {
+                            onFail();
+                        }
+                    }
 
-        Call<BaseResolveResponse> call = getApiService().updateBeaconLayout(attributes);
+                    @Override
+                    public void onFailure(Call<ResolveResponse> call, Throwable t) {
+                        onFail();
+                    }
 
-        call.enqueue(new Callback<BaseResolveResponse>() {
-            @Override
-            public void onResponse(Call<BaseResolveResponse> call, Response<BaseResolveResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    mProximityUUIDUpdateHandler.proximityUUIDListUpdated(response.body().getAccountProximityUUIDs());
-                } else {
-                    mProximityUUIDUpdateHandler.proximityUUIDListUpdated(Collections.EMPTY_LIST);
-                }
-            }
+                    void onSuccess(ResolveResponse resolveResponse) {
+                        mProximityUUIDUpdateHandler.proximityUUIDListUpdated(resolveResponse.getAccountProximityUUIDs());
+                    }
 
-            @Override
-            public void onFailure(Call<BaseResolveResponse> call, Throwable t) {
-                mProximityUUIDUpdateHandler.proximityUUIDListUpdated(Collections.EMPTY_LIST);
-            }
-        });
+                    void onFail() {
+                        if (lastSuccess == null) {
+                            mProximityUUIDUpdateHandler.proximityUUIDListUpdated(Collections.EMPTY_LIST);
+                        } else {
+                            onSuccess(lastSuccess);
+                        }
+                    }
+
+                });
     }
 
     @Override

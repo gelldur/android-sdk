@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
+import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -45,6 +46,9 @@ public class TheResolverWithMockApiShould {
     @Inject
     Gson gson;
 
+    @Inject
+    SharedPreferences prefs;
+
     private Resolver tested;
 
     RetrofitApiServiceImpl mockRetrofitApiService = mock(RetrofitApiServiceImpl.class);
@@ -56,7 +60,7 @@ public class TheResolverWithMockApiShould {
 
         ResolverConfiguration resolverConfiguration = new ResolverConfiguration();
         testHandlerManager.getCustomClock().setNowInMillis(new DateTime(2015, 7, 7, 1, 1, 1).getMillis());
-        Transport testTransportWithMockService = new RetrofitApiTransport(mockRetrofitApiService, testHandlerManager.getCustomClock());
+        Transport testTransportWithMockService = new RetrofitApiTransport(mockRetrofitApiService, testHandlerManager.getCustomClock(), prefs, gson);
 
         tested = new Resolver(resolverConfiguration, testHandlerManager, testTransportWithMockService, null);
     }

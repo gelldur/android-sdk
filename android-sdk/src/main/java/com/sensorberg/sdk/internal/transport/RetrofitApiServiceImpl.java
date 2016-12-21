@@ -8,7 +8,6 @@ import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiServiceV2;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.model.HistoryBody;
 import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
-import com.sensorberg.sdk.model.server.BaseResolveResponse;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.utils.Objects;
 
@@ -70,7 +69,8 @@ public class RetrofitApiServiceImpl {
             mApiServiceV2 = null;
         } else if (version == 1) {
             mApiServiceV0 = null;
-            mApiServiceV1 = restAdapter.create(RetrofitApiServiceV1.class);;
+            mApiServiceV1 = restAdapter.create(RetrofitApiServiceV1.class);
+            ;
             mApiServiceV2 = null;
         } else if (version == 2) {
             mApiServiceV0 = null;
@@ -142,7 +142,7 @@ public class RetrofitApiServiceImpl {
         }
     }
 
-    public Call<BaseResolveResponse> updateBeaconLayout(SortedMap<String, String> attributes) {
+    public Call<ResolveResponse> updateBeaconLayout(SortedMap<String, String> attributes) {
         if (attributes == null) {
             attributes = new TreeMap<>();
         }
@@ -194,7 +194,7 @@ public class RetrofitApiServiceImpl {
 
     public boolean setApiToken(String newToken) {
         boolean tokensDiffer = mApiToken != null && !Objects.equals(newToken, mApiToken);
-        if (tokensDiffer && mClient != null){
+        if (tokensDiffer && mClient != null) {
             try {
                 mClient.cache().evictAll();
             } catch (IOException e) {
