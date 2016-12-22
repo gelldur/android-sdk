@@ -47,7 +47,7 @@ public class GeofenceManager extends BroadcastReceiver implements
     private boolean committed = false;
 
     public interface GeofenceListener {
-        void onGeofenceEvent(Fence fence, boolean entry);
+        void onGeofenceEvent(GeofenceData geofenceData, boolean entry);
     }
 
     public GeofenceManager(Context context, SharedPreferences preferences, Gson gson,
@@ -77,10 +77,10 @@ public class GeofenceManager extends BroadcastReceiver implements
             return;
         }
         try {
-            List<Fence> fences = Fence.from(event);
+            List<GeofenceData> geofenceDatas = GeofenceData.from(event);
             boolean entry = event.getGeofenceTransition() == Geofence.GEOFENCE_TRANSITION_ENTER;
-            for (Fence fence : fences) {
-                notifyListeners(fence, entry);
+            for (GeofenceData geofenceData : geofenceDatas) {
+                notifyListeners(geofenceData, entry);
             }
         } catch (IllegalArgumentException ex) {
             Logger.log.logError("Received invalid geofence event", ex);
@@ -109,11 +109,11 @@ public class GeofenceManager extends BroadcastReceiver implements
             return false;
         }
         if (!checker.checkForPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
-            Logger.log.logError("Geofences update: Missing ACCESS_FINE_LOCATION permission");
+            Logger.log.debug("Geofences update: Missing ACCESS_FINE_LOCATION permission");
             return false;
         }
         if (!location.isLocationEnabled()) {
-            Logger.log.logError("Geofences update: Location is not enabled");
+            Logger.log.debug("Geofences update: Location is not enabled");
             return false;
         }
         return true;
@@ -242,9 +242,9 @@ public class GeofenceManager extends BroadcastReceiver implements
         context.registerReceiver(this, filter);
     }
 
-    private void notifyListeners(Fence fence, boolean entry) {
+    private void notifyListeners(GeofenceData geofenceData, boolean entry) {
         for (GeofenceListener listener : listeners) {
-            listener.onGeofenceEvent(fence, entry);
+            listener.onGeofenceEvent(geofenceData, entry);
         }
     }
 }

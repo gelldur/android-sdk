@@ -20,7 +20,7 @@ import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.interfaces.MessageDelayWindowLengthListener;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
-import com.sensorberg.sdk.location.Fence;
+import com.sensorberg.sdk.location.GeofenceData;
 import com.sensorberg.sdk.location.GeofenceManager;
 import com.sensorberg.sdk.location.LocationHelper;
 import com.sensorberg.sdk.model.BeaconId;
@@ -184,9 +184,12 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
 
         boolean contained;
         synchronized (proximityUUIDsMonitor) {
-            contained = proximityUUIDs.isEmpty()
-                    || proximityUUIDs.contains(scanEvent.getBeaconId().getProximityUUIDWithoutDashes())
-                    || fences.contains(scanEvent.getBeaconId().getGeofenceId());
+            if (scanEvent.getBeaconId().getGeofenceData() == null) {
+                contained = proximityUUIDs.isEmpty()
+                        || proximityUUIDs.contains(scanEvent.getBeaconId().getProximityUUIDWithoutDashes());
+            } else {
+                contained = fences.contains(scanEvent.getBeaconId().getGeofenceData().getFence());
+            }
         }
         if (contained) {
             if (reportLevel == Settings.BEACON_REPORT_LEVEL_ONLY_CONTAINED) {
@@ -197,8 +200,8 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     }
 
     @Override
-    public void onGeofenceEvent(Fence fence, boolean entry) {
-        BeaconId beaconId = new BeaconId("0000000000000000000000000000000000000000", fence.getId());
+    public void onGeofenceEvent(GeofenceData geofenceData, boolean entry) {
+        BeaconId beaconId = new BeaconId("0000000000000000000000000000000000000000", geofenceData);
         ScanEvent scanEvent = new ScanEvent(beaconId, clock.now(), entry, "00:00:00:00:00:00", -127, 0, locationHelper.getGeohash());
         onScanEventDetected(scanEvent);
     }

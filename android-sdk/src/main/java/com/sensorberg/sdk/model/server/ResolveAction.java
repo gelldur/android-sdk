@@ -110,13 +110,13 @@ public class ResolveAction implements Serializable {
     public boolean containsBeacon(BeaconId beaconId) {
         final String scanEventBid = beaconId.getPid().replace("-","");
         for (String bid : beacons) {
-            if (beaconId.getGeofenceId() == null) {
+            if (beaconId.getGeofenceData() == null) {
                 boolean matchBid = scanEventBid.equalsIgnoreCase(bid.replace("-",""));
                 if (matchBid) {
                     return true;
                 }
             } else {
-                boolean matchGeofence = beaconId.getGeofenceId().equals(bid);
+                boolean matchGeofence = beaconId.getGeofenceData().getFence().equals(bid);
                 if (matchGeofence) {
                     return true;
                 }

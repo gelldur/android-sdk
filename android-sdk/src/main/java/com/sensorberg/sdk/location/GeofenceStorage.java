@@ -67,12 +67,12 @@ public class GeofenceStorage {
 
     private Geofence buildGeofence(String fence) {
         try {
-            Fence temp = new Fence(fence);
+            GeofenceData temp = new GeofenceData(fence);
             return new Geofence.Builder()
-                    .setRequestId(temp.getId())
+                    .setRequestId(temp.getFence())
                     .setCircularRegion(
-                            temp.getHash().getPoint().getLatitude(),
-                            temp.getHash().getPoint().getLongitude(),
+                            temp.getLatitude(),
+                            temp.getLongitude(),
                             temp.getRadius())
                     .setExpirationDuration(Long.MAX_VALUE)
                     .setNotificationResponsiveness(5000)

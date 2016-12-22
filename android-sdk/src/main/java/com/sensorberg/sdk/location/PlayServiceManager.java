@@ -27,6 +27,7 @@ public class PlayServiceManager implements GoogleApiClient.ConnectionCallbacks, 
     private GoogleApiClient client;
     private GoogleApiClient.ConnectionCallbacks listener;
     private GoogleApiAvailability availability;
+    private int logged = ConnectionResult.SUCCESS;
 
     private Handler handler;
 
@@ -66,7 +67,10 @@ public class PlayServiceManager implements GoogleApiClient.ConnectionCallbacks, 
                 retry(SERVICE_RECONNECT_INTERVAL);
                 return false;
             default:
-                Logger.log.logError("Google Api Client "+availability.getErrorString(status));
+                if (logged != status) {
+                    logged = status;
+                    Logger.log.logError("Google Api Client "+availability.getErrorString(status));
+                }
                 return false;
         }
     }

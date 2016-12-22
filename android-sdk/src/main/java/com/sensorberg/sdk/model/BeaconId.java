@@ -1,5 +1,6 @@
 package com.sensorberg.sdk.model;
 
+import com.sensorberg.sdk.location.GeofenceData;
 import com.sensorberg.utils.Objects;
 import com.sensorberg.utils.UUIDUtils;
 
@@ -40,10 +41,11 @@ public class BeaconId implements Parcelable, Serializable {
     private final byte[] beaconId;
 
     /**
-     * Hack for enabling geofences. BeaconId will have either valid beaconId or geofenceId.
+     * Hack for enabling geofences. BeaconId will have either valid beaconId or geofenceData.
      * Non-valid beaconId is all 0's.
      */
-    private final String geofenceId;
+    private final GeofenceData geofenceData;
+
     transient private UUID uuid = null;
     /**
      * Creates and initializes a new {@link BeaconId}.
@@ -56,7 +58,7 @@ public class BeaconId implements Parcelable, Serializable {
         }
         this.beaconId = new byte[20];
         System.arraycopy(beaconId, 0x00, this.beaconId, 0, 20);
-        geofenceId = null;
+        geofenceData = null;
     }
 
     /**
@@ -71,13 +73,13 @@ public class BeaconId implements Parcelable, Serializable {
         }
         this.beaconId = new byte[20];
         System.arraycopy(data, offset, this.beaconId, 0, 20);
-        geofenceId = null;
+        geofenceData = null;
     }
 
     protected BeaconId(Parcel source) {
         this.beaconId = new byte[20];
         source.readByteArray(beaconId);
-        geofenceId = source.readString();
+        geofenceData = source.readParcelable(GeofenceData.class.getClassLoader());
     }
 
     /**
@@ -90,7 +92,7 @@ public class BeaconId implements Parcelable, Serializable {
             throw (new IllegalArgumentException("Invalid beacon id"));
         }
         this.beaconId = hexToByteArray(beaconId);
-        this.geofenceId = null;
+        this.geofenceData = null;
     }
 
     /**
@@ -98,12 +100,12 @@ public class BeaconId implements Parcelable, Serializable {
      *
      * @param beaconId the beacon id as a hexadecimal {@link String} of length 40
      */
-    public BeaconId(String beaconId, String geofenceId) {
+    public BeaconId(String beaconId, GeofenceData geofenceData) {
         if (beaconId.length() != 40) {
             throw (new IllegalArgumentException("Invalid beacon id"));
         }
         this.beaconId = hexToByteArray(beaconId);
-        this.geofenceId = geofenceId;
+        this.geofenceData = geofenceData;
     }
 
     private static byte[] hexToByteArray(String hex) throws IllegalArgumentException {
@@ -140,7 +142,7 @@ public class BeaconId implements Parcelable, Serializable {
             // This cannot happen
         }
         this.beaconId = stream.toByteArray();
-        this.geofenceId = null;
+        this.geofenceData = null;
     }
 
     public int describeContents() {
@@ -149,7 +151,7 @@ public class BeaconId implements Parcelable, Serializable {
 
     public void writeToParcel(Parcel destination, int flags) {
         destination.writeByteArray(beaconId);
-        destination.writeString(geofenceId);
+        destination.writeParcelable(geofenceData, flags);
     }
 
     @Override
@@ -165,7 +167,7 @@ public class BeaconId implements Parcelable, Serializable {
         }
         BeaconId otherId = (BeaconId) other;
         return Arrays.equals(beaconId, otherId.beaconId) &&
-                Objects.equals(geofenceId, otherId.geofenceId);
+                Objects.equals(geofenceData, otherId.geofenceData);
     }
 
     @Override
@@ -173,8 +175,8 @@ public class BeaconId implements Parcelable, Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + Arrays.hashCode(beaconId);
-        if (geofenceId != null) {
-            result = prime * result + geofenceId.hashCode();
+        if (geofenceData != null) {
+            result = prime * result + geofenceData.hashCode();
         }
         return (result);
     }
@@ -190,8 +192,8 @@ public class BeaconId implements Parcelable, Serializable {
         return (beaconIdCopy);
     }
 
-    public String getGeofenceId() {
-        return geofenceId;
+    public GeofenceData getGeofenceData() {
+        return geofenceData;
     }
 
     /**
@@ -258,7 +260,7 @@ public class BeaconId implements Parcelable, Serializable {
                 "uuid=" + getNormalizedUUIDString()+
                 ", major=" + getMajorId()+
                 ", minor=" + getMinorId()+
-                ", geofence=" + getGeofenceId()+
+                ", geofence=" + getGeofenceData()+
                 '}';
     }
 
