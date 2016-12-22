@@ -150,7 +150,8 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
 
     private void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
 
-        if (rssi < settingsManager.getScannerMinRssi()) {
+        if (settingsManager.getScannerMinRssi() != DefaultSettings.DEFAULT_SCANNER_MIN_RSSI &&
+                rssi < settingsManager.getScannerMinRssi()) {
             return;
         }
 
@@ -158,8 +159,8 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
         if (beacon != null) {
 
             int calRssi = beacon.second;
-            double distance = getDistanceFromRSSI(rssi, calRssi);
-            if (distance > settingsManager.getScannerMaxDistance()) {
+            if (settingsManager.getScannerMaxDistance() != DefaultSettings.DEFAULT_SCANNER_MAX_DISTANCE &&
+                    getDistanceFromRSSI(rssi, calRssi) > settingsManager.getScannerMaxDistance()) {
                 return;
             }
 
