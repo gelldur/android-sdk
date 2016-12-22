@@ -7,7 +7,7 @@ buildscript {
         maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.0.0'
+        classpath 'com.android.tools.build:gradle:2.2.1'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6'
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
@@ -26,7 +26,7 @@ allprojects {
         jcenter()
         maven { url "https://jitpack.io" }
     }
-    project.ext.SDK_VERSION = "2.2.2"
+    project.ext.SDK_VERSION = "2.2.1"
     project.ext.RC_VERSION = "-GEOFENCE"
     project.ext.buildToolsVersion = "23.0.3"
     project.ext.compileSdkVersion = 23
