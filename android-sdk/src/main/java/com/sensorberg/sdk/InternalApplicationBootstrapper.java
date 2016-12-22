@@ -20,7 +20,7 @@ import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.interfaces.MessageDelayWindowLengthListener;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
-import com.sensorberg.sdk.location.GeofenceId;
+import com.sensorberg.sdk.location.Fence;
 import com.sensorberg.sdk.location.GeofenceManager;
 import com.sensorberg.sdk.location.LocationHelper;
 import com.sensorberg.sdk.model.BeaconId;
@@ -83,7 +83,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
 
     protected final Set<String> proximityUUIDs = new HashSet<>();
 
-    protected final Set<String> geofenceIDs = new HashSet<>();
+    protected final Set<String> fences = new HashSet<>();
 
     protected SortedMap<String, String> attributes;
 
@@ -186,7 +186,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
         synchronized (proximityUUIDsMonitor) {
             contained = proximityUUIDs.isEmpty()
                     || proximityUUIDs.contains(scanEvent.getBeaconId().getProximityUUIDWithoutDashes())
-                    || geofenceIDs.contains(scanEvent.getBeaconId().getGeofenceId());
+                    || fences.contains(scanEvent.getBeaconId().getGeofenceId());
         }
         if (contained) {
             if (reportLevel == Settings.BEACON_REPORT_LEVEL_ONLY_CONTAINED) {
@@ -197,10 +197,9 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     }
 
     @Override
-    public void onGeofenceEvent(String geofence, boolean entry) {
-        BeaconId hack = new BeaconId("0000000000000000000000000000000000000000", geofence);
-        //TODO check effects of rssi and calRssi
-        ScanEvent scanEvent = new ScanEvent(hack, clock.now(), entry, "00:00:00:00:00:00", -127, 0, locationHelper.getGeohash());
+    public void onGeofenceEvent(Fence fence, boolean entry) {
+        BeaconId beaconId = new BeaconId("0000000000000000000000000000000000000000", fence.getId());
+        ScanEvent scanEvent = new ScanEvent(beaconId, clock.now(), entry, "00:00:00:00:00:00", -127, 0, locationHelper.getGeohash());
         onScanEventDetected(scanEvent);
     }
 
@@ -366,18 +365,18 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     public void proximityUUIDListUpdated(List<String> proximityUUIDs) {
         synchronized (proximityUUIDsMonitor) {
             this.proximityUUIDs.clear();
-            this.geofenceIDs.clear();
+            this.fences.clear();
             for (String proximityUUID : proximityUUIDs) {
                 if (proximityUUID.length() == 32) {
                     this.proximityUUIDs.add(proximityUUID.toLowerCase());
-                } else if (GeofenceId.isValid(proximityUUID)) {
-                    this.geofenceIDs.add(proximityUUID.toLowerCase());
+                } else if (proximityUUID.length() == 14) {
+                    this.fences.add(proximityUUID.toLowerCase());
                 } else {
                     Logger.log.logError("Invalid proximityUUID: "+proximityUUID);
                 }
             }
             try {
-                geofenceManager.updateGeofences(new ArrayList<>(geofenceIDs));
+                geofenceManager.updateFences(new ArrayList<>(fences));
             } catch (IllegalArgumentException ex) {
                 Logger.log.logError(ex.getMessage(), ex);
             }

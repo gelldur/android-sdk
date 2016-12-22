@@ -6,12 +6,15 @@ import com.google.android.gms.location.Geofence;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.sensorberg.sdk.Constants;
+import com.sensorberg.sdk.Logger;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+
+import lombok.Getter;
 
 public class GeofenceStorage {
 
@@ -20,8 +23,7 @@ public class GeofenceStorage {
 
     private HashMap<String, Geofence> storage = new HashMap<>();
 
-    private boolean hasNew = true;
-    private boolean committed = false;
+    @Getter private boolean changed = true;
 
     public GeofenceStorage(SharedPreferences preferences, Gson gson) {
         this.preferences = preferences;
@@ -29,22 +31,29 @@ public class GeofenceStorage {
         restore();
     }
 
-    public void updateGeofences(List<String> geofences) {
-        HashMap<String, Geofence> temp = new HashMap<>(geofences.size());
-        hasNew = false;
-        if (storage.size() != geofences.size()) {
-            setHasNew();
-        }
-        for (String incoming : geofences) {
+    /**
+     * Updates stored geofences, only if something changed.
+     * @param fences List of fence strings (8 char geohash plus 6 char radius).
+     */
+    public void updateFences(List<String> fences) {
+        HashMap<String, Geofence> temp = new HashMap<>(fences.size());
+        changed = false;
+        for (String incoming : fences) {
             Geofence existing = storage.get(incoming);
             if (existing == null) {
-                temp.put(incoming, buildGeofence(incoming));
-                setHasNew();
+                Geofence geofence = buildGeofence(incoming);
+                if (geofence != null) {
+                    temp.put(incoming, geofence);
+                    changed = true;
+                }
             } else {
                 temp.put(incoming, existing);
             }
         }
-        if (hasNew) {
+        if (storage.size() != temp.size()) {
+            changed = true;
+        }
+        if (changed) {
             storage = temp;
             store();
         }
@@ -54,29 +63,25 @@ public class GeofenceStorage {
         return new ArrayList<>(storage.values());
     }
 
-    public void setCommitted(boolean committed) {
-        this.committed = committed;
-    }
+    public List<String> getGeofencesKeys() { return new ArrayList<>(storage.keySet()); }
 
-    public boolean hasUncommitted() {
-        return !committed || hasNew;
-    }
-
-    private void setHasNew() {
-        hasNew = true;
-        committed = false;
-    }
-
-    private Geofence buildGeofence(String geofenceId) {
-        GeoHash geoHash = GeoHash.decode(geofenceId.substring(0, 8));
-        int radius = Integer.valueOf(geofenceId.substring(8, 14));
-        return new Geofence.Builder()
-                .setRequestId(geofenceId)
-                .setCircularRegion(geoHash.lat, geoHash.lon, radius)
-                .setExpirationDuration(Long.MAX_VALUE)
-                .setNotificationResponsiveness(5000)
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
-                .build();
+    private Geofence buildGeofence(String fence) {
+        try {
+            Fence temp = new Fence(fence);
+            return new Geofence.Builder()
+                    .setRequestId(temp.getId())
+                    .setCircularRegion(
+                            temp.getHash().getPoint().getLatitude(),
+                            temp.getHash().getPoint().getLongitude(),
+                            temp.getRadius())
+                    .setExpirationDuration(Long.MAX_VALUE)
+                    .setNotificationResponsiveness(5000)
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
+                    .build();
+        } catch (IllegalArgumentException ex) {
+            Logger.log.logError("Invalid geofence: "+fence, ex);
+            return null;
+        }
     }
 
     private void store() {
@@ -91,7 +96,10 @@ public class GeofenceStorage {
             Type mapType = new TypeToken<HashSet<String>>() {}.getType();
             restored = gson.fromJson(mapJson, mapType);
             for (String fence : restored) {
-                storage.put(fence, buildGeofence(fence));
+                Geofence geofence = buildGeofence(fence);
+                if (geofence != null) {
+                    storage.put(fence, geofence);
+                }
             }
         }
     }

@@ -4,6 +4,7 @@ import android.location.Location;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import ch.hsr.geohash.GeoHash;
 import lombok.Getter;
 
 public class GeoHashLocation extends Location {
@@ -12,7 +13,7 @@ public class GeoHashLocation extends Location {
 
     public GeoHashLocation(Location location) {
         super(location);
-        geohash = GeoHash.encode(location.getLatitude(), location.getLongitude(), 9).toHashString();
+        geohash = GeoHash.geoHashStringWithCharacterPrecision(location.getLatitude(), location.getLongitude(), 9);
     }
 
     // parcelable implementations

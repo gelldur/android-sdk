@@ -35,7 +35,7 @@ public class Constants {
 
         public static final class Data {
             public static final String TARGETING_ATTRIBUTES = "com.sensorberg.preferences.data.targeting";
-            public static final String GEOFENCES = "com.sensorberg.preferences.data.geofencesData";
+            public static final String GEOFENCES = "com.sensorberg.preferences.data.geofences";
         }
     }
 

@@ -43,10 +43,11 @@ public class GeofenceManager extends BroadcastReceiver implements
 
     private List<GeofenceListener> listeners = new ArrayList<>();
 
-    private boolean updating;
+    private boolean updating = false;
+    private boolean committed = false;
 
     public interface GeofenceListener {
-        void onGeofenceEvent(String geofence, boolean entry);
+        void onGeofenceEvent(Fence fence, boolean entry);
     }
 
     public GeofenceManager(Context context, SharedPreferences preferences, Gson gson,
@@ -54,7 +55,9 @@ public class GeofenceManager extends BroadcastReceiver implements
         this.context = context;
         this.checker = checker;
         this.location = location;
+        registerReceiver();
         storage = new GeofenceStorage(preferences, gson);
+        //This will callback asynchronously here when service is connected.
         play = new PlayServiceManager(context, this);
         location.addListener(this);
     }
@@ -67,31 +70,33 @@ public class GeofenceManager extends BroadcastReceiver implements
             return;
         }
         if (event.hasError() && event.getErrorCode() == GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE) {
+            //This runs in a case of e.g. disabling location on the device.
             //If we've registred geofence before, Google Play Service lets us know about removal here.
-            storage.setCommitted(false);
+            //(But we don't rely only on it, cause we're smart and listen to disabling location anyway)
+            committed = false;
             return;
         }
         try {
-            List<GeofenceId> geofences = GeofenceId.from(event);
+            List<Fence> fences = Fence.from(event);
             boolean entry = event.getGeofenceTransition() == Geofence.GEOFENCE_TRANSITION_ENTER;
-            for (GeofenceId geofence : geofences) {
-                notifyListeners(geofence.getGeofenceId(), entry);
+            for (Fence fence : fences) {
+                notifyListeners(fence, entry);
             }
         } catch (IllegalArgumentException ex) {
-            Logger.log.logError("Received invalid geofence", ex);
+            Logger.log.logError("Received invalid geofence event", ex);
         }
     }
 
-    public void updateGeofences(List<String> geofences) {
-        if (geofences.size() > 100) {
+    public void updateFences(List<String> fences) {
+        if (fences.size() > 100) {
             throw new IllegalArgumentException("Can't have more than 100 geofences");
         }
-        storage.updateGeofences(geofences);
-        updateGeofences();
+        storage.updateFences(fences);
+        updateRegistredGeofences();
     }
 
     private boolean checkConditions() {
-        if (!storage.hasUncommitted()) {
+        if (committed && !storage.isChanged()) {
             Logger.log.debug("Geofences update: No changes, aborting.");
             return false;
         }
@@ -114,7 +119,7 @@ public class GeofenceManager extends BroadcastReceiver implements
         return true;
     }
 
-    private void updateGeofences() {
+    private void updateRegistredGeofences() {
         if (!checkConditions()) {
             return;
         }
@@ -126,7 +131,7 @@ public class GeofenceManager extends BroadcastReceiver implements
                         @Override
                         public void onResult(@NonNull Status status) {
                             if (status.isSuccess()) {
-                                addAllGeofences();
+                                registerAllGeofences();
                             } else {
                                 Logger.log.logError("Failed to remove geofences, error code: "+status.getStatusCode());
                                 updating = false;
@@ -139,10 +144,10 @@ public class GeofenceManager extends BroadcastReceiver implements
         }
     }
 
-    private void addAllGeofences() {
+    private void registerAllGeofences() {
         if (storage.getGeofences().isEmpty()) {
             updating = false;
-            storage.setCommitted(true);
+            committed = true;
             Logger.log.debug("No geofences to add");
             return;
         }
@@ -154,7 +159,7 @@ public class GeofenceManager extends BroadcastReceiver implements
                         @Override
                         public void onResult(@NonNull Status status) {
                             if (status.isSuccess()) {
-                                storage.setCommitted(true);
+                                committed = true;
                                 Logger.log.debug("Geofences successfully added: "+storage.getGeofences());
                             } else {
                                 Logger.log.logError("Failed to add geofences, error code: "+status.getStatusCode());
@@ -183,21 +188,21 @@ public class GeofenceManager extends BroadcastReceiver implements
     public void onLocationStateChanged(boolean enabled) {
         if (enabled) {
             //Setting as uncommitted - Google Play Services removes geofences when location is disabled.
-            storage.setCommitted(false);
-            updateGeofences();
+            committed = false;
+            updateRegistredGeofences();
         }
     }
 
     public void onLocationPermissionGranted () {
         //Right now there's no callback for that - on permission change app is killed, then restarted.
         //This is left in here in case the method for callback appears in Android.
-        //storage.setCommitted(false);
-        //updateGeofences();
+        //committed = false;
+        //updateRegistredGeofences();
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        updateGeofences();
+        updateRegistredGeofences();
     }
 
     @Override
@@ -212,9 +217,7 @@ public class GeofenceManager extends BroadcastReceiver implements
             }
         }
         if (listeners.size() == 0) {
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(ACTION);
-            context.registerReceiver(this, filter);
+            registerReceiver();
         }
         listeners.add(listener);
     }
@@ -233,9 +236,15 @@ public class GeofenceManager extends BroadcastReceiver implements
         }
     }
 
-    private void notifyListeners(String geofenceId, boolean entry) {
+    private void registerReceiver() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION);
+        context.registerReceiver(this, filter);
+    }
+
+    private void notifyListeners(Fence fence, boolean entry) {
         for (GeofenceListener listener : listeners) {
-            listener.onGeofenceEvent(geofenceId, entry);
+            listener.onGeofenceEvent(fence, entry);
         }
     }
 }

@@ -2,30 +2,33 @@ package com.sensorberg.sdk.location;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
+import com.sensorberg.sdk.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.hsr.geohash.GeoHash;
 import lombok.Getter;
 
-public class GeofenceId {
+public class Fence {
 
-    @Getter private final String hash;
     @Getter private final int radius;
-    @Getter private final String geofenceId;
+    @Getter private final GeoHash hash;
+    @Getter private final String id;
 
-    public GeofenceId(String geofenceId) {
-        String problem = check(geofenceId);
+    public Fence(String fence) {
+        id = fence;
+        String problem = check(fence);
         if (problem != null) {
             throw new IllegalArgumentException(problem);
         }
-        hash = geofenceId.substring(0, 8);
-        radius = Integer.valueOf(geofenceId.substring(8, 14));
-        this.geofenceId = geofenceId;
-    }
-
-    public static boolean isValid(String geofenceId) {
-        return check(geofenceId) == null;
+        radius = Integer.valueOf(fence.substring(8, 14));
+        String geohash = fence.substring(0, 8);
+        try {
+            hash = GeoHash.fromGeohashString(geohash);
+        } catch (NullPointerException ex) {
+            throw new IllegalArgumentException("Invalid geofence geohash: "+geohash);
+        }
     }
 
     private static String check(String geofenceId) {
@@ -41,14 +44,21 @@ public class GeofenceId {
         return null;
     }
 
-    public static List<GeofenceId> from(GeofencingEvent event) {
+    public static List<Fence> from(GeofencingEvent event) {
         String problem = check(event);
         if (problem != null) {
             throw new IllegalArgumentException(problem);
         }
-        ArrayList<GeofenceId> result = new ArrayList<>();
+        ArrayList<Fence> result = new ArrayList<>();
         for (Geofence geofence : event.getTriggeringGeofences()) {
-            result.add(new GeofenceId(geofence.getRequestId()));
+            try {
+                result.add(new Fence(geofence.getRequestId()));
+            } catch (IllegalArgumentException ex) {
+                Logger.log.logError(ex.getMessage());
+            }
+        }
+        if (result.isEmpty()) {
+            throw new IllegalArgumentException("GeofencingEvent has no triggering geofences");
         }
         return result;
     }
