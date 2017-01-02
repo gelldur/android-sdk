@@ -19,6 +19,7 @@ import com.sensorberg.sdk.resolver.ResolverListener;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -35,6 +36,7 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     private static final int MSG_PUBLISH_HISTORY = 1;
     private static final int MSG_DELETE_ALL_DATA = 6;
     private static final int MSG_SAVE_SUPPRESSION_STORE = 7;
+    static final int MAX_UPLOAD_SIZE = 2000;
 
     private Clock clock;
 
@@ -99,10 +101,10 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
         final List<String> notSentConversionsKeys;
         final List<ActionConversion> notSentConversionsValues;
         synchronized (lock) {
-            notSentScans = new LinkedList<>(beaconScans);
-            notSentActions = new LinkedList<>(beaconActions);
-            notSentConversionsKeys = new LinkedList<>(actionConversions.keySet());
-            notSentConversionsValues = new LinkedList<>(actionConversions.values());
+            notSentScans = getList(beaconScans);
+            notSentActions = getList(beaconActions);
+            notSentConversionsKeys = getList(actionConversions.keySet());
+            notSentConversionsValues = getList(actionConversions.values());
         }
 
         if (notSentScans.isEmpty() && notSentActions.isEmpty() && notSentConversionsKeys.isEmpty()) {
@@ -142,6 +144,18 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
         };
 
         transport.publishHistory(notSentScans, notSentActions, notSentConversionsValues, transportHistoryCallback);
+    }
+
+    private static <T> List<T> getList(Collection<T> collection) {
+        if (collection.size() > MAX_UPLOAD_SIZE) {
+            if (collection instanceof List) {
+                return new LinkedList<>(((List<T>) collection).subList(0, MAX_UPLOAD_SIZE));
+            } else {
+                return new LinkedList<>(new LinkedList<>(collection).subList(0, MAX_UPLOAD_SIZE));
+            }
+        } else {
+            return new LinkedList<>(collection);
+        }
     }
 
     public void publishHistory() {

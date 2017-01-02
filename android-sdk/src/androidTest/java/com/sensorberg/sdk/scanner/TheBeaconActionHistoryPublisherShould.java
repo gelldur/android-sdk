@@ -77,7 +77,7 @@ public class TheBeaconActionHistoryPublisherShould {
         verify(transport).publishHistory(hasSize(0), hasSize(1), hasSize(0), any(TransportHistoryCallback.class));
         Mockito.reset(transport);
 
-        // nullify and make new instance
+        //  nullify and make new instance
 
         tested = null;
         tested = new BeaconActionHistoryPublisher(transport, testHandlerManager.getCustomClock(), testHandlerManager, sharedPreferences, gson);
@@ -132,5 +132,19 @@ public class TheBeaconActionHistoryPublisherShould {
         //check that this instance read from local persistence layer
         tested.publishHistory();
         verify(transport).publishHistory(hasSize(0), hasSize(0), hasSize(1), any(TransportHistoryCallback.class));
+    }
+
+    @Test
+    public void should_have_maximum_items_to_publish() throws Exception {
+
+        int limit = BeaconActionHistoryPublisher.MAX_UPLOAD_SIZE;
+        int eventSize = 10 + limit;
+
+        for (int i = 0; i < eventSize; i++) {
+            tested.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(100 + i));
+        }
+        tested.publishHistory();
+        verify(transport).publishHistory(hasSize(limit), hasSize(0), hasSize(0), any(TransportHistoryCallback.class));
+
     }
 }
