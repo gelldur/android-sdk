@@ -1,6 +1,7 @@
 package com.sensorberg.sdk.internal.transport;
 
 import com.google.gson.Gson;
+import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
 import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiServiceV0;
 import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiServiceV1;
@@ -114,7 +115,9 @@ public class RetrofitApiServiceImpl {
         okClientBuilder.addInterceptor(headerAuthorizationInterceptor);
 
         httpLoggingInterceptor = new HttpLoggingInterceptor();
-        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
+        httpLoggingInterceptor.setLevel(Logger.isVerboseLoggingEnabled() ?
+                HttpLoggingInterceptor.Level.BODY :
+                HttpLoggingInterceptor.Level.NONE);
         okClientBuilder.addInterceptor(httpLoggingInterceptor);
 
         okClientBuilder.retryOnConnectionFailure(true);
