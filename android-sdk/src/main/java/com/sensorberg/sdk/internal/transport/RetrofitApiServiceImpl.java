@@ -71,7 +71,6 @@ public class RetrofitApiServiceImpl {
         } else if (version == 1) {
             mApiServiceV0 = null;
             mApiServiceV1 = restAdapter.create(RetrofitApiServiceV1.class);
-            ;
             mApiServiceV2 = null;
         } else if (version == 2) {
             mApiServiceV0 = null;

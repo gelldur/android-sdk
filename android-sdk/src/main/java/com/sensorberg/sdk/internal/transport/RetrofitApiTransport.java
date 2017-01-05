@@ -34,13 +34,12 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static com.sensorberg.sdk.settings.SharedPreferencesKeys.Network.KEY_RESOLVE_RESPONSE;
 import static com.sensorberg.utils.ListUtils.map;
 
 public class RetrofitApiTransport implements Transport {
 
     public static String RESOLVER_BASE_URL = "https://demo.sensorberg-cdn.com";
-
-    private static final String KEY_RESOLVE_RESPONSE = "com.sensorberg.preferences.transport.resolved";
 
     public static int BACKEND_VERSION = 2;
 
@@ -125,6 +124,7 @@ public class RetrofitApiTransport implements Transport {
                         if (lastSuccess == null) {
                             beaconResponseHandler.onFailure(t);
                         } else {
+                            Logger.log.logError("resolution failed, but we have a backup:" + scanEvent.getBeaconId().toTraditionalString(), t);
                             onSuccess(lastSuccess);
                         }
                     }
@@ -245,23 +245,25 @@ public class RetrofitApiTransport implements Transport {
                             save(response.body());
                             onSuccess(response.body());
                         } else {
-                            onFail();
+                            onFail(new Exception("Failed to updateBeaconLayout. Response body is empty"));
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ResolveResponse> call, Throwable t) {
-                        onFail();
+                        onFail(t);
                     }
 
                     void onSuccess(ResolveResponse resolveResponse) {
                         mProximityUUIDUpdateHandler.proximityUUIDListUpdated(resolveResponse.getAccountProximityUUIDs());
                     }
 
-                    void onFail() {
+                    void onFail(Throwable t) {
                         if (lastSuccess == null) {
+                            Logger.log.logError("UpdateBeaconLayout failed", t);
                             mProximityUUIDUpdateHandler.proximityUUIDListUpdated(Collections.EMPTY_LIST);
                         } else {
+                            Logger.log.logError("UpdateBeaconLayout failed, but we have a backup", t);
                             onSuccess(lastSuccess);
                         }
                     }
