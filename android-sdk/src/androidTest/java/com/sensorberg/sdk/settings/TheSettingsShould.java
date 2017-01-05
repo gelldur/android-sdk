@@ -44,6 +44,9 @@ public class TheSettingsShould {
     @Inject
     Gson gson;
 
+    @Inject
+    SharedPreferences prefs;
+
     RetrofitApiServiceImpl mockRetrofitApiService = Mockito.mock(RetrofitApiServiceImpl.class);
 
     SettingsManager tested;
@@ -54,7 +57,7 @@ public class TheSettingsShould {
     public void setUp() throws Exception {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
-        Transport transport = new RetrofitApiTransport(mockRetrofitApiService, clock);
+        Transport transport = new RetrofitApiTransport(mockRetrofitApiService, clock, prefs, gson);
         testedSharedPreferences = InstrumentationRegistry.getContext().getSharedPreferences(Long.toString(System.currentTimeMillis()),
                 Context.MODE_PRIVATE);
         tested = new SettingsManager(transport, testedSharedPreferences);

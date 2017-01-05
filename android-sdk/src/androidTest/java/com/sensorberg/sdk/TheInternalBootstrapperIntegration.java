@@ -1,8 +1,12 @@
 package com.sensorberg.sdk;
 
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-
 import com.sensorberg.sdk.action.ActionFactory;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.internal.interfaces.BeaconResponseHandler;
@@ -11,7 +15,6 @@ import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
 import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.model.HistoryBody;
-import com.sensorberg.sdk.model.server.BaseResolveResponse;
 import com.sensorberg.sdk.model.server.ResolveAction;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.sdk.presenter.LocalBroadcastManager;
@@ -32,10 +35,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
-
-import android.content.IntentFilter;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -69,6 +68,9 @@ public class TheInternalBootstrapperIntegration {
 
     @Inject
     Gson gson;
+
+    @Inject
+    SharedPreferences prefs;
 
     @Inject
     @Named("realBeaconActionHistoryPublisher")
@@ -122,7 +124,7 @@ public class TheInternalBootstrapperIntegration {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
         beaconActionHistoryPublisher.deleteAllData();
 
-        spiedTransportWithMockService = Mockito.spy(new RetrofitApiTransport(mockRetrofitApiService, testHandlerManager.getCustomClock()));
+        spiedTransportWithMockService = Mockito.spy(new RetrofitApiTransport(mockRetrofitApiService, testHandlerManager.getCustomClock(), prefs, gson));
         spiedInternalApplicationBootstrapper = Mockito.spy(new InternalApplicationBootstrapper(spiedTransportWithMockService, testServiceScheduler,
                 testHandlerManager, testHandlerManager.getCustomClock(), bluetoothPlatform, new ResolverConfiguration()));
 
@@ -168,9 +170,9 @@ public class TheInternalBootstrapperIntegration {
     @Test
     public void test_precaching() {
         try {
-            BaseResolveResponse updateLayoutResponse = gson
+            ResolveResponse updateLayoutResponse = gson
                     .fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.response_resolve_precaching,
-                            InstrumentationRegistry.getContext()), BaseResolveResponse.class);
+                            InstrumentationRegistry.getContext()), ResolveResponse.class);
             Mockito.when(mockRetrofitApiService.updateBeaconLayout(Matchers.<TreeMap<String, String>>any())).thenReturn(Calls.response(updateLayoutResponse));
 
             ResolveResponse getBeaconResponse = gson.fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.response_resolve_precaching,
@@ -199,8 +201,8 @@ public class TheInternalBootstrapperIntegration {
 
     @Test
     public void test_precaching_of_account_proximityUUIDS() throws IOException, JSONException, InterruptedException {
-        BaseResolveResponse resolveResponse = gson.fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.response_resolve_precaching,
-                InstrumentationRegistry.getContext()), BaseResolveResponse.class);
+        ResolveResponse resolveResponse = gson.fromJson(Utils.getRawResourceAsString(com.sensorberg.sdk.test.R.raw.response_resolve_precaching,
+                InstrumentationRegistry.getContext()), ResolveResponse.class);
         Mockito.when(mockRetrofitApiService.updateBeaconLayout(Matchers.<TreeMap<String, String>>any())).thenReturn(Calls.response(resolveResponse));
 
         Assertions.assertThat(spiedInternalApplicationBootstrapper.proximityUUIDs).hasSize(0);

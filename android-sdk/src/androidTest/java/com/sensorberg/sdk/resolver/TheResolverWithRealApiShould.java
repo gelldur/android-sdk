@@ -1,6 +1,7 @@
 package com.sensorberg.sdk.resolver;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.google.gson.Gson;
@@ -47,6 +48,9 @@ public class TheResolverWithRealApiShould {
     Gson gson;
 
     @Inject
+    SharedPreferences prefs;
+
+    @Inject
     @Named("androidPlatformIdentifier")
     PlatformIdentifier platformIdentifier;
 
@@ -65,7 +69,7 @@ public class TheResolverWithRealApiShould {
 
         String baseUrl = BuildConfig.RESOLVER_URL != null ? BuildConfig.RESOLVER_URL : RetrofitApiTransport.RESOLVER_BASE_URL;
         RetrofitApiServiceImpl retrofitServiceWithOutCache = new RetrofitApiServiceImpl(null, gson, platformIdentifier, baseUrl);
-        transport = new RetrofitApiTransport(retrofitServiceWithOutCache, clock);
+        transport = new RetrofitApiTransport(retrofitServiceWithOutCache, clock, prefs, gson);
         tested = new Resolver(configuration, testHandlerManager, transport, null);
 
     }

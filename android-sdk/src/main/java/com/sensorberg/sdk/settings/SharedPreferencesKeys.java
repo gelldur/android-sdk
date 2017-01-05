@@ -76,6 +76,8 @@ public final class SharedPreferencesKeys {
 
         public static final String BEACON_REPORT_LEVEL = "com.sensorberg.preferences.network.beaconReportLevel";
 
+        public static final String KEY_RESOLVE_RESPONSE = "com.sensorberg.preferences.transport.resolved";
+
         private Network() {
             throw new IllegalAccessError("Utility class");
         }
