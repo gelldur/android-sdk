@@ -32,6 +32,9 @@ public class GeofenceData implements Parcelable {
             throw new IllegalArgumentException(problem);
         }
         radius = Integer.valueOf(fence.substring(8, 14));
+        if (radius == 0) {
+            throw new IllegalArgumentException("Geofence radius can't be 0");
+        }
         String start = fence.substring(0, 8);
         try {
             GeoHash hash = GeoHash.fromGeohashString(start);

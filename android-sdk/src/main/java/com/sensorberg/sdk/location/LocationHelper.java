@@ -95,11 +95,15 @@ public class LocationHelper extends BroadcastReceiver {
      * Also null if the location is not available or permissions are missing.
      */
     public String getGeohash() {
-        location = acquireGeohash();
+        location = acquireGeohash(true);
         if (location != null) {
             return location.getGeohash();
         }
         return null;
+    }
+
+    public GeoHashLocation getLastKnownLocation() {
+        return acquireGeohash(false);
     }
 
     /**
@@ -122,12 +126,16 @@ public class LocationHelper extends BroadcastReceiver {
      *
      * @return Most recent known location.
      */
-    private GeoHashLocation acquireGeohash() {
+    private GeoHashLocation acquireGeohash(boolean filter) {
         List<Location> locations = new ArrayList<>(3);
 
         // re-evaluated current location
         // it might be still the best, or might be too old
-        if (isAccurateAndFreshAndNotNull(location)) {
+        if (filter) {
+            if (isAccurateAndFreshAndNotNull(location)) {
+                locations.add(location);
+            }
+        } else if (location != null) {
             locations.add(location);
         }
 
@@ -138,7 +146,11 @@ public class LocationHelper extends BroadcastReceiver {
             try {
                 Location location = manager.getLastKnownLocation(provider);
                 // filter out bad locations
-                if (isAccurateAndFreshAndNotNull(location)) {
+                if (filter) {
+                    if (isAccurateAndFreshAndNotNull(location)) {
+                        locations.add(location);
+                    }
+                } else if (location != null) {
                     locations.add(location);
                 }
             } catch (SecurityException ex) {

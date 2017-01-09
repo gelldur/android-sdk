@@ -37,6 +37,9 @@ public class Constants {
             public static final String TARGETING_ATTRIBUTES = "com.sensorberg.preferences.data.targeting";
             public static final String GEOFENCES = "com.sensorberg.preferences.data.geofences";
         }
+
+        public static final String INITIAL_GEOFENCES_SEARCH_RADIUS = "com.sensorberg.preferences.initialGeofencesSearchRadius";
+        public static final String LAST_KNOWN_LOCATION = "com.sensorberg.preferences.lastKnownLocation";
     }
 
     public static final class Time{

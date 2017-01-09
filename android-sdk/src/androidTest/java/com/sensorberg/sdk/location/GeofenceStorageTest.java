@@ -6,7 +6,6 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.google.android.gms.location.Geofence;
-import com.google.gson.Gson;
 import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.di.TestComponent;
 
@@ -25,7 +24,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(AndroidJUnit4.class)
 public class GeofenceStorageTest {
 
-    @Inject Gson gson;
+    @Inject Context context;
     SharedPreferences preferences;
 
     private GeofenceStorage tested;
@@ -36,7 +35,7 @@ public class GeofenceStorageTest {
         preferences = InstrumentationRegistry.getContext().getSharedPreferences(
                 Long.toString(System.currentTimeMillis()),
                 Context.MODE_PRIVATE);
-        tested = new GeofenceStorage(preferences, gson);
+        tested = new GeofenceStorage(context, preferences);
     }
 
     @Test
@@ -47,7 +46,7 @@ public class GeofenceStorageTest {
         tested.updateFences(fences);
         tested = null;
 
-        tested = new GeofenceStorage(preferences, gson);
+        tested = new GeofenceStorage(context, preferences);
         List<String> geofences = tested.getGeofencesKeys();
         assertEquals(fences.size(), geofences.size());
         assertTrue(geofences.contains(fences.get(0)));
@@ -74,7 +73,7 @@ public class GeofenceStorageTest {
         tested.updateFences(fences);
         tested = null;
 
-        tested = new GeofenceStorage(preferences, gson);
+        tested = new GeofenceStorage(context, preferences);
         List<String> geofences = tested.getGeofencesKeys();
         assertEquals(2, geofences.size());
         assertTrue(geofences.contains(fences.get(0)));
@@ -96,7 +95,7 @@ public class GeofenceStorageTest {
 
         //Make sure they're written
         tested = null;
-        tested = new GeofenceStorage(preferences, gson);
+        tested = new GeofenceStorage(context, preferences);
         assertEquals(2, tested.getGeofences().size());
         assertEquals(2, tested.getGeofencesKeys().size());
 
@@ -106,7 +105,7 @@ public class GeofenceStorageTest {
 
         //Make sure they're removed
         tested = null;
-        tested = new GeofenceStorage(preferences, gson);
+        tested = new GeofenceStorage(context, preferences);
         assertEquals(0, tested.getGeofences().size());
         assertEquals(0, tested.getGeofencesKeys().size());
     }
@@ -121,7 +120,7 @@ public class GeofenceStorageTest {
 
         //Make sure they're written
         tested = null;
-        tested = new GeofenceStorage(preferences, gson);
+        tested = new GeofenceStorage(context, preferences);
 
         List<String> geofences = tested.getGeofencesKeys();
         assertEquals(2, geofences.size());

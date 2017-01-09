@@ -19,7 +19,7 @@ import lombok.Getter;
 public class PlayServiceManager implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     public static final long SERVICE_RECONNECT_INTERVAL = 15 * TimeConstants.ONE_MINUTE;
-    private Runnable connect;
+    private boolean retry = false;
 
     @Getter private int status;
 
@@ -41,10 +41,8 @@ public class PlayServiceManager implements GoogleApiClient.ConnectionCallbacks, 
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
-        if (status == ConnectionResult.SUCCESS) {
-            client.connect();
-        } else {
-            Logger.log.logError("Google Api Client status: "+status+" message: "+availability.getErrorString(status));
+        if (status != ConnectionResult.SUCCESS) {
+            Logger.log.geofenceError("Google Api Client status: " + status + " message: " + availability.getErrorString(status), null);
         }
         handler = new Handler(Looper.getMainLooper());
     }
@@ -54,35 +52,50 @@ public class PlayServiceManager implements GoogleApiClient.ConnectionCallbacks, 
     }
 
     public boolean isConnected() {
+        return client.isConnected();
+    }
+
+    public boolean connect() {
         status = availability.isGooglePlayServicesAvailable(context);
         switch (status) {
             case ConnectionResult.SUCCESS:
-                boolean connected = client.isConnected();
-                if (!connected && !client.isConnecting()) {
+                if (!client.isConnected() && !client.isConnecting()) {
                     retry(0);
                 }
-                return connected;
+                return true;
             case ConnectionResult.SERVICE_UPDATING:
-                Logger.log.logError("Google Api Client "+availability.getErrorString(status));
+                Logger.log.geofenceError("Google Api Client "+availability.getErrorString(status), null);
                 retry(SERVICE_RECONNECT_INTERVAL);
-                return false;
+                return true;
             default:
                 if (logged != status) {
                     logged = status;
-                    Logger.log.logError("Google Api Client "+availability.getErrorString(status));
+                    Logger.log.geofenceError("Google Api Client "+availability.getErrorString(status), null);
                 }
                 return false;
         }
     }
 
+    public boolean disconnect() {
+        handler.removeCallbacksAndMessages(null);
+        retry = false;
+        if (client.isConnected()) {
+            client.disconnect();
+            Logger.log.geofence("Google Api Client disconnected");
+        }
+        return true;
+    }
+
     private void retry(long delay) {
         //Retry only if not already retrying
-        if (connect == null) {
+        if (!retry) {
+            retry = true;
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     client.connect();
-                    connect = null;
+                    Logger.log.geofence("Google Api Client connecting...");
+                    retry = false;
                 }
             }, delay);
         }
@@ -101,7 +114,7 @@ public class PlayServiceManager implements GoogleApiClient.ConnectionCallbacks, 
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Logger.log.logError("Could not connect to Google Services API: "
-                +connectionResult.getErrorMessage()+" code: "+connectionResult.getErrorCode());
+        Logger.log.geofenceError("Could not connect to Google Services API: "
+                +connectionResult.getErrorMessage()+" code: "+connectionResult.getErrorCode(), null);
     }
 }
