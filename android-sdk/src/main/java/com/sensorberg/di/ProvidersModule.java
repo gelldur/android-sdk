@@ -1,8 +1,14 @@
 package com.sensorberg.di;
 
+import android.app.AlarmManager;
+import android.app.Application;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.location.LocationManager;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import com.sensorberg.sdk.internal.AndroidBluetoothPlatform;
 import com.sensorberg.sdk.internal.AndroidClock;
 import com.sensorberg.sdk.internal.AndroidFileManager;
@@ -28,14 +34,6 @@ import com.sensorberg.sdk.model.ISO8601TypeAdapter;
 import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 import com.sensorberg.sdk.settings.DefaultSettings;
 import com.sensorberg.sdk.settings.SettingsManager;
-
-import android.app.AlarmManager;
-import android.app.Application;
-import android.app.NotificationManager;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.location.LocationManager;
-import android.os.Build;
 
 import java.util.Date;
 
@@ -119,7 +117,7 @@ public class ProvidersModule {
     @Provides
     @Singleton
     public ServiceScheduler provideIntentScheduler(Context context, AlarmManager alarmManager, Clock clock,
-            PersistentIntegerCounter persistentIntegerCounter) {
+                                                   PersistentIntegerCounter persistentIntegerCounter) {
         return new AndroidServiceScheduler(context, alarmManager, clock, persistentIntegerCounter,
                 DefaultSettings.DEFAULT_MESSAGE_DELAY_WINDOW_LENGTH);
     }
@@ -148,8 +146,8 @@ public class ProvidersModule {
     @Provides
     @Named("realTransport")
     @Singleton
-    public Transport provideRealTransport(@Named("realRetrofitApiService") RetrofitApiServiceImpl retrofitApiService, Clock clock) {
-        return new RetrofitApiTransport(retrofitApiService, clock);
+    public Transport provideRealTransport(@Named("realRetrofitApiService") RetrofitApiServiceImpl retrofitApiService, Clock clock, SharedPreferences sharedPreferences, Gson gson) {
+        return new RetrofitApiTransport(retrofitApiService, clock, sharedPreferences, gson);
     }
 
     @Provides
@@ -184,7 +182,7 @@ public class ProvidersModule {
     @Named("realRetrofitApiService")
     @Singleton
     public RetrofitApiServiceImpl provideRealRetrofitApiService(Context context, Gson gson,
-            @Named("androidPlatformIdentifier") PlatformIdentifier platformIdentifier) {
+                                                                @Named("androidPlatformIdentifier") PlatformIdentifier platformIdentifier) {
         return new RetrofitApiServiceImpl(context.getCacheDir(), gson, platformIdentifier, RetrofitApiTransport.RESOLVER_BASE_URL);
     }
 
