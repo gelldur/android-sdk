@@ -220,7 +220,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
 
     private void saveAttributes(Map<String, String> attributes) {
         String attrs = gson.toJson(attributes);
-        Logger.log.logAttributes("Saved "+attributes.size()+" attributes");
+        Logger.log.logAttributes("Saved " + attributes.size() + " attributes");
         preferences.edit().putString(Constants.SharedPreferencesKeys.Data.TARGETING_ATTRIBUTES, attrs).apply();
     }
 
@@ -228,12 +228,13 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
         String attrsJson = preferences.getString(Constants.SharedPreferencesKeys.Data.TARGETING_ATTRIBUTES, "");
         SortedMap<String, String> map;
         if (!attrsJson.isEmpty()) {
-            Type mapType = new TypeToken<TreeMap<String, String>>() {}.getType();
+            Type mapType = new TypeToken<TreeMap<String, String>>() {
+            }.getType();
             map = Collections.synchronizedSortedMap((TreeMap<String, String>) gson.fromJson(attrsJson, mapType));
         } else {
             map = Collections.synchronizedSortedMap(new TreeMap<String, String>());
         }
-        Logger.log.logAttributes("Read "+map.size()+" attributes");
+        Logger.log.logAttributes("Read " + map.size() + " attributes");
         return map;
     }
 
@@ -260,7 +261,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
             beaconEvent.setPresentationTime(clock.now());
             beaconActionHistoryPublisher.onActionPresented(beaconEvent);
 
-            if (beaconEvent.getAction().getType() == ActionType.SILENT){
+            if (beaconEvent.getAction().getType() == ActionType.SILENT) {
                 Logger.log.beaconResolveState(beaconEvent, "Silent campaign handled, no callback to host application");
                 return;
             }
@@ -324,11 +325,21 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     }
 
     public void setApiToken(String apiToken) {
-        transport.setApiToken(apiToken);
-        beaconActionHistoryPublisher.publishHistory();
         if (resolver.configuration.setApiToken(apiToken)) {
+
+            Logger.log.applicationStateChanged("New token received. Restarting everything");
+
+            // clear
+            scanner.stop();
             unscheduleAllPendingActions();
             beaconActionHistoryPublisher.deleteAllObjects();
+
+            // re-start
+            transport.setApiToken(apiToken);
+            updateSettings();
+            updateBeaconLayout();
+            scanner.clearCache();
+            scanner.start();
         }
     }
 
