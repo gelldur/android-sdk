@@ -1,6 +1,19 @@
 package com.sensorberg.sdk;
 
+import android.annotation.TargetApi;
+import android.app.Service;
+import android.content.Intent;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.DeadObjectException;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
+import android.text.TextUtils;
+
 import com.sensorberg.SensorbergSdk;
+import com.sensorberg.sdk.internal.PermissionChecker;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
 import com.sensorberg.sdk.internal.interfaces.Clock;
 import com.sensorberg.sdk.internal.interfaces.FileManager;
@@ -14,18 +27,6 @@ import com.sensorberg.sdk.receivers.GenericBroadcastReceiver;
 import com.sensorberg.sdk.receivers.ScannerBroadcastReceiver;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolverConfiguration;
-
-import android.annotation.TargetApi;
-import android.app.Service;
-import android.content.Intent;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.DeadObjectException;
-import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
-import android.text.TextUtils;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -102,6 +103,19 @@ public class SensorbergService extends Service {
 
         if (!platform.registerBroadcastReceiver()) {
             logError("no BroadcastReceiver registered for Action:com.sensorberg.android.PRESENT_ACTION");
+            return stopSensorbergService();
+        }
+
+        if (!new PermissionChecker(this).hasScanPermissionCheckAndroid6()) {
+            logError("no permission to scan");
+            if(intent != null){
+                String apikey = intent.getStringExtra(SensorbergServiceMessage.EXTRA_API_KEY);
+                if (apikey != null && !apikey.isEmpty()) {
+                    ResolverConfiguration configuration = new ResolverConfiguration();
+                    configuration.setApiToken(apikey);
+                    persistConfiguration(configuration);
+                }
+            }
             return stopSensorbergService();
         }
 
