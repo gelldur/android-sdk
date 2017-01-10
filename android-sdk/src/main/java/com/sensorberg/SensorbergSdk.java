@@ -1,5 +1,14 @@
 package com.sensorberg;
 
+import android.app.Application;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.os.Messenger;
+import android.text.TextUtils;
+
 import com.sensorberg.di.Component;
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.SensorbergServiceIntents;
@@ -13,18 +22,10 @@ import com.sensorberg.utils.AttributeValidator;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
-import android.app.Application;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.os.Messenger;
-
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -76,7 +77,7 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
     /**
      * Constructor to be used for starting the SDK.
      *
-     * @param ctx {@code Context} Context used for starting the service.
+     * @param ctx    {@code Context} Context used for starting the service.
      * @param apiKey {@code String} Your API key that you can get from your Sensorberg dashboard.
      */
     public SensorbergSdk(Context ctx, String apiKey) {
@@ -85,7 +86,7 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
         activateService(apiKey);
     }
 
-    public static void init(Context ctx){
+    public static void init(Context ctx) {
         context = ctx;
         initLibraries(context);
     }
@@ -112,7 +113,7 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
      * your app, this can be done on an Application or on an Activity level.
      *
      * @param listener {@code SensorbergSdkEventListener} Your implementation of the listener that will receive Sensorberg SDK events that
-     *                                                should be presented via UI.
+     *                 should be presented via UI.
      */
     public void registerEventListener(SensorbergSdkEventListener listener) {
         if (listener != null) {
@@ -129,7 +130,7 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
      * Depending on how you structure your app, this can be done on an Application or on an Activity level.
      *
      * @param listener {@code SensorbergSdkEventListener} Reference to your implementation of the listener that was registered with
-     *                                                  {@code registerEventListener}.
+     *                 {@code registerEventListener}.
      */
     public void unregisterEventListener(SensorbergSdkEventListener listener) {
         listeners.remove(listener);
@@ -194,7 +195,11 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
     }
 
     public void changeAPIToken(String newApiToken) {
-        context.startService(SensorbergServiceIntents.getApiTokenIntent(context, newApiToken));
+        if (TextUtils.isEmpty(newApiToken)) {
+            context.startService(SensorbergServiceIntents.getApiTokenIntent(context, newApiToken));
+        } else {
+            Logger.log.logError("Cannot set empty token");
+        }
     }
 
     public void setAdvertisingIdentifier(String advertisingIdentifier) {
@@ -222,8 +227,9 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
      * Call this to let SDK know you've attempted to show the {@link com.sensorberg.sdk.action.Action} to the user.
      * This is for situations when you are not certain if user have seen the Action,
      * like showing notification on the status bar.
+     *
      * @param actionUUID UUID of the {@link com.sensorberg.sdk.action.Action} that was attempted to be shown.
-     * @param context Caller's context.
+     * @param context    Caller's context.
      */
     public static void notifyActionShowAttempt(UUID actionUUID, Context context) {
         Intent intent = SensorbergServiceIntents.getConversionIntent(context, actionUUID, ActionConversion.TYPE_IGNORED);
@@ -233,8 +239,9 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
     /**
      * Call this to let SDK know you've confirmed that user has seen the {@link com.sensorberg.sdk.action.Action} and acted on it.
      * This is for situation where e.g. user tapped the notification and was redirected to website.
+     *
      * @param actionUUID UUID of the {@link com.sensorberg.sdk.action.Action} that user has seen and acted on.
-     * @param context Caller's context.
+     * @param context    Caller's context.
      */
     public static void notifyActionSuccess(UUID actionUUID, Context context) {
         Intent intent = SensorbergServiceIntents.getConversionIntent(context, actionUUID, ActionConversion.TYPE_SUCCESS);
@@ -245,8 +252,9 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
      * Call this to let SDK know the user haven't seen and will not be able to see the {@link com.sensorberg.sdk.action.Action} in future.
      * This is for situations where e.g. the notification with action is dismissed by the user and you won't show this action to the user again.
      * Calling this after {@link #notifyActionSuccess(UUID, Context) notifyActionSuccess} has no effect.
+     *
      * @param actionUUID UUID of the {@link com.sensorberg.sdk.action.Action} that user haven't seen and will not see in the future.
-     * @param context Caller's context.
+     * @param context    Caller's context.
      */
     protected static void notifyActionRejected(UUID actionUUID, Context context) {
         //TODO This is just a stub in case we want to change conversion type based on user dismissing the notification in the future.
@@ -258,6 +266,7 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
      * Pass here key-values params that are used for message targeting.
      * Valid key and values are limited to alphanumerical characters and underscore (_).
      * To clear the list pass null.
+     *
      * @param attributes Map of attributes that will be passed.
      * @throws IllegalArgumentException if invalid key/value was passed.
      */
