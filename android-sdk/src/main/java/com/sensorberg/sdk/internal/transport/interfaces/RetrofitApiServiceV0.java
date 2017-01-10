@@ -18,7 +18,7 @@ public interface RetrofitApiServiceV0 {
 
     @GET("/layout")
     @Headers("Cache-Control: max-age=0")
-    Call<BaseResolveResponse> updateBeaconLayout();
+    Call<ResolveResponse> updateBeaconLayout();
 
     @GET("/layout")
     Call<ResolveResponse> getBeacon(@Header("X-pid") String beaconId, @Header("X-qos") String networkInfo);

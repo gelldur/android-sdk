@@ -36,9 +36,9 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
 
     private static final long NEVER_STOPPED = 0L;
 
-    protected long waitTime = DefaultSettings.DEFAULT_BACKGROUND_WAIT_TIME;
+    long waitTime;
 
-    protected long scanTime = DefaultSettings.DEFAULT_BACKGROUND_SCAN_TIME;
+    long scanTime;
 
     private final SettingsManager settingsManager;
 
@@ -91,9 +91,11 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
         File beaconFile = shouldRestoreBeaconStates ? fileManager.getFile("enteredBeaconsCache") : null;
         enteredBeacons = new BeaconMap(fileManager, beaconFile);
 
+        waitTime = settingsManager.getBackgroundWaitTime();
+        scanTime = settingsManager.getBackgroundScanTime();
+
         SensorbergSdk.getComponent().inject(this);
     }
-
 
     /**
      * Adds a {@link ScannerListener} to the {@link List} of {@link ScannerListener}s.

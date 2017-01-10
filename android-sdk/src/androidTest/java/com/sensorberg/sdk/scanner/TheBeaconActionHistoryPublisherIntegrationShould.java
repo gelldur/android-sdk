@@ -9,9 +9,7 @@ import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
 import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
-import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback;
 import com.sensorberg.sdk.internal.transport.model.HistoryBody;
-import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.sdk.settings.SettingsManager;
 
 import org.junit.Before;
@@ -21,8 +19,6 @@ import org.mockito.Mockito;
 
 import android.content.SharedPreferences;
 import android.support.test.runner.AndroidJUnit4;
-
-import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -38,7 +34,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static util.Verfier.hasSize;
 
 @RunWith(AndroidJUnit4.class)
 public class TheBeaconActionHistoryPublisherIntegrationShould {
@@ -72,7 +67,7 @@ public class TheBeaconActionHistoryPublisherIntegrationShould {
     public void setUp() throws Exception {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
-        testTransportWithMockService = new RetrofitApiTransport(mockRetrofitApiService, clock);
+        testTransportWithMockService = new RetrofitApiTransport(mockRetrofitApiService, clock, sharedPreferences, gson);
         tested = new BeaconActionHistoryPublisher(testTransportWithMockService, clock,
                 testHandlerManager, sharedPreferences, gson);
     }

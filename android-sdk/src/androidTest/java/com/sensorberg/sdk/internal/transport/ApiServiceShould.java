@@ -13,6 +13,7 @@ import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
 import com.sensorberg.sdk.model.server.BaseResolveResponse;
+import com.sensorberg.sdk.model.server.ResolveResponse;
 
 import org.fest.assertions.api.Assertions;
 import org.junit.After;
@@ -83,8 +84,8 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(null);
-        Response<BaseResolveResponse> response = call.execute();
+        Call<ResolveResponse> call = realRetrofitApiService.updateBeaconLayout(null);
+        Response<ResolveResponse> response = call.execute();
 
         Assertions.assertThat(response.raw().request().headers()).isNotNull();
         Assertions.assertThat(response.raw().request().headers().get(Transport.HEADER_USER_AGENT))
@@ -97,10 +98,10 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(null);
+        Call<ResolveResponse> call = realRetrofitApiService.updateBeaconLayout(null);
 
         Assertions.assertThat(realPlatformIdentifier.getAdvertiserIdentifier()).isNull();
-        Response<BaseResolveResponse> responseWithAdvertiserId = call.clone().execute();
+        Response<ResolveResponse> responseWithAdvertiserId = call.clone().execute();
 
         Assertions.assertThat(responseWithAdvertiserId.raw().request().headers().get(Transport.HEADER_ADVERTISER_IDENTIFIER))
                 .isEqualTo(realPlatformIdentifier.getAdvertiserIdentifier());
@@ -112,12 +113,12 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(null);
+        Call<ResolveResponse> call = realRetrofitApiService.updateBeaconLayout(null);
         realPlatformIdentifier.setAdvertisingIdentifier("TEST_ADID");
 
         Assertions.assertThat(realPlatformIdentifier.getAdvertiserIdentifier()).isNotNull();
         Assertions.assertThat(realPlatformIdentifier.getAdvertiserIdentifier()).isEqualToIgnoringCase("TEST_ADID");
-        Response<BaseResolveResponse> responseWithAdvertiserId = call.clone().execute();
+        Response<ResolveResponse> responseWithAdvertiserId = call.clone().execute();
 
         Assertions.assertThat(responseWithAdvertiserId.raw().request().headers().get(Transport.HEADER_ADVERTISER_IDENTIFIER))
                 .isEqualTo(realPlatformIdentifier.getAdvertiserIdentifier());
@@ -129,8 +130,8 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(null);
-        Response<BaseResolveResponse> response = call.execute();
+        Call<ResolveResponse> call = realRetrofitApiService.updateBeaconLayout(null);
+        Response<ResolveResponse> response = call.execute();
 
         Assertions.assertThat(response.raw().request().headers()).isNotNull();
         Assertions.assertThat(response.raw().request().headers().get(Transport.HEADER_INSTALLATION_IDENTIFIER))
@@ -143,8 +144,8 @@ public class ApiServiceShould {
                 InstrumentationRegistry.getContext().getResources().openRawResource(com.sensorberg.sdk.test.R.raw.response_raw_layout_etag_001));
         server.enqueue(successfulCachedSettingsMockResponse);
 
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(null);
-        Response<BaseResolveResponse> response = call.execute();
+        Call<ResolveResponse> call = realRetrofitApiService.updateBeaconLayout(null);
+        Response<ResolveResponse> response = call.execute();
 
         Assertions.assertThat(response.raw().request().headers()).isNotNull();
         Assertions.assertThat(response.raw().request().headers().get(Transport.HEADER_XAPIKEY))
@@ -176,7 +177,7 @@ public class ApiServiceShould {
         attributes.put("a_param", "value_2");
         attributes.put("b_param", "value_3");
         attributes.put("param_B", "value_4");
-        Call<BaseResolveResponse> call = realRetrofitApiService.updateBeaconLayout(attributes);
+        Call<ResolveResponse> call = realRetrofitApiService.updateBeaconLayout(attributes);
         String url = call.request().url().query();
         assertEquals("User params are not appended or not in order", url, "a_param=value_2&b_param=value_3&param_A=value_1&param_B=value_4");
     }
