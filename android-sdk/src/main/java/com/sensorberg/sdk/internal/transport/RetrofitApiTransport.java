@@ -103,7 +103,7 @@ public class RetrofitApiTransport implements Transport {
                     public void onResponse(Call<ResolveResponse> call, Response<ResolveResponse> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             save(response.body());
-                            onSuccess(response.body());
+                            onSuccess(response.body(), !"true".equals(response.headers().get("is304")));
                         } else {
                             onFail(new Throwable("No Content, Invalid Api Key"));
                         }
@@ -114,10 +114,10 @@ public class RetrofitApiTransport implements Transport {
                         onFail(t);
                     }
 
-                    void onSuccess(ResolveResponse resolveResponse) {
+                    void onSuccess(ResolveResponse resolveResponse, boolean changed) {
                         List<BeaconEvent> beaconEvents = checkSuccessfulBeaconResponse(scanEvent, resolveResponse);
                         beaconResponseHandler.onSuccess(beaconEvents);
-                        checkShouldCallBeaconResponseHandlers(resolveResponse);
+                        checkShouldCallBeaconResponseHandlers(resolveResponse, changed);
                     }
 
                     void onFail(Throwable t) {
@@ -125,15 +125,15 @@ public class RetrofitApiTransport implements Transport {
                             beaconResponseHandler.onFailure(t);
                         } else {
                             Logger.log.logError("resolution failed, but we have a backup:" + scanEvent.getBeaconId().toTraditionalString(), t);
-                            onSuccess(lastSuccess);
+                            onSuccess(lastSuccess, false);
                         }
                     }
 
                 });
     }
 
-    private void checkShouldCallBeaconResponseHandlers(ResolveResponse successfulResponse) {
-        mProximityUUIDUpdateHandler.proximityUUIDListUpdated(successfulResponse.getAccountProximityUUIDs());
+    private void checkShouldCallBeaconResponseHandlers(ResolveResponse successfulResponse, boolean changed) {
+        mProximityUUIDUpdateHandler.proximityUUIDListUpdated(successfulResponse.getAccountProximityUUIDs(), changed);
 
         if (successfulResponse.reportTriggerSeconds != null) {
             beaconHistoryUploadIntervalListener
@@ -243,7 +243,7 @@ public class RetrofitApiTransport implements Transport {
                     public void onResponse(Call<ResolveResponse> call, Response<ResolveResponse> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             save(response.body());
-                            onSuccess(response.body());
+                            onSuccess(response.body(), !"true".equals(response.headers().get("is304")));
                         } else {
                             onFail(new Exception("Failed to updateBeaconLayout. Response body is empty"));
                         }
@@ -254,17 +254,17 @@ public class RetrofitApiTransport implements Transport {
                         onFail(t);
                     }
 
-                    void onSuccess(ResolveResponse resolveResponse) {
-                        mProximityUUIDUpdateHandler.proximityUUIDListUpdated(resolveResponse.getAccountProximityUUIDs());
+                    void onSuccess(ResolveResponse resolveResponse, boolean changed) {
+                        mProximityUUIDUpdateHandler.proximityUUIDListUpdated(resolveResponse.getAccountProximityUUIDs(), changed);
                     }
 
                     void onFail(Throwable t) {
                         if (lastSuccess == null) {
                             Logger.log.logError("UpdateBeaconLayout failed", t);
-                            mProximityUUIDUpdateHandler.proximityUUIDListUpdated(Collections.EMPTY_LIST);
+                            mProximityUUIDUpdateHandler.proximityUUIDListUpdated(Collections.EMPTY_LIST, true);
                         } else {
                             Logger.log.logError("UpdateBeaconLayout failed, but we have a backup", t);
-                            onSuccess(lastSuccess);
+                            onSuccess(lastSuccess, false);
                         }
                     }
 

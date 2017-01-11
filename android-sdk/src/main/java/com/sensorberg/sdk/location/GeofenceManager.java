@@ -20,19 +20,25 @@ import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.sensorberg.sdk.Constants;
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.internal.PermissionChecker;
+import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.settings.TimeConstants;
 
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 
 import lombok.Setter;
 
 public class GeofenceManager implements LocationHelper.LocationStateListener,
-        GoogleApiClient.ConnectionCallbacks, LocationListener {
+        GoogleApiClient.ConnectionCallbacks, LocationListener, GeofenceListener {
 
     private static final int FACTOR = 3;
 
@@ -45,13 +51,13 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
     private GeofenceReceiver receiver;
     private PlayServiceManager play;
 
+    private List<GeofenceListener> listeners = new ArrayList<>();
+
+    private HashSet<String> entered;
+
     private Location previous;
     private boolean updating = false;
     @Setter private boolean registred = true;
-
-    public interface GeofenceListener {
-        void onGeofenceEvent(GeofenceData geofenceData, boolean entry);
-    }
 
     public GeofenceManager(Context context, SharedPreferences preferences, Gson gson,
                            PermissionChecker checker, LocationHelper location) {
@@ -60,6 +66,7 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
         this.location = location;
         this.preferences = preferences;
         this.gson = gson;
+        entered = loadEntered();
         receiver = new GeofenceReceiver(context, this);
         storage = new GeofenceStorage(context, preferences);
         //This will callback asynchronously when service is connected.
@@ -76,6 +83,7 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
         registred = false;
         int count = storage.getCount();
         storage.updateFences(fences);
+        //TODO play not connected, incoming is 0, saved is 0 then return?
         if (!play.isConnected() && count == 0 && !fences.isEmpty()) {
             //Enabling geofencing
             play.connect();
@@ -108,6 +116,10 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
             registred = false;
             Logger.log.geofence("Update triggered by location change " + incoming);
             updateRegistredGeofences(incoming);
+        } else if (!registred) {
+            Location location = getLocation();
+            Logger.log.geofence("Update triggered by location change (retry) " + location);
+            updateRegistredGeofences(location);
         }
     }
 
@@ -165,34 +177,36 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
     }
 
     private void registerGeofences(final Location location) {
-        final GeofencingRequest request = getGeofencingRequest(location);
-        if (request == null) {
+        final List<GeofencingRequest> requests = getGeofencingRequests(location);
+        if (requests.isEmpty()) {
             onGeofencesRemoved(location);
             return;
         }
         try {
-            LocationServices.GeofencingApi
-                    .addGeofences(play.getClient(), request, getPendingIntent())
-                    .setResultCallback(new ResultCallback<Status>() {
-                        @Override
-                        public void onResult(@NonNull Status status) {
-                            if (status.isSuccess()) {
-                                onGeofencesAdded(location, request.getGeofences());
-                            } else {
-                                onGeofencesFailed(null, status.getStatusCode());
+            for (final GeofencingRequest request : requests) {
+                LocationServices.GeofencingApi
+                        .addGeofences(play.getClient(), request, getPendingIntent())
+                        .setResultCallback(new ResultCallback<Status>() {
+                            @Override
+                            public void onResult(@NonNull Status status) {
+                                if (status.isSuccess()) {
+                                    onGeofencesAdded(location, request.getGeofences(), request.getInitialTrigger());
+                                } else {
+                                    onGeofencesFailed(null, status.getStatusCode());
+                                }
                             }
-                        }
-                    });
+                        });
+            }
         } catch (SecurityException ex) {
             onGeofencesFailed(ex, 0);
         }
     }
 
-    private void onGeofencesAdded(Location location, List<Geofence> geofences) {
+    private void onGeofencesAdded(Location location, List<Geofence> geofences, int initialTrigger) {
         registred = true;
         updating = false;
         previous = location;
-        Logger.log.geofence("Successfully added " + geofences.size() + " geofences");
+        Logger.log.geofence("Successfully added " + geofences.size() + " geofences, initial trigger: "+initialTrigger);
         requestLocationUpdates();
     }
 
@@ -200,7 +214,7 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
         registred = true;
         updating = false;
         previous = location;
-        Logger.log.geofence("No geofences to add");
+        Logger.log.geofence("No geofences around, disconnecting from Play Service, at: "+location);
         removeLocationUpdates();
         play.disconnect();
     }
@@ -214,21 +228,68 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
         }
     }
 
-    private GeofencingRequest getGeofencingRequest(Location location) {
-        try {
-            GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
-            builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
-            List<Geofence> geofences = storage.getGeofences(location);
-            if (geofences.size() > 0) {
-                builder.addGeofences(geofences);
+
+    @Override
+    public void onGeofenceEvent(GeofenceData geofenceData, boolean entry) {
+        if (entry) {
+            if (entered.contains(geofenceData.getFence())) {
+                Logger.log.geofence("Duplicate entry, skipping geofence: "+geofenceData.getFence());
+                return;
             } else {
-                return null;
+                entered.add(geofenceData.getFence());
+                save(entered);
             }
-            return builder.build();
+        } else {
+            if (!entered.contains(geofenceData.getFence())) {
+                Logger.log.geofence("Duplicate exit, skipping geofence: "+geofenceData.getFence());
+                return;
+            } else {
+                entered.remove(geofenceData.getFence());
+                save(entered);
+            }
+        }
+        notifyListeners(geofenceData, entry);
+    }
+
+    private List<GeofencingRequest> getGeofencingRequests(Location location) {
+        List<GeofencingRequest> result = new ArrayList<>(2);
+        try {
+            HashMap<String, Geofence> triggerEnter = storage.getGeofences(location);
+            HashMap<String, Geofence> triggerExit = new HashMap<>();
+            //Move geofences we're inside to saved set of geofences which will be triggered when registered outside of geofence
+            Iterator<String> iterator = entered.iterator();
+            while (iterator.hasNext()) {
+                String inside = iterator.next();
+                Geofence temp = triggerEnter.get(inside);
+                if (temp != null) {
+                    triggerEnter.remove(inside);
+                    triggerExit.put(inside, temp);
+                } else {
+                    //Cleanup entered geofence if it's not anymore in range
+                    iterator.remove();
+                    //It's because of either:
+                    // - Device moving far enough from this geofence with location disabled, so it's not listed in 100 nearest
+                    // - Removing this geofence from layout
+                    Logger.log.geofenceError("Exit event for "+inside+" not triggered, probably not relevant anymore", null);
+                }
+            }
+            save(entered);
+            if (triggerEnter.size() > 0) {
+                GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
+                builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
+                builder.addGeofences(new ArrayList<>(triggerEnter.values()));
+                result.add(builder.build());
+            }
+            if (triggerExit.size() > 0) {
+                GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
+                builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_EXIT);
+                builder.addGeofences(new ArrayList<>(triggerExit.values()));
+                result.add(builder.build());
+            }
         } catch (SQLException ex) {
             Logger.log.geofenceError("Can't build geofencing reqest", ex);
-            return null;
         }
+        return result;
     }
 
     private PendingIntent getPendingIntent() {
@@ -275,11 +336,11 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
     }
 
     private void storeLastKnownNonNullLocation(Location location) {
-        LocationStorage.save(gson, preferences, Constants.SharedPreferencesKeys.LAST_KNOWN_LOCATION, location);
+        LocationStorage.save(gson, preferences, Constants.SharedPreferencesKeys.Location.LAST_KNOWN_LOCATION, location);
     }
 
     private Location restoreLastKnownLocation() {
-        return LocationStorage.load(gson, preferences, Constants.SharedPreferencesKeys.LAST_KNOWN_LOCATION);
+        return LocationStorage.load(gson, preferences, Constants.SharedPreferencesKeys.Location.LAST_KNOWN_LOCATION);
     }
 
     public void onLocationPermissionGranted () {
@@ -293,12 +354,51 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
         //Nothing. Google Play Services should reconnect automatically.
     }
 
-    public void addListener(GeofenceManager.GeofenceListener listener) {
-        receiver.addListener(listener);
+    public void addListener(GeofenceListener listener) {
+        for (GeofenceListener previous : listeners) {
+            if(previous == listener) {
+                return;
+            }
+        }
+        if (listeners.size() == 0) {
+            receiver.addListener(this);
+        }
+        listeners.add(listener);
     }
 
-    public void removeListener(GeofenceManager.GeofenceListener listener) {
-        receiver.removeListener(listener);
+    public void removeListener(GeofenceListener listener) {
+        Iterator<GeofenceListener> iterator = listeners.iterator();
+        while (iterator.hasNext()) {
+            GeofenceListener existing = iterator.next();
+            if(existing == listener) {
+                iterator.remove();
+                if (listeners.size() == 0) {
+                    receiver.removeListener(this);
+                }
+                return;
+            }
+        }
+    }
+
+    private void notifyListeners(GeofenceData geofenceData, boolean entry) {
+        for (GeofenceListener listener : listeners) {
+            listener.onGeofenceEvent(geofenceData, entry);
+        }
+    }
+
+    public void save(HashSet<String> entered) {
+        String key = Constants.SharedPreferencesKeys.Location.ENTERED_GEOFENCES_SET;
+        preferences.edit().putString(key, gson.toJson(entered)).apply();
+    }
+
+    public HashSet<String> loadEntered() {
+        String key = Constants.SharedPreferencesKeys.Location.ENTERED_GEOFENCES_SET;
+        String json = preferences.getString(key, null);
+        if (json == null || json.isEmpty()) {
+            return new HashSet<>();
+        }
+        Type type = new TypeToken<HashMap<String, ActionConversion>>() {}.getType();
+        return gson.fromJson(json, type);
     }
 }
 

@@ -21,7 +21,7 @@ public class GeofenceReceiver extends BroadcastReceiver {
     private Context context;
     private GeofenceManager manager;
 
-    private List<GeofenceManager.GeofenceListener> listeners = new ArrayList<>();
+    private List<GeofenceListener> listeners = new ArrayList<>();
 
     public GeofenceReceiver(Context context, GeofenceManager manager) {
         this.context = context;
@@ -47,6 +47,8 @@ public class GeofenceReceiver extends BroadcastReceiver {
             List<GeofenceData> geofenceDatas = GeofenceData.from(event);
             boolean entry = event.getGeofenceTransition() == Geofence.GEOFENCE_TRANSITION_ENTER;
             for (GeofenceData geofenceData : geofenceDatas) {
+                Logger.log.geofence("Received "+ (entry ? "entry" : "exit") +
+                        " event "+geofenceData.getGeohash() + ", radius "+geofenceData.getRadius());
                 notifyListeners(geofenceData, entry);
             }
         } catch (IllegalArgumentException ex) {
@@ -54,8 +56,8 @@ public class GeofenceReceiver extends BroadcastReceiver {
         }
     }
 
-    public void addListener(GeofenceManager.GeofenceListener listener) {
-        for (GeofenceManager.GeofenceListener previous : listeners) {
+    public void addListener(GeofenceListener listener) {
+        for (GeofenceListener previous : listeners) {
             if(previous == listener) {
                 return;
             }
@@ -66,10 +68,10 @@ public class GeofenceReceiver extends BroadcastReceiver {
         listeners.add(listener);
     }
 
-    public void removeListener(GeofenceManager.GeofenceListener listener) {
-        Iterator<GeofenceManager.GeofenceListener> iterator = listeners.iterator();
+    public void removeListener(GeofenceListener listener) {
+        Iterator<GeofenceListener> iterator = listeners.iterator();
         while (iterator.hasNext()) {
-            GeofenceManager.GeofenceListener existing = iterator.next();
+            GeofenceListener existing = iterator.next();
             if(existing == listener) {
                 iterator.remove();
                 if (listeners.size() == 0) {
@@ -87,7 +89,7 @@ public class GeofenceReceiver extends BroadcastReceiver {
     }
 
     private void notifyListeners(GeofenceData geofenceData, boolean entry) {
-        for (GeofenceManager.GeofenceListener listener : listeners) {
+        for (GeofenceListener listener : listeners) {
             listener.onGeofenceEvent(geofenceData, entry);
         }
     }

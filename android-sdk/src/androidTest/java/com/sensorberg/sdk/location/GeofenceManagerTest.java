@@ -14,7 +14,7 @@ import javax.inject.Inject;
 import static org.junit.Assert.fail;
 
 @RunWith(AndroidJUnit4.class)
-public class GeofenceManagerTest implements GeofenceManager.GeofenceListener {
+public class GeofenceManagerTest implements GeofenceListener {
 
     @Inject protected GeofenceManager tested;
 

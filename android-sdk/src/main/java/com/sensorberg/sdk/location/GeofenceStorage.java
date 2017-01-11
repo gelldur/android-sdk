@@ -15,6 +15,7 @@ import com.sensorberg.sdk.settings.DefaultSettings;
 import com.sensorberg.sdk.storage.DBHelper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import ch.hsr.geohash.GeoHash;
@@ -37,23 +38,12 @@ public class GeofenceStorage {
     public GeofenceStorage(Context context, SharedPreferences preferences) {
         this.preferences = preferences;
         radius = preferences.getInt(
-                Constants.SharedPreferencesKeys.INITIAL_GEOFENCES_SEARCH_RADIUS,
+                Constants.SharedPreferencesKeys.Location.INITIAL_GEOFENCES_SEARCH_RADIUS,
                 DefaultSettings.DEFAULT_INITIAL_GEOFENCES_SEARCH_RADIUS);
         db = DBHelper.getInstance(context).getReadableDatabase();
     }
 
     public void updateFences(List<String> fences) {
-
-        fences = new ArrayList<>();
-        if (getCount() == 0) {
-            GeoHashSource source = new GeoHashSource();
-            for (int i = 0; i < 1000; i++) {
-                fences.add(source.randomFence());
-            }
-        } else {
-            return;
-        }
-
         SQLiteStatement stmt = null;
         try {
             long start = System.currentTimeMillis();
@@ -84,11 +74,11 @@ public class GeofenceStorage {
      * @param location Location. When null it returns up to HIGH random geofences.
      * @return List of geofences as requested. Always less than HIGH.
      */
-    public List<Geofence> getGeofences(Location location) throws SQLException {
+    public HashMap<String, Geofence> getGeofences(Location location) throws SQLException {
         int count = getCount();
         if (count == 0) {
             //No geofences, return empty array.
-            return new ArrayList<>(0);
+            return new HashMap<>(0);
         } else if (count < HIGH || location == null) {
             //We're below HIGH (or location is unknown), register up to HIGH geofences.
             String sql = "SELECT " + DBHelper.TG_FENCE + " FROM " + DBHelper.TABLE_GEOFENCES + " LIMIT " + HIGH;
@@ -104,7 +94,7 @@ public class GeofenceStorage {
             long start = System.currentTimeMillis();
             WGS84Point center = new WGS84Point(location.getLatitude(), location.getLongitude());
             radius = preferences.getInt(
-                    Constants.SharedPreferencesKeys.INITIAL_GEOFENCES_SEARCH_RADIUS,
+                    Constants.SharedPreferencesKeys.Location.INITIAL_GEOFENCES_SEARCH_RADIUS,
                     DefaultSettings.DEFAULT_INITIAL_GEOFENCES_SEARCH_RADIUS);
             Cursor cursor = null;
             try {
@@ -161,7 +151,7 @@ public class GeofenceStorage {
                 }
                 Logger.log.geofence("Found " + result.getCount() + " by reducing radius to " + radius + " m");
                 preferences.edit().putInt(
-                        Constants.SharedPreferencesKeys.INITIAL_GEOFENCES_SEARCH_RADIUS, radius).apply();
+                        Constants.SharedPreferencesKeys.Location.INITIAL_GEOFENCES_SEARCH_RADIUS, radius).apply();
                 this.radius = radius;
                 break;
             }
@@ -213,7 +203,7 @@ public class GeofenceStorage {
                 }
                 Logger.log.geofence("Found: " + result.getCount() + " by extending radius to " + radius + " m");
                 preferences.edit().putInt(
-                        Constants.SharedPreferencesKeys.INITIAL_GEOFENCES_SEARCH_RADIUS, radius).apply();
+                        Constants.SharedPreferencesKeys.Location.INITIAL_GEOFENCES_SEARCH_RADIUS, radius).apply();
                 this.radius = radius;
                 break;
             }
@@ -248,16 +238,17 @@ public class GeofenceStorage {
         return result;
     }
 
-    private List<Geofence> getGeofencesFromCursor(Cursor cursor, int limit) {
-        List<Geofence> result = new ArrayList<>(limit);
+    private HashMap<String, Geofence> getGeofencesFromCursor(Cursor cursor, int limit) {
+        HashMap<String, Geofence> result = new HashMap<>(limit);
         Geofence geofence;
         int i = 0;
         while (cursor.moveToNext()) {
             i++;
             if (i <= HIGH) {
-                geofence = buildGeofence(cursor.getString(0));
+                String fence = cursor.getString(0);
+                geofence = buildGeofence(fence);
                 if (geofence != null) {
-                    result.add(geofence);
+                    result.put(fence, geofence);
                 }
             } else {
                 Logger.log.geofenceError("Over " + HIGH + " found in cursor", null);

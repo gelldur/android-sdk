@@ -21,6 +21,7 @@ import com.sensorberg.sdk.internal.interfaces.MessageDelayWindowLengthListener;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.location.GeofenceData;
+import com.sensorberg.sdk.location.GeofenceListener;
 import com.sensorberg.sdk.location.GeofenceManager;
 import com.sensorberg.sdk.location.LocationHelper;
 import com.sensorberg.sdk.model.BeaconId;
@@ -59,7 +60,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 public class InternalApplicationBootstrapper extends MinimalBootstrapper implements ScannerListener,
-        SyncStatusObserver, Transport.ProximityUUIDUpdateHandler, GeofenceManager.GeofenceListener {
+        SyncStatusObserver, Transport.ProximityUUIDUpdateHandler, GeofenceListener {
 
     private static final boolean SURVIVE_REBOOT = true;
 
@@ -82,8 +83,6 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     protected SensorbergService.MessengerList presentationDelegate;
 
     protected final Set<String> proximityUUIDs = new HashSet<>();
-
-    protected final Set<String> fences = new HashSet<>();
 
     protected SortedMap<String, String> attributes;
 
@@ -188,7 +187,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
                 contained = proximityUUIDs.isEmpty()
                         || proximityUUIDs.contains(scanEvent.getBeaconId().getProximityUUIDWithoutDashes());
             } else {
-                contained = fences.contains(scanEvent.getBeaconId().getGeofenceData().getFence());
+                contained = true;
             }
         }
         if (contained) {
@@ -376,23 +375,30 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     }
 
     @Override
-    public void proximityUUIDListUpdated(List<String> proximityUUIDs) {
+    public void proximityUUIDListUpdated(List<String> proximityUUIDs, boolean changed) {
         synchronized (proximityUUIDsMonitor) {
             this.proximityUUIDs.clear();
-            this.fences.clear();
+            List<String> fences = null;
+            if (changed) {
+                fences = new ArrayList<>();
+            }
             for (String proximityUUID : proximityUUIDs) {
                 if (proximityUUID.length() == 32) {
                     this.proximityUUIDs.add(proximityUUID.toLowerCase());
                 } else if (proximityUUID.length() == 14) {
-                    this.fences.add(proximityUUID.toLowerCase());
+                    if (changed) {
+                        fences.add(proximityUUID.toLowerCase());
+                    }
                 } else {
                     Logger.log.logError("Invalid proximityUUID: "+proximityUUID);
                 }
             }
-            try {
-                geofenceManager.updateFences(new ArrayList<>(fences));
-            } catch (IllegalArgumentException ex) {
-                Logger.log.logError(ex.getMessage(), ex);
+            if (changed) {
+                try {
+                    geofenceManager.updateFences(fences);
+                } catch (IllegalArgumentException ex) {
+                    Logger.log.logError(ex.getMessage(), ex);
+                }
             }
         }
     }

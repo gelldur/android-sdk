@@ -14,6 +14,7 @@ import com.sensorberg.utils.Objects;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +24,7 @@ import okhttp3.Headers;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -118,6 +120,15 @@ public class RetrofitApiServiceImpl {
                 HttpLoggingInterceptor.Level.BODY :
                 HttpLoggingInterceptor.Level.NONE);
         okClientBuilder.addInterceptor(httpLoggingInterceptor);
+        okClientBuilder.addNetworkInterceptor(new Interceptor() {
+            @Override
+            public Response intercept(Chain chain) throws IOException {
+                Response response = chain.proceed(chain.request());
+                return response.newBuilder()
+                        .addHeader("is304", String.valueOf(response.code() == HttpURLConnection.HTTP_NOT_MODIFIED))
+                        .build();
+            }
+        });
 
         okClientBuilder.retryOnConnectionFailure(true);
 
