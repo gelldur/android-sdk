@@ -57,6 +57,6 @@ public class GeofenceManagerTest implements GeofenceListener {
 
     @Override
     public void onLocationChanged(Location location) {
-
+        fail();
     }
 }

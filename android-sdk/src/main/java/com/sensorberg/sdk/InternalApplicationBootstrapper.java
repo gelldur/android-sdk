@@ -118,7 +118,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
         SensorbergSdk.getComponent().inject(this);
 
         this.transport = transport;
-        this.transport.setProximityUUIDUpdateHandler(this);
+        transport.setProximityUUIDUpdateHandler(this);
 
         geofenceManager.addListener(this);
 

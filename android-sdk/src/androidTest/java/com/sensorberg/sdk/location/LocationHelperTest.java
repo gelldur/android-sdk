@@ -1,12 +1,10 @@
 package com.sensorberg.sdk.location;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.google.gson.Gson;
 import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.settings.SettingsManager;
@@ -42,15 +40,6 @@ public class LocationHelperTest {
 
     @Inject
     protected Context context;
-
-    @Inject
-    protected Gson gson;
-
-    @Inject
-    protected SharedPreferences prefs;
-
-    @Inject
-    protected PlayServiceManager play;
 
     @Before
     public void setUp() throws Exception {

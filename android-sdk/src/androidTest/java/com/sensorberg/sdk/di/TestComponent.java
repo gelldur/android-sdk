@@ -125,7 +125,7 @@ public interface TestComponent extends Component {
 
     void inject(LocationHelperTest locationHelperTest);
 
-    void inject(GeofenceStorageTest locationHelperTest);
+    void inject(GeofenceStorageTest geofenceStorageTest);
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     final class Initializer {
