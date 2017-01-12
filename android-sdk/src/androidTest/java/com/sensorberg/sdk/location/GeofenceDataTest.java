@@ -30,23 +30,23 @@ public class GeofenceDataTest {
     public void shouldThrowInvalidArgument() {
         try {
             String test = null;
-            new GeofenceData(test);
+            new GeofenceData(test, false);
         } catch (IllegalArgumentException ex) { }
         try {
-            new GeofenceData("");
+            new GeofenceData("", false);
             fail("Invalid geofence, exception should be thrown");
         } catch (IllegalArgumentException ex) { }
         try {
-            new GeofenceData("bbccddeef001122");
+            new GeofenceData("bbccddeef001122", false);
             fail("Invalid geofence, exception should be thrown");
         } catch (IllegalArgumentException ex) { }
         try {
-            new GeofenceData("ccddeeff0022333");
+            new GeofenceData("ccddeeff0022333", false);
             fail("Invalid geofence, exception should be thrown");
         } catch (IllegalArgumentException ex) { }
         assertTrue(true);
         try {
-            new GeofenceData("ccddeeff000000");
+            new GeofenceData("ccddeeff000000", false);
             fail("Invalid geofence, exception should be thrown");
         } catch (IllegalArgumentException ex) { }
         assertTrue(true);
@@ -58,14 +58,14 @@ public class GeofenceDataTest {
         String fence;
         try {
             fence = "s252w7m5999999";
-            data = new GeofenceData(fence);
+            data = new GeofenceData(fence, false);
             assertTrue(data.getFence().equals(fence));
             assertEquals(data.getLatitude(), 0.106, 0.0005);
             assertEquals(data.getLongitude(), 16.102, 0.0005);
             assertEquals(data.getRadius(), 999999);
 
             fence = "gnzgf2b9000001";
-            data = new GeofenceData(fence);
+            data = new GeofenceData(fence, false);
             assertTrue(data.getFence().equals(fence));
             assertEquals(data.getLatitude(), 83.632, 0.0005);
             assertEquals(data.getLongitude(), -34.002, 0.0005);

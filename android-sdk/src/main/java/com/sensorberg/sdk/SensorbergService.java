@@ -351,6 +351,7 @@ public class SensorbergService extends Service {
                     bootstrapper.stopScanning();
                 } else {
                     bootstrapper.startScanning();
+                    bootstrapper.startGeofences();
                     Logger.log.debug("Location Permission. Scanner should start");
                 }
             }

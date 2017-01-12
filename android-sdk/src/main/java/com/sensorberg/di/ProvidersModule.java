@@ -29,7 +29,7 @@ import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
 import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.location.GeofenceManager;
-import com.sensorberg.sdk.location.LocationSource;
+import com.sensorberg.sdk.location.LocationHelper;
 import com.sensorberg.sdk.location.PlayServiceManager;
 import com.sensorberg.sdk.model.ISO8601TypeAdapter;
 import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
@@ -81,16 +81,15 @@ public class ProvidersModule {
 
     @Provides
     @Singleton
-    public LocationSource provideLocationSource(Context context, LocationManager locationManager,
-                                                @Named("realSettingsManager") SettingsManager settingsManager,
-                                                Gson gson, SharedPreferences prefs, PlayServiceManager play) {
-        return new LocationSource(context, locationManager, settingsManager, gson, prefs, play);
+    public LocationHelper provideLocationHelper(Context context, LocationManager locationManager,
+                                                @Named("realSettingsManager") SettingsManager settingsManager) {
+        return new LocationHelper(context, locationManager, settingsManager);
     }
 
     @Provides
     @Singleton
-    public PlayServiceManager providePlayServiceManager(Context context, LocationManager manager, PermissionChecker checker) {
-        return new PlayServiceManager(context, manager, checker);
+    public PlayServiceManager providePlayServiceManager(Context context, LocationHelper location, PermissionChecker checker) {
+        return new PlayServiceManager(context, location, checker);
     }
 
     @Provides
@@ -205,7 +204,7 @@ public class ProvidersModule {
     @Provides
     @Singleton
     public GeofenceManager provideGeofenceManager(Context context, SharedPreferences preferences,
-                                                  Gson gson, LocationSource locationSource, PlayServiceManager play) {
-        return new GeofenceManager(context, preferences, gson, locationSource, play);
+                                                  Gson gson, LocationHelper locationHelper, PlayServiceManager play) {
+        return new GeofenceManager(context, preferences, gson, locationHelper, play);
     }
 }

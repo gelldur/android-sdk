@@ -43,7 +43,7 @@ public class GeofenceStorageTest {
         List<String> fences = new ArrayList<>(2);
         fences.add("bbccddee001122");
         fences.add("ccddeeff002233");
-        tested.updateFences(fences);
+        tested.onFencesChanged(fences);
         tested = null;
 
         tested = new GeofenceStorage(context, preferences);
@@ -70,7 +70,7 @@ public class GeofenceStorageTest {
         fences.add("aAsdve060341cadasdsd23091230");
         fences.add("ccddeeffd02233");
 
-        tested.updateFences(fences);
+        tested.onFencesChanged(fences);
         tested = null;
 
         tested = new GeofenceStorage(context, preferences);
@@ -91,7 +91,7 @@ public class GeofenceStorageTest {
         List<String> fences = new ArrayList<>(2);
         fences.add("bbccddee001122");   //good
         fences.add("ccddeeff002233");   //good
-        tested.updateFences(fences);
+        tested.onFencesChanged(fences);
 
         //Make sure they're written
         tested = null;
@@ -101,7 +101,7 @@ public class GeofenceStorageTest {
 
         //Remove them
         fences.clear();
-        tested.updateFences(fences);
+        tested.onFencesChanged(fences);
 
         //Make sure they're removed
         tested = null;
@@ -116,7 +116,7 @@ public class GeofenceStorageTest {
         List<String> fences = new ArrayList<>(2);
         fences.add("bbccddee001122");
         fences.add("bbccddee001123");
-        tested.updateFences(fences);
+        tested.onFencesChanged(fences);
 
         //Make sure they're written
         tested = null;

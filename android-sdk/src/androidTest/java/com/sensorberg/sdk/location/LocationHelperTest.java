@@ -30,9 +30,9 @@ import static org.mockito.Mockito.when;
  * Created by ronaldo on 11/17/16.
  */
 @RunWith(AndroidJUnit4.class)
-public class LocationSourceTest {
+public class LocationHelperTest {
 
-    private LocationSource tested;
+    private LocationHelper tested;
     private LocationManager mockedManager;
     private List<String> PROVIDERS;
     private Location l0, l1;
@@ -66,7 +66,7 @@ public class LocationSourceTest {
         when(mockedManager.getProviders(true)).thenReturn(PROVIDERS);
         when(mockedManager.getLastKnownLocation(PROVIDERS.get(0))).thenReturn(l0);
         when(mockedManager.getLastKnownLocation(PROVIDERS.get(1))).thenReturn(l1);
-        tested = new LocationSource(context, mockedManager, settings, gson, prefs, play);
+        tested = new LocationHelper(context, mockedManager, settings);
     }
 
     @Test

@@ -2,7 +2,6 @@ package com.sensorberg.sdk.location;
 
 import android.Manifest;
 import android.content.Context;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -31,8 +30,8 @@ public class PlayServiceManager implements GoogleApiClient.ConnectionCallbacks, 
     private List<GoogleApiClient.ConnectionCallbacks> listeners = new ArrayList<>();
 
     private Context context;
-    private LocationManager manager;
     private PermissionChecker checker;
+    private LocationHelper location;
 
     private GoogleApiClient client;
     private GoogleApiAvailability availability;
@@ -42,9 +41,9 @@ public class PlayServiceManager implements GoogleApiClient.ConnectionCallbacks, 
 
     @Getter private int status;
 
-    public PlayServiceManager(Context context, LocationManager manager, PermissionChecker checker) {
+    public PlayServiceManager(Context context, LocationHelper location, PermissionChecker checker) {
         this.context = context;
-        this.manager = manager;
+        this.location = location;
         this.checker = checker;
         availability = GoogleApiAvailability.getInstance();
         status = availability.isGooglePlayServicesAvailable(context);
@@ -70,7 +69,7 @@ public class PlayServiceManager implements GoogleApiClient.ConnectionCallbacks, 
     public boolean isGeofencingAvailable() {
         status = availability.isGooglePlayServicesAvailable(context);
         return checker.checkForPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-                && LocationSource.isLocationEnabled(manager)
+                && location.isLocationEnabled()
                 && (status == ConnectionResult.SUCCESS || status == ConnectionResult.SERVICE_UPDATING);
     }
 

@@ -1,5 +1,6 @@
 package com.sensorberg.sdk.location;
 
+import android.location.Location;
 import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.Before;
@@ -30,7 +31,7 @@ public class GeofenceManagerTest implements GeofenceListener {
             fences.add("ccddeeff"+String.format("%06d", i));
         }
         try {
-            tested.updateFences(fences);
+            tested.onFencesChanged(fences);
             fail("Should throw exception on more than 100 geofences");
         } catch (IllegalArgumentException ex) { }
     }
@@ -52,5 +53,10 @@ public class GeofenceManagerTest implements GeofenceListener {
     @Override
     public void onGeofenceEvent(GeofenceData geofenceData, boolean entry) {
         fail();
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+
     }
 }

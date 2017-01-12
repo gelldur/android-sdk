@@ -1,13 +1,18 @@
 package com.sensorberg.sdk.location;
 
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.Location;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofenceStatusCodes;
 import com.google.android.gms.location.GeofencingEvent;
+import com.google.android.gms.location.LocationAvailability;
+import com.google.android.gms.location.LocationResult;
+import com.sensorberg.sdk.BuildConfig;
 import com.sensorberg.sdk.Logger;
 
 import java.util.ArrayList;
@@ -16,7 +21,8 @@ import java.util.List;
 
 public class GeofenceReceiver extends BroadcastReceiver {
 
-    public static final String ACTION = "com.sensorberg.sdk.receiver.GEOFENCE";
+    public static final String ACTION_GEOFENCE = "com.sensorberg.sdk.receiver.GEOFENCE";
+    public static final String ACTION_LOCATION = "com.sensorberg.sdk.receiver.LOCATION";
 
     private Context context;
     private GeofenceManager manager;
@@ -29,8 +35,53 @@ public class GeofenceReceiver extends BroadcastReceiver {
         registerReceiver();
     }
 
+    public static PendingIntent getGeofencePendingIntent(Context context) {
+        Intent intent = new Intent(GeofenceReceiver.ACTION_GEOFENCE);
+        return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    public static PendingIntent getLocationPendingIntent(Context context) {
+        Intent intent = new Intent(GeofenceReceiver.ACTION_LOCATION);
+        return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
     @Override
     public void onReceive(Context context, Intent intent) {
+        String action = intent.getAction();
+        if (action == null || action.isEmpty()) {
+            Logger.log.geofenceError("Received intent without action",null);
+            return;
+        }
+        switch (action) {
+            case ACTION_GEOFENCE:
+                handleGeofence(intent);
+                break;
+            case ACTION_LOCATION:
+                handleLocation(intent);
+                break;
+            default:
+                Logger.log.geofenceError("Received intent with unknown action",null);
+                break;
+        }
+    }
+
+    private void handleLocation(Intent intent) {
+        if (!LocationResult.hasResult(intent)) {
+            if (LocationAvailability.hasLocationAvailability(intent)) {
+                //Not needed yet.
+                //LocationAvailability availability = LocationAvailability.extractLocationAvailability(intent);
+                //Logger.log.geofence("Received LocationAvailability: " + availability.isLocationAvailable());
+            }
+            return;
+        }
+        LocationResult result = LocationResult.extractResult(intent);
+        Location location = result.getLastLocation();
+        for (GeofenceListener listener : listeners) {
+            listener.onLocationChanged(location);
+        }
+    }
+
+    private void handleGeofence(Intent intent) {
         GeofencingEvent event = GeofencingEvent.fromIntent(intent);
         if (event == null) {
             Logger.log.geofenceError("GeofencingEvent is null", null);
@@ -49,10 +100,13 @@ public class GeofenceReceiver extends BroadcastReceiver {
             for (GeofenceData geofenceData : geofenceDatas) {
                 Logger.log.geofence("Received "+ (entry ? "entry" : "exit") +
                         " event "+geofenceData.getGeohash() + ", radius "+geofenceData.getRadius());
-                if (!geofenceData.isMock()) {
-                    notifyListeners(geofenceData, entry);
+                Logger.log.geofence("Debug build: "+BuildConfig.DEBUG+" Mock: "+geofenceData.isMock());
+                if (!BuildConfig.DEBUG && geofenceData.isMock()) {
+                    Logger.log.geofenceError("Geofence from mock location on non-debug build, ignoring", null);
                 } else {
-                    log
+                    for (GeofenceListener listener : listeners) {
+                        listener.onGeofenceEvent(geofenceData, entry);
+                    }
                 }
             }
         } catch (IllegalArgumentException ex) {
@@ -88,13 +142,8 @@ public class GeofenceReceiver extends BroadcastReceiver {
 
     private void registerReceiver() {
         IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION);
+        filter.addAction(ACTION_GEOFENCE);
+        filter.addAction(ACTION_LOCATION);
         context.registerReceiver(this, filter);
-    }
-
-    private void notifyListeners(GeofenceData geofenceData, boolean entry) {
-        for (GeofenceListener listener : listeners) {
-            listener.onGeofenceEvent(geofenceData, entry);
-        }
     }
 }

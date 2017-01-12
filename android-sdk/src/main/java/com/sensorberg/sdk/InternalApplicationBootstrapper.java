@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SyncStatusObserver;
+import android.location.Location;
 import android.os.Parcelable;
 
 import com.google.gson.Gson;
@@ -23,7 +24,7 @@ import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.location.GeofenceData;
 import com.sensorberg.sdk.location.GeofenceListener;
 import com.sensorberg.sdk.location.GeofenceManager;
-import com.sensorberg.sdk.location.LocationSource;
+import com.sensorberg.sdk.location.LocationHelper;
 import com.sensorberg.sdk.model.BeaconId;
 import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.presenter.LocalBroadcastManager;
@@ -98,7 +99,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     protected PermissionChecker permissionChecker;
 
     @Inject
-    protected LocationSource locationSource;
+    protected LocationHelper locationHelper;
 
     protected BluetoothPlatform bluetoothPlatform;
 
@@ -201,12 +202,17 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     @Override
     public void onGeofenceEvent(GeofenceData geofenceData, boolean entry) {
         BeaconId beaconId = new BeaconId("0000000000000000000000000000000000000000", geofenceData);
-        ScanEvent scanEvent = new ScanEvent(beaconId, clock.now(), entry, "00:00:00:00:00:00", -127, 0, locationSource.getGeohash());
+        ScanEvent scanEvent = new ScanEvent(beaconId, clock.now(), entry, "00:00:00:00:00:00", -127, 0, locationHelper.getGeohash());
         onScanEventDetected(scanEvent);
     }
 
+    @Override
+    public void onLocationChanged(Location location) {
+        //Nothing
+    }
+
     public void onConversionUpdate(ActionConversion conversion) {
-        conversion.setGeohash(locationSource.getGeohash());
+        conversion.setGeohash(locationHelper.getGeohash());
         beaconActionHistoryPublisher.onConversionUpdate(conversion);
     }
 
@@ -306,6 +312,10 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
         scanner.stop();
     }
 
+    public void startGeofences() {
+        geofenceManager.ping();
+    }
+
     public void saveAllDataBeforeDestroy() {
         beaconActionHistoryPublisher.saveAllData();
     }
@@ -395,7 +405,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
             }
             if (changed) {
                 try {
-                    geofenceManager.updateFences(fences);
+                    geofenceManager.onFencesChanged(fences);
                 } catch (IllegalArgumentException ex) {
                     Logger.log.logError(ex.getMessage(), ex);
                 }
