@@ -17,7 +17,7 @@ import com.sensorberg.sdk.internal.http.TransportShould;
 import com.sensorberg.sdk.internal.transport.ApiServiceInGeneralShould;
 import com.sensorberg.sdk.internal.transport.ApiServiceShould;
 import com.sensorberg.sdk.location.GeofenceStorageTest;
-import com.sensorberg.sdk.location.LocationHelperTest;
+import com.sensorberg.sdk.location.LocationSourceTest;
 import com.sensorberg.sdk.model.persistence.TheBeaconActionShould;
 import com.sensorberg.sdk.model.persistence.TheBeaconScanShould;
 import com.sensorberg.sdk.model.server.ResolveActionTest;
@@ -123,7 +123,7 @@ public interface TestComponent extends Component {
 
     void inject(TheActionShould theActionShould);
 
-    void inject(LocationHelperTest locationHelperTest);
+    void inject(LocationSourceTest locationHelperTest);
 
     void inject(GeofenceStorageTest locationHelperTest);
 

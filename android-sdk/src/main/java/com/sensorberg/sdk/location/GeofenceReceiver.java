@@ -38,9 +38,9 @@ public class GeofenceReceiver extends BroadcastReceiver {
         }
         if (event.hasError() && event.getErrorCode() == GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE) {
             //This runs in a case of e.g. disabling location on the device.
-            //If we've registred geofence before, Google Play Service lets us know about removal here.
+            //If we've registered geofence before, Google Play Service lets us know about removal here.
             //(But we don't rely only on it, cause we're smart and listen to disabling location anyway)
-            manager.setRegistred(false);
+            manager.setRegistered(false);
             return;
         }
         try {
@@ -49,7 +49,11 @@ public class GeofenceReceiver extends BroadcastReceiver {
             for (GeofenceData geofenceData : geofenceDatas) {
                 Logger.log.geofence("Received "+ (entry ? "entry" : "exit") +
                         " event "+geofenceData.getGeohash() + ", radius "+geofenceData.getRadius());
-                notifyListeners(geofenceData, entry);
+                if (!geofenceData.isMock()) {
+                    notifyListeners(geofenceData, entry);
+                } else {
+                    log
+                }
             }
         } catch (IllegalArgumentException ex) {
             Logger.log.geofenceError("GeofencingEvent is invalid", ex);

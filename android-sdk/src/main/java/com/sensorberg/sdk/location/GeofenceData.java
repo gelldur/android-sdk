@@ -24,6 +24,7 @@ public class GeofenceData implements Parcelable {
     @Getter private final double latitude;
     @Getter private final double longitude;
     @Getter private final int radius;
+    //TODO mock
 
     protected GeofenceData(String fence) {
         this.fence = fence;

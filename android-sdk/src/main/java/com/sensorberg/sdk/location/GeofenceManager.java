@@ -1,6 +1,5 @@
 package com.sensorberg.sdk.location;
 
-import android.Manifest;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -24,8 +23,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.sensorberg.sdk.Constants;
 import com.sensorberg.sdk.Logger;
-import com.sensorberg.sdk.internal.PermissionChecker;
-import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.settings.TimeConstants;
 
 import java.lang.reflect.Type;
@@ -37,16 +34,15 @@ import java.util.List;
 
 import lombok.Setter;
 
-public class GeofenceManager implements LocationHelper.LocationStateListener,
+public class GeofenceManager implements LocationSource.LocationStateListener,
         GoogleApiClient.ConnectionCallbacks, LocationListener, GeofenceListener {
 
     private static final int FACTOR = 3;
 
     private Context context;
-    private PermissionChecker checker;
     private SharedPreferences preferences;
     private Gson gson;
-    private LocationHelper location;
+    private LocationSource source;
     private GeofenceStorage storage;
     private GeofenceReceiver receiver;
     private PlayServiceManager play;
@@ -56,22 +52,29 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
     private HashSet<String> entered;
 
     private Location previous;
+    private Location current;
     private boolean updating = false;
-    @Setter private boolean registred = true;
+    private boolean empty = true;
+    @Setter private boolean registered = true;
 
     public GeofenceManager(Context context, SharedPreferences preferences, Gson gson,
-                           PermissionChecker checker, LocationHelper location) {
+                           LocationSource source, PlayServiceManager play) {
         this.context = context;
-        this.checker = checker;
-        this.location = location;
+        this.source = source;
         this.preferences = preferences;
         this.gson = gson;
+        this.play = play;
         entered = loadEntered();
         receiver = new GeofenceReceiver(context, this);
         storage = new GeofenceStorage(context, preferences);
         //This will callback asynchronously when service is connected.
-        play = new PlayServiceManager(context, this);
-        location.addListener(this);
+        source.addListener(this);
+        play.addListener(this);
+        if (storage.getCount() > 0) {
+            empty = false;
+            Logger.log.geofence("Enable GEOFENCING: Geofences restored from DB");
+            play.connect();
+        }
     }
 
     /**
@@ -79,81 +82,109 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
      * @param fences List of fence strings (8 char geohash plus 6 char radius).
      */
     public void updateFences(List<String> fences) {
-        Logger.log.geofence("Update triggered by layout change");
-        registred = false;
-        int count = storage.getCount();
-        storage.updateFences(fences);
-        //TODO play not connected, incoming is 0, saved is 0 then return?
-        if (!play.isConnected() && count == 0 && !fences.isEmpty()) {
-            //Enabling geofencing
+        Logger.log.geofence("Update: layout change");
+        if (!empty && storage.getCount() == 0 && fences.size() == 0) {
+            empty = true;
+            Logger.log.geofence("Disable GEOFENCING: No geofences in layout");
+            play.disconnect();
+            return;
+        } else if (empty) {
+            empty = false;
+            Logger.log.geofence("Enable GEOFENCING: Geofences appeared in layout");
             play.connect();
         }
-        updateRegistredGeofences(getLocation());
-
-    }
-
-    public void onLocationStateChanged(boolean enabled) {
-        registred = false;
-        if (enabled) {
-            Location location = getLocation();
-            Logger.log.geofence("Update triggered by enabling location " + location);
-            updateRegistredGeofences(location);
+        storage.updateFences(fences);
+        registered = false;
+        if (trigger()) {
+            removeGeofences(current);
         }
     }
 
+    //TODO use only this callback for anything regarding location...
     @Override
     public void onLocationChanged(Location incoming) {
         if (incoming != null) {
-            if (previous != null) {
-                float change = previous.distanceTo(incoming);
-                float needed = storage.getRadius() / FACTOR;
-                if (change < needed) {
-                    Logger.log.geofence("Aborting. Location change too small, " +
-                            "was: " + change + "m, needed: " + needed + "m");
-                    return;
-                }
+            source.setLastKnownIfBetter(incoming, true);    //TODO here mock location leaks to location pool
+        } else {
+            Logger.log.geofence("Warning, Play Service returned null location, using backup");
+            incoming = source.getLastKnownLocation();
+        }
+        Logger.log.geofence("Update: location change at " + incoming);
+        if (trigger()) {
+            removeGeofences(current);
+        }
+    }
+
+    public void onLocationStateChanged(boolean enabled) {
+        if (enabled) {
+            Logger.log.geofence("Update: enabling location");
+            registered = false;
+            if (trigger()) {
+                removeGeofences(current);
+            } else if (current == null && storage.getCount() > storage.HIGH) {
+                requestLocationUpdates(1);  //TODO well, crap. It removes previous request.
             }
-            registred = false;
-            Logger.log.geofence("Update triggered by location change " + incoming);
-            updateRegistredGeofences(incoming);
-        } else if (!registred) {
-            Location location = getLocation();
-            Logger.log.geofence("Update triggered by location change (retry) " + location);
-            updateRegistredGeofences(location);
         }
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        Logger.log.geofence("Update triggered by Play services connection");
-        updateRegistredGeofences(getLocation());
+        Logger.log.geofence("Update: Play services connection");
+        if (trigger()) {
+            removeGeofences(current);
+        }
     }
 
-    private void updateRegistredGeofences(Location location) {
-        if (registred) {
-            Logger.log.geofence("No changes, aborting");
-            return;
+    private boolean trigger() {
+        //TODO what if updating?
+        if (empty) {
+            Logger.log.geofence("Deny: No geofences in layout");
+            return false;
         }
-        if (updating) {
-            Logger.log.geofence("Update already in progress");
-            return;
-        }
-        if (!checker.checkForPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
-            Logger.log.geofence("Missing ACCESS_FINE_LOCATION permission");
-            return;
-        }
-        if (!this.location.isLocationEnabled()) {
-            Logger.log.geofence("Location is not enabled");
-            return;
+        if (!play.isGeofencingAvailable()) {
+            Logger.log.geofenceError("Deny: Service is not available", null);
+            return false;
         }
         if (!play.isConnected()) {
-            Logger.log.geofenceError("Google API client is not connected", null);
-            play.connect(); //will update when connected.
-            return;
-        } else {
-
+            play.connect();
+            Logger.log.geofenceError("Deny: Service is not connected, will retry when connects", null);
+            return false;
         }
-        removeGeofences(location);
+        if (storage.getCount() < GeofenceStorage.HIGH) {    //TODO keep getCount in memory
+            //We don't have to consider location below 100 geofences
+            if (registered) {
+                Logger.log.geofence("Deny: Below " + GeofenceStorage.HIGH + " and all are registered");
+                return false;
+            } else {
+                Logger.log.geofence("Allow: Below " + GeofenceStorage.HIGH + " and not registered");
+                current = source.getLastKnownLocation();
+                return true;
+            }
+        } else {
+            current = source.getLastKnownLocation();
+            if (previous == null) {
+                if (current == null) {
+                    Logger.log.geofence("Deny: No location available");
+                    return false;
+                }
+                Logger.log.geofence("Allow: New location at " + current);
+                return true;
+            }
+            //From now on previous != null
+            if (current != null) {
+                float change = previous.distanceTo(current);
+                float needed = storage.getRadius() / FACTOR;
+                if (change < needed) {
+                    Logger.log.geofence("Deny: Location change too small, " + "was: " + change + "m, needed: " + needed + "m");
+                    return false;
+                }
+                Logger.log.geofence("Allow: Location change large enough, " + "was: " + change + "m, needed: " + needed + "m");
+                return true;
+            }
+            //Technically not possible at this moment, but oh well...
+            Logger.log.geofence("Allow: Just in case, at " + current);
+            return true;
+        }
     }
 
     private void removeGeofences(final Location location) {
@@ -203,20 +234,21 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
     }
 
     private void onGeofencesAdded(Location location, List<Geofence> geofences, int initialTrigger) {
-        registred = true;
+        registered = true;
         updating = false;
         previous = location;
         Logger.log.geofence("Successfully added " + geofences.size() + " geofences, initial trigger: "+initialTrigger);
-        requestLocationUpdates();
+        requestLocationUpdates(0);
     }
 
     private void onGeofencesRemoved(Location location) {
-        registred = true;
+        registered = true;
         updating = false;
         previous = location;
         Logger.log.geofence("No geofences around, disconnecting from Play Service, at: "+location);
         removeLocationUpdates();
         play.disconnect();
+        empty = true;
     }
 
     private void onGeofencesFailed(SecurityException ex, int status) {
@@ -297,8 +329,11 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
         return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    private void requestLocationUpdates() {
+    private void requestLocationUpdates(int count) {
         LocationRequest request = LocationRequest.create();
+        if (count > 0) {
+            request.setNumUpdates(count);
+        }
         request.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
         request.setFastestInterval(TimeConstants.ONE_HOUR);
         request.setInterval(2 * TimeConstants.ONE_HOUR);
@@ -313,34 +348,6 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
 
     private void removeLocationUpdates() {
         LocationServices.FusedLocationApi.removeLocationUpdates(play.getClient(), this);
-    }
-
-    private Location getLocation() {
-        if (play.isConnected()) {
-            try {
-                Location last = LocationServices.FusedLocationApi.getLastLocation(play.getClient());
-                if (last != null) {
-                    storeLastKnownNonNullLocation(last);
-                    return last;
-                }
-            } catch (SecurityException ex) {
-                Logger.log.geofenceError("Can't get location from PlayServices (using backup).", ex);
-            }
-        }
-        Location last = location.getLastKnownLocation();
-        if (last != null) {
-            storeLastKnownNonNullLocation(last);
-            return last;
-        }
-        return restoreLastKnownLocation();
-    }
-
-    private void storeLastKnownNonNullLocation(Location location) {
-        LocationStorage.save(gson, preferences, Constants.SharedPreferencesKeys.Location.LAST_KNOWN_LOCATION, location);
-    }
-
-    private Location restoreLastKnownLocation() {
-        return LocationStorage.load(gson, preferences, Constants.SharedPreferencesKeys.Location.LAST_KNOWN_LOCATION);
     }
 
     public void onLocationPermissionGranted () {
@@ -397,7 +404,7 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
         if (json == null || json.isEmpty()) {
             return new HashSet<>();
         }
-        Type type = new TypeToken<HashMap<String, ActionConversion>>() {}.getType();
+        Type type = new TypeToken<HashSet<String>>() {}.getType();
         return gson.fromJson(json, type);
     }
 }

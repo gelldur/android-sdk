@@ -16,7 +16,7 @@ import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.interfaces.Platform;
 import com.sensorberg.sdk.internal.interfaces.RunLoop;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
-import com.sensorberg.sdk.location.LocationHelper;
+import com.sensorberg.sdk.location.LocationSource;
 import com.sensorberg.sdk.model.BeaconId;
 import com.sensorberg.sdk.settings.DefaultSettings;
 import com.sensorberg.sdk.settings.SettingsManager;
@@ -75,7 +75,7 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
     private long lastScanStart;
 
     @Inject
-    LocationHelper locationHelper;
+    LocationSource locationSource;
 
     @Getter @Setter private RssiListener rssiListener = RssiListener.NONE;
 
@@ -118,7 +118,7 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
                         //might be negative!!!
                         long timeSinceWeSawTheBeacon = now - lastBreakLength - beaconEntry.getLastBeaconTime();
                         if (timeSinceWeSawTheBeacon > settingsManager.getExitTimeoutMillis()) {
-                            ScanEvent scanEvent = new ScanEvent(beaconId, now, false, locationHelper.getGeohash());
+                            ScanEvent scanEvent = new ScanEvent(beaconId, now, false, locationSource.getGeohash());
                             runLoop.sendMessage(ScannerEvent.EVENT_DETECTED, scanEvent);
                             Logger.log.beaconResolveState(scanEvent,
                                     " exited (time since we saw the beacon: " + (int) (timeSinceWeSawTheBeacon / 1000) + " seconds)");
@@ -173,7 +173,7 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
 
                 if (entry == null) {
                     String address = device != null ? device.getAddress() : null;
-                    ScanEvent scanEvent = new ScanEvent(beaconId, now, true, address, rssi, calRssi, locationHelper.getGeohash());
+                    ScanEvent scanEvent = new ScanEvent(beaconId, now, true, address, rssi, calRssi, locationSource.getGeohash());
                     runLoop.sendMessage(ScannerEvent.EVENT_DETECTED, scanEvent);
                     entry = new EventEntry(now, ScanEventType.ENTRY.getMask());
                     Logger.log.beaconResolveState(scanEvent, "entered");

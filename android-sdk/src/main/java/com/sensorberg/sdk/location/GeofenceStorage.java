@@ -27,8 +27,8 @@ public class GeofenceStorage {
 
     private static final int MIN_RADIUS = 100;          //100 m
     private static final int MAX_RADIUS = 819200;       //So we'll get there by doubling 100 m
-    private static final int HIGH = 100;
-    private static final int LOW = HIGH / 2;
+    public static final int HIGH = 100;
+    public static final int LOW = HIGH / 2;
 
     private SharedPreferences preferences;
     private SQLiteDatabase db;

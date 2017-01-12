@@ -23,7 +23,7 @@ import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.location.GeofenceData;
 import com.sensorberg.sdk.location.GeofenceListener;
 import com.sensorberg.sdk.location.GeofenceManager;
-import com.sensorberg.sdk.location.LocationHelper;
+import com.sensorberg.sdk.location.LocationSource;
 import com.sensorberg.sdk.model.BeaconId;
 import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.presenter.LocalBroadcastManager;
@@ -98,7 +98,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     protected PermissionChecker permissionChecker;
 
     @Inject
-    protected LocationHelper locationHelper;
+    protected LocationSource locationSource;
 
     protected BluetoothPlatform bluetoothPlatform;
 
@@ -201,12 +201,12 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     @Override
     public void onGeofenceEvent(GeofenceData geofenceData, boolean entry) {
         BeaconId beaconId = new BeaconId("0000000000000000000000000000000000000000", geofenceData);
-        ScanEvent scanEvent = new ScanEvent(beaconId, clock.now(), entry, "00:00:00:00:00:00", -127, 0, locationHelper.getGeohash());
+        ScanEvent scanEvent = new ScanEvent(beaconId, clock.now(), entry, "00:00:00:00:00:00", -127, 0, locationSource.getGeohash());
         onScanEventDetected(scanEvent);
     }
 
     public void onConversionUpdate(ActionConversion conversion) {
-        conversion.setGeohash(locationHelper.getGeohash());
+        conversion.setGeohash(locationSource.getGeohash());
         beaconActionHistoryPublisher.onConversionUpdate(conversion);
     }
 

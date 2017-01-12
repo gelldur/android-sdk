@@ -10,10 +10,7 @@ import com.sensorberg.sdk.internal.interfaces.Clock;
 import com.sensorberg.sdk.internal.interfaces.FileManager;
 import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
-import com.sensorberg.sdk.location.LocationHelper;
 import com.sensorberg.sdk.settings.SettingsManager;
-
-import javax.inject.Inject;
 
 public class Scanner extends AbstractScanner {
     public static final String SCANNER_EVENT = "com.sensorberg.sdk.scanner.SDKScanner.SCANNER_EVENT";

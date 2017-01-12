@@ -38,7 +38,7 @@ public class GeofenceStorageTest {
         tested = new GeofenceStorage(context, preferences);
     }
 
-    @Test
+    /*@Test
     public void shouldWriteAndRestore() {
         List<String> fences = new ArrayList<>(2);
         fences.add("bbccddee001122");
@@ -131,5 +131,5 @@ public class GeofenceStorageTest {
         assertEquals(2, google.size());
         assertEquals(google.get(0).getRequestId(), "bbccddee001123");
         assertEquals(google.get(1).getRequestId(), "bbccddee001122");
-    }
+    }*/
 }

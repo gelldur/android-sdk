@@ -1,10 +1,12 @@
 package com.sensorberg.sdk.location;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.test.runner.AndroidJUnit4;
 
+import com.google.gson.Gson;
 import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.settings.SettingsManager;
@@ -28,9 +30,9 @@ import static org.mockito.Mockito.when;
  * Created by ronaldo on 11/17/16.
  */
 @RunWith(AndroidJUnit4.class)
-public class LocationHelperTest {
+public class LocationSourceTest {
 
-    private LocationHelper tested;
+    private LocationSource tested;
     private LocationManager mockedManager;
     private List<String> PROVIDERS;
     private Location l0, l1;
@@ -40,6 +42,15 @@ public class LocationHelperTest {
 
     @Inject
     protected Context context;
+
+    @Inject
+    protected Gson gson;
+
+    @Inject
+    protected SharedPreferences prefs;
+
+    @Inject
+    protected PlayServiceManager play;
 
     @Before
     public void setUp() throws Exception {
@@ -55,7 +66,7 @@ public class LocationHelperTest {
         when(mockedManager.getProviders(true)).thenReturn(PROVIDERS);
         when(mockedManager.getLastKnownLocation(PROVIDERS.get(0))).thenReturn(l0);
         when(mockedManager.getLastKnownLocation(PROVIDERS.get(1))).thenReturn(l1);
-        tested = new LocationHelper(context, mockedManager, settings);
+        tested = new LocationSource(context, mockedManager, settings, gson, prefs, play);
     }
 
     @Test
