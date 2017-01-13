@@ -1,5 +1,7 @@
 package com.sensorberg.sdk.model;
 
+import com.sensorberg.sdk.location.GeofenceData;
+import com.sensorberg.utils.Objects;
 import com.sensorberg.utils.UUIDUtils;
 
 import android.os.Parcel;
@@ -37,6 +39,13 @@ public class BeaconId implements Parcelable, Serializable {
     };
 
     private final byte[] beaconId;
+
+    /**
+     * Hack for enabling geofences. BeaconId will have either valid beaconId or geofenceData.
+     * Non-valid beaconId is all 0's.
+     */
+    private final GeofenceData geofenceData;
+
     transient private UUID uuid = null;
     /**
      * Creates and initializes a new {@link BeaconId}.
@@ -49,6 +58,7 @@ public class BeaconId implements Parcelable, Serializable {
         }
         this.beaconId = new byte[20];
         System.arraycopy(beaconId, 0x00, this.beaconId, 0, 20);
+        geofenceData = null;
     }
 
     /**
@@ -63,11 +73,13 @@ public class BeaconId implements Parcelable, Serializable {
         }
         this.beaconId = new byte[20];
         System.arraycopy(data, offset, this.beaconId, 0, 20);
+        geofenceData = null;
     }
 
     protected BeaconId(Parcel source) {
         this.beaconId = new byte[20];
         source.readByteArray(beaconId);
+        geofenceData = source.readParcelable(GeofenceData.class.getClassLoader());
     }
 
     /**
@@ -80,6 +92,20 @@ public class BeaconId implements Parcelable, Serializable {
             throw (new IllegalArgumentException("Invalid beacon id"));
         }
         this.beaconId = hexToByteArray(beaconId);
+        this.geofenceData = null;
+    }
+
+    /**
+     * Creates and initializes a new {@link BeaconId}.
+     *
+     * @param beaconId the beacon id as a hexadecimal {@link String} of length 40
+     */
+    public BeaconId(String beaconId, GeofenceData geofenceData) {
+        if (beaconId.length() != 40) {
+            throw (new IllegalArgumentException("Invalid beacon id"));
+        }
+        this.beaconId = hexToByteArray(beaconId);
+        this.geofenceData = geofenceData;
     }
 
     private static byte[] hexToByteArray(String hex) throws IllegalArgumentException {
@@ -116,6 +142,7 @@ public class BeaconId implements Parcelable, Serializable {
             // This cannot happen
         }
         this.beaconId = stream.toByteArray();
+        this.geofenceData = null;
     }
 
     public int describeContents() {
@@ -124,6 +151,7 @@ public class BeaconId implements Parcelable, Serializable {
 
     public void writeToParcel(Parcel destination, int flags) {
         destination.writeByteArray(beaconId);
+        destination.writeParcelable(geofenceData, flags);
     }
 
     @Override
@@ -138,7 +166,8 @@ public class BeaconId implements Parcelable, Serializable {
             return (false);
         }
         BeaconId otherId = (BeaconId) other;
-        return Arrays.equals(beaconId, otherId.beaconId);
+        return Arrays.equals(beaconId, otherId.beaconId) &&
+                Objects.equals(geofenceData, otherId.geofenceData);
     }
 
     @Override
@@ -146,6 +175,9 @@ public class BeaconId implements Parcelable, Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + Arrays.hashCode(beaconId);
+        if (geofenceData != null) {
+            result = prime * result + geofenceData.hashCode();
+        }
         return (result);
     }
 
@@ -158,6 +190,10 @@ public class BeaconId implements Parcelable, Serializable {
         byte[] beaconIdCopy = new byte[20];
         System.arraycopy(beaconId, 0, beaconIdCopy, 0, 20);
         return (beaconIdCopy);
+    }
+
+    public GeofenceData getGeofenceData() {
+        return geofenceData;
     }
 
     /**
@@ -224,6 +260,7 @@ public class BeaconId implements Parcelable, Serializable {
                 "uuid=" + getNormalizedUUIDString()+
                 ", major=" + getMajorId()+
                 ", minor=" + getMinorId()+
+                ", geofence=" + getGeofenceData()+
                 '}';
     }
 

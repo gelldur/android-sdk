@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SyncStatusObserver;
+import android.location.Location;
 import android.os.Parcelable;
 
 import com.google.gson.Gson;
@@ -20,6 +21,9 @@ import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.interfaces.MessageDelayWindowLengthListener;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
+import com.sensorberg.sdk.location.GeofenceData;
+import com.sensorberg.sdk.location.GeofenceListener;
+import com.sensorberg.sdk.location.GeofenceManager;
 import com.sensorberg.sdk.location.LocationHelper;
 import com.sensorberg.sdk.model.BeaconId;
 import com.sensorberg.sdk.model.persistence.ActionConversion;
@@ -42,6 +46,7 @@ import com.sensorberg.sdk.settings.SettingsUpdateCallback;
 import com.sensorberg.utils.ListUtils;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,7 +60,8 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-public class InternalApplicationBootstrapper extends MinimalBootstrapper implements ScannerListener, SyncStatusObserver, Transport.ProximityUUIDUpdateHandler {
+public class InternalApplicationBootstrapper extends MinimalBootstrapper implements ScannerListener,
+        SyncStatusObserver, Transport.ProximityUUIDUpdateHandler, GeofenceListener {
 
     private static final boolean SURVIVE_REBOOT = true;
 
@@ -101,6 +107,9 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     protected SharedPreferences preferences;
 
     @Inject
+    protected GeofenceManager geofenceManager;
+
+    @Inject
     protected Gson gson;
 
     public InternalApplicationBootstrapper(Transport transport, ServiceScheduler scheduler, HandlerManager handlerManager,
@@ -110,6 +119,9 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
 
         this.transport = transport;
         transport.setProximityUUIDUpdateHandler(this);
+
+        geofenceManager.addListener(this);
+
         settingsManager.setSettingsUpdateCallback(settingsUpdateCallbackListener);
         settingsManager.setMessageDelayWindowLengthListener((MessageDelayWindowLengthListener) scheduler);
         clock = clk;
@@ -172,16 +184,31 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
 
         boolean contained;
         synchronized (proximityUUIDsMonitor) {
-            contained = proximityUUIDs.isEmpty() || proximityUUIDs.contains(scanEvent.getBeaconId().getProximityUUIDWithoutDashes());
+            if (scanEvent.getBeaconId().getGeofenceData() == null) {
+                contained = proximityUUIDs.isEmpty()
+                        || proximityUUIDs.contains(scanEvent.getBeaconId().getProximityUUIDWithoutDashes());
+            } else {
+                contained = true;
+            }
         }
         if (contained) {
-
             if (reportLevel == Settings.BEACON_REPORT_LEVEL_ONLY_CONTAINED) {
                 beaconActionHistoryPublisher.onScanEventDetected(scanEvent);
             }
-
             resolver.resolve(scanEvent);
         }
+    }
+
+    @Override
+    public void onGeofenceEvent(GeofenceData geofenceData, boolean entry) {
+        BeaconId beaconId = new BeaconId("0000000000000000000000000000000000000000", geofenceData);
+        ScanEvent scanEvent = new ScanEvent(beaconId, clock.now(), entry, "00:00:00:00:00:00", -127, 0, locationHelper.getGeohash());
+        onScanEventDetected(scanEvent);
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        //Nothing
     }
 
     public void onConversionUpdate(ActionConversion conversion) {
@@ -285,6 +312,10 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
         scanner.stop();
     }
 
+    public void startGeofences() {
+        geofenceManager.ping();
+    }
+
     public void saveAllDataBeforeDestroy() {
         beaconActionHistoryPublisher.saveAllData();
     }
@@ -354,11 +385,30 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     }
 
     @Override
-    public void proximityUUIDListUpdated(List<String> proximityUUIDs) {
+    public void proximityUUIDListUpdated(List<String> proximityUUIDs, boolean changed) {
         synchronized (proximityUUIDsMonitor) {
             this.proximityUUIDs.clear();
+            List<String> fences = null;
+            if (changed) {
+                fences = new ArrayList<>();
+            }
             for (String proximityUUID : proximityUUIDs) {
-                this.proximityUUIDs.add(proximityUUID.toLowerCase());
+                if (proximityUUID.length() == 32) {
+                    this.proximityUUIDs.add(proximityUUID.toLowerCase());
+                } else if (proximityUUID.length() == 14) {
+                    if (changed) {
+                        fences.add(proximityUUID.toLowerCase());
+                    }
+                } else {
+                    Logger.log.logError("Invalid proximityUUID: "+proximityUUID);
+                }
+            }
+            if (changed) {
+                try {
+                    geofenceManager.onFencesChanged(fences);
+                } catch (IllegalArgumentException ex) {
+                    Logger.log.logError(ex.getMessage(), ex);
+                }
             }
         }
     }

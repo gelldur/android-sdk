@@ -2,7 +2,9 @@ package com.sensorberg.sdk.location;
 
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 
+import com.sensorberg.sdk.BuildConfig;
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.settings.SettingsManager;
 
@@ -33,9 +35,29 @@ public class LocationHelper {
     public String getGeohash() {
         location = acquireGeohash();
         if (location != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                if (!BuildConfig.DEBUG && location.isFromMockProvider()) {
+                    Logger.log.geofenceError("Mock location on non-debug build, ignoring", null);
+                    return null;
+                }
+            }
             return location.getGeohash();
         }
         return null;
+    }
+
+    /**
+     * Is location enabled, as per status bar indicator being on/off
+     * @return location enabled/disabled
+     */
+    public boolean isLocationEnabled() {
+        for (String provider : manager.getProviders(true)) {
+            if (LocationManager.GPS_PROVIDER.equals(provider)
+                    || LocationManager.NETWORK_PROVIDER.equals(provider)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

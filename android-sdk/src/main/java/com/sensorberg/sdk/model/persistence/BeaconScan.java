@@ -50,7 +50,11 @@ public class BeaconScan {
     public static BeaconScan from(ScanEvent scanEvent) {
         BeaconScan value = new BeaconScan();
         value.setTrigger(scanEvent.isEntry() ? ScanEventType.ENTRY.getMask() : ScanEventType.EXIT.getMask());
-        value.setPid(scanEvent.getBeaconId().getPid());
+        if (scanEvent.getBeaconId().getGeofenceData() == null) {
+            value.setPid(scanEvent.getBeaconId().getPid());
+        } else {
+            value.setPid(scanEvent.getBeaconId().getGeofenceData().getFence());
+        }
         value.setCreatedAt(scanEvent.getEventTime());
         value.setGeohash(scanEvent.getGeohash());
         return value;
