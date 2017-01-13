@@ -1,9 +1,5 @@
 package com.sensorberg.sdk.location;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
@@ -15,78 +11,18 @@ import com.sensorberg.sdk.settings.SettingsManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
-public class LocationHelper extends BroadcastReceiver {
+public class LocationHelper {
 
-    private Context context;
     private LocationManager manager;
     private SettingsManager settings;
-    private boolean enabled = false;
 
     private GeoHashLocation location;
 
-    private List<LocationStateListener> listeners = new ArrayList<>();
-
-    /**
-     * Interface for listening to location state changes.
-     * It corresponds to status bar location setting being on/off.
-     */
-    public interface LocationStateListener {
-        void onLocationStateChanged(boolean enabled);
-    }
-
-    public LocationHelper(Context context, LocationManager manager, SettingsManager settings) {
-        this.context = context;
+    public LocationHelper(LocationManager manager, SettingsManager settings) {
         this.manager = manager;
         this.settings = settings;
-        enabled = isLocationEnabled();
-    }
-
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        if (LocationManager.PROVIDERS_CHANGED_ACTION.equals(intent.getAction())) {
-            if (isLocationEnabled() != enabled) {
-                enabled = !enabled;
-                notifyListeners(enabled);
-            }
-        }
-    }
-
-    public void addListener(LocationStateListener listener) {
-        for (LocationStateListener previous : listeners) {
-            if(previous == listener) {
-                return;
-            }
-        }
-        if (listeners.size() == 0) {
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(LocationManager.PROVIDERS_CHANGED_ACTION);
-            context.registerReceiver(this, filter);
-            enabled = isLocationEnabled();
-        }
-        listeners.add(listener);
-    }
-
-    public void removeListener(LocationStateListener listener) {
-        Iterator<LocationStateListener> iterator = listeners.iterator();
-        while (iterator.hasNext()) {
-            LocationStateListener existing = iterator.next();
-            if(existing == listener) {
-                iterator.remove();
-                if (listeners.size() == 0) {
-                    context.unregisterReceiver(this);
-                }
-                return;
-            }
-        }
-    }
-
-    private void notifyListeners(boolean enabled) {
-        for (LocationStateListener listener : listeners) {
-            listener.onLocationStateChanged(enabled);
-        }
     }
 
     /**

@@ -81,9 +81,8 @@ public class ProvidersModule {
 
     @Provides
     @Singleton
-    public LocationHelper provideLocationHelper(Context context, LocationManager locationManager,
-                                                @Named("realSettingsManager") SettingsManager settingsManager) {
-        return new LocationHelper(context, locationManager, settingsManager);
+    public LocationHelper provideLocationHelper(LocationManager locationManager, @Named("realSettingsManager") SettingsManager settingsManager) {
+        return new LocationHelper(locationManager, settingsManager);
     }
 
     @Provides
@@ -203,8 +202,7 @@ public class ProvidersModule {
 
     @Provides
     @Singleton
-    public GeofenceManager provideGeofenceManager(Context context, SharedPreferences preferences,
-                                                  Gson gson, LocationHelper locationHelper, PlayServiceManager play) {
-        return new GeofenceManager(context, preferences, gson, locationHelper, play);
+    public GeofenceManager provideGeofenceManager(Context context, SharedPreferences preferences, Gson gson, PlayServiceManager play) {
+        return new GeofenceManager(context, preferences, gson, play);
     }
 }

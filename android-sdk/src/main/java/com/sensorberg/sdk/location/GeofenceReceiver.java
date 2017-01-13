@@ -4,8 +4,9 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.location.Location;
+import android.location.LocationManager;
+import android.os.Build;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofenceStatusCodes;
@@ -14,39 +15,30 @@ import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationResult;
 import com.sensorberg.sdk.BuildConfig;
 import com.sensorberg.sdk.Logger;
+import com.sensorberg.sdk.SensorbergServiceIntents;
+import com.sensorberg.sdk.SensorbergServiceMessage;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class GeofenceReceiver extends BroadcastReceiver {
 
     public static final String ACTION_GEOFENCE = "com.sensorberg.sdk.receiver.GEOFENCE";
-    public static final String ACTION_LOCATION = "com.sensorberg.sdk.receiver.LOCATION";
-
-    private Context context;
-    private GeofenceManager manager;
-
-    private List<GeofenceListener> listeners = new ArrayList<>();
-
-    public GeofenceReceiver(Context context, GeofenceManager manager) {
-        this.context = context;
-        this.manager = manager;
-        registerReceiver();
-    }
+    public static final String ACTION_LOCATION_UPDATE = "com.sensorberg.sdk.receiver.LOCATION_UPDATE";
 
     public static PendingIntent getGeofencePendingIntent(Context context) {
-        Intent intent = new Intent(GeofenceReceiver.ACTION_GEOFENCE);
+        Intent intent = new Intent(context, GeofenceReceiver.class);
+        intent.setAction(ACTION_GEOFENCE);
         return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     public static PendingIntent getLocationPendingIntent(Context context) {
-        Intent intent = new Intent(GeofenceReceiver.ACTION_LOCATION);
+        Intent intent = new Intent(context, GeofenceReceiver.class);
+        intent.setAction(ACTION_LOCATION_UPDATE);
         return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(Context context, Intent intent) { //TODO add wakelocks
         String action = intent.getAction();
         if (action == null || action.isEmpty()) {
             Logger.log.geofenceError("Received intent without action",null);
@@ -54,34 +46,73 @@ public class GeofenceReceiver extends BroadcastReceiver {
         }
         switch (action) {
             case ACTION_GEOFENCE:
-                handleGeofence(intent);
+                handleGeofence(context, intent);
                 break;
-            case ACTION_LOCATION:
-                handleLocation(intent);
+            case ACTION_LOCATION_UPDATE:
+                handleLocationUpdate(context, intent);
+                break;
+            case LocationManager.PROVIDERS_CHANGED_ACTION:
+                //Listening to this may cause trouble with some mock location apps that are spamming this action.
+                //TODO find a way to prevent it at BroadcastReceiver level.
+                handleProvidersChanged(context);
                 break;
             default:
-                Logger.log.geofenceError("Received intent with unknown action",null);
+                Logger.log.geofenceError("Received intent with unknown action " + action, null);
                 break;
         }
     }
 
-    private void handleLocation(Intent intent) {
-        if (!LocationResult.hasResult(intent)) {
-            if (LocationAvailability.hasLocationAvailability(intent)) {
-                //Not needed yet.
-                //LocationAvailability availability = LocationAvailability.extractLocationAvailability(intent);
-                //Logger.log.geofence("Received LocationAvailability: " + availability.isLocationAvailable());
+    private boolean isLocationEnabled(LocationManager locationManager) {
+        for (String provider : locationManager.getProviders(true)) {
+            if (LocationManager.GPS_PROVIDER.equals(provider)
+                    || LocationManager.NETWORK_PROVIDER.equals(provider)) {
+                return true;
             }
-            return;
         }
-        LocationResult result = LocationResult.extractResult(intent);
-        Location location = result.getLastLocation();
-        for (GeofenceListener listener : listeners) {
-            listener.onLocationChanged(location);
+        return false;
+    }
+
+    private void handleProvidersChanged(Context context) {
+        LocationManager locationManager =
+                (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        if (isLocationEnabled(locationManager)) {
+            Intent service = SensorbergServiceIntents.getServiceIntentWithMessage(
+                    context, SensorbergServiceMessage.MSG_LOCATION_ENABLED);
+            context.startService(service);
         }
     }
 
-    private void handleGeofence(Intent intent) {
+    private void handleLocationUpdate(Context context, Intent intent) {
+        LocationResult result = LocationResult.extractResult(intent);
+        LocationAvailability availability = LocationAvailability.extractLocationAvailability(intent);
+        Intent service = SensorbergServiceIntents.getServiceIntentWithMessage(
+                context, SensorbergServiceMessage.MSG_LOCATION_UPDATED);
+        if (result != null) {
+            Location location = result.getLastLocation();
+            if (location != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    if (!BuildConfig.DEBUG && location.isFromMockProvider()) {
+                        Logger.log.geofenceError("Mock location on non-debug build, ignoring", null);
+                    } else {
+                        service.putExtra(SensorbergServiceMessage.EXTRA_LOCATION, location);
+                    }
+                } else {
+                    service.putExtra(SensorbergServiceMessage.EXTRA_LOCATION, location);
+                }
+            }
+        }
+        if (availability != null) {
+            service.putExtra(SensorbergServiceMessage.EXTRA_LOCATION_AVAILABILITY,
+                    availability.isLocationAvailable());
+        }
+        if (result != null || availability != null) {
+            context.startService(service);
+        } else {
+            Logger.log.geofenceError("Received invalid location update", null);
+        }
+    }
+
+    private void handleGeofence(Context context, Intent intent) {
         GeofencingEvent event = GeofencingEvent.fromIntent(intent);
         if (event == null) {
             Logger.log.geofenceError("GeofencingEvent is null", null);
@@ -91,7 +122,10 @@ public class GeofenceReceiver extends BroadcastReceiver {
             //This runs in a case of e.g. disabling location on the device.
             //If we've registered geofence before, Google Play Service lets us know about removal here.
             //(But we don't rely only on it, cause we're smart and listen to disabling location anyway)
-            manager.setRegistered(false);
+            Logger.log.geofence("Received GEOFENCE_NOT_AVAILABLE from service, will re-register");
+            Intent service = SensorbergServiceIntents.getServiceIntentWithMessage(
+                    context, SensorbergServiceMessage.MSG_GEOFENCE_NOT_AVAILABLE);
+            context.startService(service);
             return;
         }
         try {
@@ -100,50 +134,18 @@ public class GeofenceReceiver extends BroadcastReceiver {
             for (GeofenceData geofenceData : geofenceDatas) {
                 Logger.log.geofence("Received "+ (entry ? "entry" : "exit") +
                         " event "+geofenceData.getGeohash() + ", radius "+geofenceData.getRadius());
-                Logger.log.geofence("Debug build: "+BuildConfig.DEBUG+" Mock: "+geofenceData.isMock());
                 if (!BuildConfig.DEBUG && geofenceData.isMock()) {
                     Logger.log.geofenceError("Geofence from mock location on non-debug build, ignoring", null);
                 } else {
-                    for (GeofenceListener listener : listeners) {
-                        listener.onGeofenceEvent(geofenceData, entry);
-                    }
+                    Intent service = SensorbergServiceIntents.getServiceIntentWithMessage(
+                            context, SensorbergServiceMessage.MSG_GEOFENCE_EVENT);
+                    service.putExtra(SensorbergServiceMessage.EXTRA_GEOFENCE_DATA, geofenceData);
+                    service.putExtra(SensorbergServiceMessage.EXTRA_GEOFENCE_ENTRY, entry);
+                    context.startService(service);
                 }
             }
         } catch (IllegalArgumentException ex) {
             Logger.log.geofenceError("GeofencingEvent is invalid", ex);
         }
-    }
-
-    public void addListener(GeofenceListener listener) {
-        for (GeofenceListener previous : listeners) {
-            if(previous == listener) {
-                return;
-            }
-        }
-        if (listeners.size() == 0) {
-            registerReceiver();
-        }
-        listeners.add(listener);
-    }
-
-    public void removeListener(GeofenceListener listener) {
-        Iterator<GeofenceListener> iterator = listeners.iterator();
-        while (iterator.hasNext()) {
-            GeofenceListener existing = iterator.next();
-            if(existing == listener) {
-                iterator.remove();
-                if (listeners.size() == 0) {
-                    context.unregisterReceiver(this);
-                }
-                return;
-            }
-        }
-    }
-
-    private void registerReceiver() {
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_GEOFENCE);
-        filter.addAction(ACTION_LOCATION);
-        context.registerReceiver(this, filter);
     }
 }

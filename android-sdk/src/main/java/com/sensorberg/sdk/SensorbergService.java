@@ -3,6 +3,7 @@ package com.sensorberg.sdk;
 import android.annotation.TargetApi;
 import android.app.Service;
 import android.content.Intent;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.DeadObjectException;
@@ -22,6 +23,7 @@ import com.sensorberg.sdk.internal.interfaces.Platform;
 import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
+import com.sensorberg.sdk.location.GeofenceData;
 import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.receivers.GenericBroadcastReceiver;
 import com.sensorberg.sdk.receivers.ScannerBroadcastReceiver;
@@ -369,6 +371,22 @@ public class SensorbergService extends Service {
                     Logger.log.debug("Location Permission. Scanner should start");
                 }
             }
+            case SensorbergServiceMessage.MSG_LOCATION_UPDATED: {
+                onLocationChanged(intent);
+                break;
+            }
+            case SensorbergServiceMessage.MSG_LOCATION_ENABLED: {
+                bootstrapper.geofenceManager.ping();
+                break;
+            }
+            case SensorbergServiceMessage.MSG_GEOFENCE_EVENT: {
+                onGeofenceEvent(intent);
+                break;
+            }
+            case SensorbergServiceMessage.MSG_GEOFENCE_NOT_AVAILABLE: {
+                onGeofenceNotAvailable(intent);
+                break;
+            }
         }
         return START_STICKY;
     }
@@ -379,6 +397,39 @@ public class SensorbergService extends Service {
         }
 
         return bootstrapper != null;
+    }
+
+    protected void onLocationChanged(Intent intent) {
+        if (intent.hasExtra(SensorbergServiceMessage.EXTRA_LOCATION_AVAILABILITY)) {
+            boolean available = intent.getBooleanExtra(
+                    SensorbergServiceMessage.EXTRA_LOCATION_AVAILABILITY, false);
+            if (available) {
+                //Not used, might come handy at one point.
+                //bootstrapper.geofenceManager.ping();
+            }
+        }
+        Location location = intent.getParcelableExtra(SensorbergServiceMessage.EXTRA_LOCATION);
+        if (location != null) {
+            bootstrapper.geofenceManager.onLocationChanged(location);
+        }
+    }
+
+    protected void onGeofenceEvent(Intent intent) {
+        GeofenceData data = intent.getParcelableExtra(SensorbergServiceMessage.EXTRA_GEOFENCE_DATA);
+        if (data == null) {
+            Logger.log.geofenceError("Intent missing GeofenceData", null);
+            return;
+        }
+        if (!intent.hasExtra(SensorbergServiceMessage.EXTRA_GEOFENCE_ENTRY)) {
+            Logger.log.geofenceError("Intent missing geofence entry", null);
+            return;
+        }
+        boolean entry = intent.getBooleanExtra(SensorbergServiceMessage.EXTRA_GEOFENCE_ENTRY, true);
+        bootstrapper.geofenceManager.onGeofenceEvent(data, entry);
+    }
+
+    protected void onGeofenceNotAvailable(Intent intent) {
+        bootstrapper.geofenceManager.onGeofenceNotAvailable();
     }
 
     protected void presentBeaconEvent(Intent intent) {

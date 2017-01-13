@@ -65,5 +65,16 @@
                 <action android:name="com.sensorberg.android.sdk.intent.permissionState"/>
             </intent-filter>
         </receiver>
+
+        <receiver android:name=".location.GeofenceReceiver"
+            android:process=":sensorberg"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.location.PROVIDERS_CHANGED"/>
+                <action android:name="com.sensorberg.sdk.receiver.GEOFENCE"/>
+                <action android:name="com.sensorberg.sdk.receiver.LOCATION_UPDATE"/>
+            </intent-filter>
+        </receiver>
+
     </application>
 </manifest>

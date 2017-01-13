@@ -36,17 +36,14 @@ import java.util.List;
 
 import lombok.Setter;
 
-public class GeofenceManager implements LocationHelper.LocationStateListener,
-        GoogleApiClient.ConnectionCallbacks, LocationListener, GeofenceListener {
+public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, LocationListener, GeofenceListener {
 
     private static final int FACTOR = 3;
 
     private Context context;
     private SharedPreferences prefs;
     private Gson gson;
-    private LocationHelper source;
     private GeofenceStorage storage;
-    private GeofenceReceiver receiver;
     private PlayServiceManager play;
 
     private List<GeofenceListener> listeners = new ArrayList<>();
@@ -62,18 +59,14 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
     @Setter
     private boolean registered = false;
 
-    public GeofenceManager(Context context, SharedPreferences prefs, Gson gson,
-                           LocationHelper source, PlayServiceManager play) {
+    public GeofenceManager(Context context, SharedPreferences prefs, Gson gson, PlayServiceManager play) {
         this.context = context;
-        this.source = source;
         this.prefs = prefs;
         this.gson = gson;
         this.play = play;
         entered = loadEntered();
-        receiver = new GeofenceReceiver(context, this);
         storage = new GeofenceStorage(context, prefs);
         handler = new Handler(Looper.getMainLooper());
-        source.addListener(this);
         play.addListener(this);
         previous = restorePrevious();
         current = restoreLastKnown();
@@ -130,12 +123,6 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
     @Override
     public void onLocationChanged(Location incoming) {
         if (incoming != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                if (!BuildConfig.DEBUG && incoming.isFromMockProvider()) {
-                    Logger.log.geofenceError("Mock location on non-debug build, ignoring", null);
-                    return;
-                }
-            }
             current = incoming;
             storeLastKnown(current);
             Logger.log.geofence("Update: location change at " + incoming);
@@ -145,11 +132,11 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
         }
     }
 
-    public void onLocationStateChanged(boolean enabled) {
-        if (this.enabled && enabled) {
+    public void onGeofenceNotAvailable() {
+        if (enabled) {
             Logger.log.geofence("Event: Location state changed");
             registered = false;
-            requestSingleUpdate();  //TODO what if no wake lock?
+            requestSingleUpdate();
         }
     }
 
@@ -375,8 +362,8 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
             result.setResultCallback(new ResultCallback<Status>() {
                 @Override
                 public void onResult(@NonNull Status status) {
-                    if (status.isSuccess()) {
-                        Logger.log.geofenceError("Requesting single location update failed", null);
+                    if (!status.isSuccess()) {
+                        Logger.log.geofenceError("Requesting single location update failed " + status.getStatusCode(), null);
                     }
                 }
             });
@@ -408,7 +395,7 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
             result.setResultCallback(new ResultCallback<Status>() {
                 @Override
                 public void onResult(@NonNull Status status) {
-                    if (status.isSuccess()) {
+                    if (!status.isSuccess()) {
                         Logger.log.geofenceError("Requesting location updates failed " +
                                 status.getStatusCode(), null);
                     }
@@ -454,9 +441,6 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
                 return;
             }
         }
-        if (listeners.size() == 0) {
-            receiver.addListener(this);
-        }
         listeners.add(listener);
     }
 
@@ -466,9 +450,6 @@ public class GeofenceManager implements LocationHelper.LocationStateListener,
             GeofenceListener existing = iterator.next();
             if (existing == listener) {
                 iterator.remove();
-                if (listeners.size() == 0) {
-                    receiver.removeListener(this);
-                }
                 return;
             }
         }

@@ -55,7 +55,7 @@ public class LocationHelperTest {
         when(mockedManager.getProviders(true)).thenReturn(PROVIDERS);
         when(mockedManager.getLastKnownLocation(PROVIDERS.get(0))).thenReturn(l0);
         when(mockedManager.getLastKnownLocation(PROVIDERS.get(1))).thenReturn(l1);
-        tested = new LocationHelper(context, mockedManager, settings);
+        tested = new LocationHelper(mockedManager, settings);
     }
 
     @Test
