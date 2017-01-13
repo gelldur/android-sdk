@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import com.sensorberg.sdk.SensorbergService;
 import com.sensorberg.sdk.SensorbergServiceMessage;
 import com.sensorberg.sdk.internal.PermissionChecker;
 
@@ -42,7 +43,7 @@ public class PermissionBroadcastReceiver extends BroadcastReceiver {
      * @param toShow
      */
     private void shouldDisplayPermission(Context context, boolean toShow) {
-        Intent service = new Intent(context, SensorbergServiceMessage.class);
+        Intent service = new Intent(context, SensorbergService.class);
         service.putExtra(SensorbergServiceMessage.EXTRA_GENERIC_TYPE, SensorbergServiceMessage.MSG_LOCATION_SERVICES_IS_SET);
         service.putExtra(SensorbergServiceMessage.EXTRA_LOCATION_PERMISSION, toShow);
         context.startService(service);
