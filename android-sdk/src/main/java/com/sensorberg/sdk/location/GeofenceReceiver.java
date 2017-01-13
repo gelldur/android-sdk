@@ -53,7 +53,6 @@ public class GeofenceReceiver extends BroadcastReceiver {
                 break;
             case LocationManager.PROVIDERS_CHANGED_ACTION:
                 //Listening to this may cause trouble with some mock location apps that are spamming this action.
-                //TODO find a way to prevent it at BroadcastReceiver level.
                 handleProvidersChanged(context);
                 break;
             default:

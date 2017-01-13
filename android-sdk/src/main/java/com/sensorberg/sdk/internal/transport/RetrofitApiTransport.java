@@ -91,6 +91,11 @@ public class RetrofitApiTransport implements Transport {
         }
     }
 
+    private boolean isModified(Response<ResolveResponse> response) {
+        String header = response.headers().get(RetrofitApiServiceImpl.OKHTTP_HEADER);
+        return !String.valueOf(HttpURLConnection.HTTP_NOT_MODIFIED).equals(header);
+    }
+
     @Override
     public void getBeacon(final ScanEvent scanEvent, SortedMap<String, String> attributes, final BeaconResponseHandler beaconResponseHandler) {
         String networkInfo = NetworkInfoBroadcastReceiver.latestNetworkInfo != null
@@ -103,7 +108,7 @@ public class RetrofitApiTransport implements Transport {
                     public void onResponse(Call<ResolveResponse> call, Response<ResolveResponse> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             save(response.body());
-                            onSuccess(response.body(), !"true".equals(response.headers().get("is304")));
+                            onSuccess(response.body(), isModified(response));
                         } else {
                             onFail(new Throwable("No Content, Invalid Api Key"));
                         }
@@ -243,7 +248,7 @@ public class RetrofitApiTransport implements Transport {
                     public void onResponse(Call<ResolveResponse> call, Response<ResolveResponse> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             save(response.body());
-                            onSuccess(response.body(), !"true".equals(response.headers().get("is304")));
+                            onSuccess(response.body(), isModified(response));
                         } else {
                             onFail(new Exception("Failed to updateBeaconLayout. Response body is empty"));
                         }

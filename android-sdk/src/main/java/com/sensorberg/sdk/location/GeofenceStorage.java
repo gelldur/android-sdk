@@ -34,6 +34,7 @@ public class GeofenceStorage {
     private SQLiteDatabase db;
 
     @Getter private int radius;
+    @Getter private int count;
 
     public GeofenceStorage(Context context, SharedPreferences preferences) {
         this.preferences = preferences;
@@ -41,6 +42,7 @@ public class GeofenceStorage {
                 Constants.SharedPreferencesKeys.Location.INITIAL_GEOFENCES_SEARCH_RADIUS,
                 DefaultSettings.DEFAULT_INITIAL_GEOFENCES_SEARCH_RADIUS);
         db = DBHelper.getInstance(context).getReadableDatabase();
+        count = getCountQuery();
     }
 
     public void updateFences(List<String> fences) {
@@ -58,6 +60,7 @@ public class GeofenceStorage {
                 stmt.executeInsert();
             }
             db.setTransactionSuccessful();
+            count = fences.size();
             Logger.log.geofence("Saved "+fences.size()+" in "+(System.currentTimeMillis() - start) + " ms");
         } catch (SQLException ex) {
             Logger.log.geofenceError("Storage error", ex);
@@ -75,7 +78,6 @@ public class GeofenceStorage {
      * @return List of geofences as requested. Always less than HIGH.
      */
     public HashMap<String, Geofence> getGeofences(Location location) throws SQLException {
-        int count = getCount();
         if (count == 0) {
             //No geofences, return empty array.
             return new HashMap<>(0);
@@ -245,7 +247,7 @@ public class GeofenceStorage {
         while (cursor.moveToNext()) {
             i++;
             if (i <= HIGH) {
-                String fence = cursor.getString(0);
+                String fence = cursor.getString(cursor.getColumnIndex(DBHelper.TG_FENCE));
                 geofence = buildGeofence(fence);
                 if (geofence != null) {
                     result.put(fence, geofence);
@@ -273,7 +275,11 @@ public class GeofenceStorage {
         return db.rawQuery(sql, args);
     }
 
-    public int getCount() throws SQLException {
+    public int getCount() {
+        return count;
+    }
+
+    private int getCountQuery() throws SQLException {
         Cursor cursor = null;
         try {
             cursor = db.rawQuery("SELECT count(1) FROM " + DBHelper.TABLE_GEOFENCES, null);

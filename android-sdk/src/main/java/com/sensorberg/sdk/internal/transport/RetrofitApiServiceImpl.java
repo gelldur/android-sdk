@@ -36,6 +36,8 @@ import retrofit2.http.Url;
 
 public class RetrofitApiServiceImpl {
 
+    public static final String OKHTTP_HEADER = "ok:header";
+
     private static final int CONNECTION_TIMEOUT = 30; //seconds
 
     private static final long HTTP_RESPONSE_DISK_CACHE_MAX_SIZE = 5 * 1024L * 1024L; //5MB
@@ -125,7 +127,7 @@ public class RetrofitApiServiceImpl {
             public Response intercept(Chain chain) throws IOException {
                 Response response = chain.proceed(chain.request());
                 return response.newBuilder()
-                        .addHeader("is304", String.valueOf(response.code() == HttpURLConnection.HTTP_NOT_MODIFIED))
+                        .addHeader(OKHTTP_HEADER, String.valueOf(response.code()))
                         .build();
             }
         });
