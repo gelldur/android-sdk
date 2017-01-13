@@ -52,6 +52,10 @@ public class Logger {
 
         void logBeaconHistoryPublisherState(String s);
 
+        void geofence(String s);
+
+        void geofenceError(String s, Throwable cause);
+
         void logAttributes(String s);
     }
 
@@ -136,6 +140,16 @@ public class Logger {
         }
 
         @Override
+        public void geofence(String s) {
+
+        }
+
+        @Override
+        public void geofenceError(String s, Throwable cause) {
+
+        }
+
+        @Override
         public void logAttributes(String s) {
 
         }
@@ -215,6 +229,16 @@ public class Logger {
         @Override
         public void logBeaconHistoryPublisherState(String state) {
             android.util.Log.d(TAG, "beaconHistoryPublisher state:" + state);
+        }
+
+        @Override
+        public void geofence(String s) {
+            android.util.Log.d(TAG, "Geofences: "+s);
+        }
+
+        @Override
+        public void geofenceError(String s, Throwable cause) {
+            android.util.Log.e(TAG, "Geofences: "+s, cause);
         }
 
         @Override
