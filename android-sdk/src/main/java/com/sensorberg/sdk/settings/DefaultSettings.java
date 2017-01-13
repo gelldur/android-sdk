@@ -39,4 +39,6 @@ public class DefaultSettings {
     public static final int DEFAULT_SCANNER_MIN_RSSI = Integer.MIN_VALUE;
 
     public static final int DEFAULT_SCANNER_MAX_DISTANCE = Integer.MAX_VALUE;
+
+    public static final int DEFAULT_INITIAL_GEOFENCES_SEARCH_RADIUS = 100 * 1000; //meters, 100 km
 }
