@@ -195,7 +195,7 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
     }
 
     public void changeAPIToken(String newApiToken) {
-        if (TextUtils.isEmpty(newApiToken)) {
+        if (!TextUtils.isEmpty(newApiToken)) {
             context.startService(SensorbergServiceIntents.getApiTokenIntent(context, newApiToken));
         } else {
             Logger.log.logError("Cannot set empty token");
