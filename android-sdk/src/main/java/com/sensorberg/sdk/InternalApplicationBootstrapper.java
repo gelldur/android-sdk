@@ -342,6 +342,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
             scanner.stop();
             unscheduleAllPendingActions();
             beaconActionHistoryPublisher.deleteAllObjects();
+            geofenceManager.clear();
 
             // re-start
             transport.setApiToken(apiToken);
