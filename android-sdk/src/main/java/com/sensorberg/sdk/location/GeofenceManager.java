@@ -74,6 +74,11 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
         }
     }
 
+    public void clear() {
+        entered = new HashSet<>();
+        onFencesChanged(new ArrayList<String>());
+    }
+
     private void enable() {
         if (!enabled) {
             enabled = true;
