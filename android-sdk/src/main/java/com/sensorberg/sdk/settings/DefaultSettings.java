@@ -24,6 +24,14 @@ public class DefaultSettings {
 
     public static final int DEFAULT_GEOHASH_MIN_ACCURACY_RADIUS = 25;   //meters
 
+    public static final long GEOFENCE_MIN_UPDATE_TIME = 5 * TimeConstants.ONE_MINUTE;
+
+    public static final int GEOFENCE_MIN_UPDATE_DISTANCE = 500; //m
+
+    public static final int GEOFENCE_MAX_DEVICE_SPEED = 50; //km/h
+
+    public static final int GEOFENCE_NOTIFICATION_RESPONSIVENESS = (int) (5 * TimeConstants.ONE_SECOND);
+
     public static final long DEFAULT_BACKGROUND_SCAN_TIME = 20 * TimeConstants.ONE_SECOND;
 
     public static final long DEFAULT_CLEAN_BEACONMAP_ON_RESTART_TIMEOUT = TimeConstants.ONE_MINUTE;
