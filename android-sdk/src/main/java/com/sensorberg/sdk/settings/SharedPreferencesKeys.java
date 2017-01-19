@@ -33,6 +33,14 @@ public final class SharedPreferencesKeys {
 
         public static final String GEOHASH_MIN_ACCURACY_RADIUS = "com.sensorberg.preferences.location.geohashMinAccuracyRadius";
 
+        public static final String GEOFENCE_MIN_UPDATE_TIME = "com.sensorberg.preferences.geofence.minUpdateTime";
+
+        public static final String GEOFENCE_MIN_UPDATE_DISTANCE = "com.sensorberg.preferences.geofence.minUpdateDistance";
+
+        public static final String GEOFENCE_MAX_DEVICE_SPEED = "com.sensorberg.preferences.geofence.maxDeviceSpeed";
+
+        public static final String GEOFENCE_NOTIFICATION_RESPONSIVENESS = "com.sensorberg.preferences.geofence.notificationResponsiveness";
+
         private Location() {
             throw new IllegalAccessError("Utility class");
         }

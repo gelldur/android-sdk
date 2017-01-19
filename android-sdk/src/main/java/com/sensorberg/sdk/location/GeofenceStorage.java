@@ -12,6 +12,7 @@ import com.google.android.gms.location.Geofence;
 import com.sensorberg.sdk.Constants;
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.settings.DefaultSettings;
+import com.sensorberg.sdk.settings.SettingsManager;
 import com.sensorberg.sdk.storage.DBHelper;
 
 import java.util.ArrayList;
@@ -31,12 +32,14 @@ public class GeofenceStorage {
     public static final int LOW = HIGH / 2;
 
     private SharedPreferences preferences;
+    private SettingsManager settings;
     private SQLiteDatabase db;
 
     @Getter private int radius;
     @Getter private int count;
 
-    public GeofenceStorage(Context context, SharedPreferences preferences) {
+    public GeofenceStorage(Context context, SettingsManager settings, SharedPreferences preferences) {
+        this.settings = settings;
         this.preferences = preferences;
         radius = preferences.getInt(
                 Constants.SharedPreferencesKeys.Location.INITIAL_GEOFENCES_SEARCH_RADIUS,
@@ -105,7 +108,7 @@ public class GeofenceStorage {
                     //Good enough on first shot. Use it.
                     return getGeofencesFromCursor(cursor, cursor.getCount());
                 } else {
-                    //If more than LIMIT we'll search and reduce radius, else increase
+                    //If more than HIGH we'll search and reduce radius, else increase
                     if (cursor.getCount() > HIGH) {
                         cursor = searchAndReduce(center, radius, cursor);
                     } else {
@@ -131,6 +134,7 @@ public class GeofenceStorage {
      */
     private Cursor searchAndReduce(WGS84Point center, int radius, Cursor current) {
         Cursor result = current, previous = null;
+        int radiusPrev = radius;
         boolean done = false;
         while (!done) {
             //Decide whether found is acceptable.
@@ -141,6 +145,7 @@ public class GeofenceStorage {
                     close(previous);
                 } else {
                     //It's zero, use previous.
+                    radius = radiusPrev;
                     if (previous != null) {
                         //If the previous value was > 0 then we take it.
                         result = previous;
@@ -159,6 +164,7 @@ public class GeofenceStorage {
             }
             //Loop things
             close(previous);
+            radiusPrev = radius;
             radius /= 2;
             if (radius < MIN_RADIUS) {
                 //So we don't overshoot or loop forever.
@@ -183,6 +189,7 @@ public class GeofenceStorage {
      */
     private Cursor searchAndExtend(WGS84Point center, int radius, Cursor current) {
         Cursor result = current, previous = null;
+        int radiusPrev = radius;
         boolean done = false;
         while (!done) {
             //Decide whether found is acceptable.
@@ -193,6 +200,7 @@ public class GeofenceStorage {
                     close(previous);
                 } else {
                     //More than HIGH, check previous cursor.
+                    radius = radiusPrev;
                     if (previous != null && previous.getCount() != 0) {
                         //If the previous value was > 0 then we take it.
                         result = previous;
@@ -211,6 +219,7 @@ public class GeofenceStorage {
             }
             //Loop things
             close(previous);
+            radiusPrev = radius;
             radius *= 2;
             if (radius > MAX_RADIUS) {
                 //So we don't overshoot or loop forever.
@@ -303,7 +312,7 @@ public class GeofenceStorage {
                             temp.getLongitude(),
                             temp.getRadius())
                     .setExpirationDuration(Long.MAX_VALUE)
-                    .setNotificationResponsiveness(5000)
+                    .setNotificationResponsiveness(settings.getGeofenceNotificationResponsiveness())
                     //TODO this could be optimized to trigger only on entry / exit according to layout. Not worth it now.
                     .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)
                     .build();

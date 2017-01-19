@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.database.SQLException;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,7 +22,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.sensorberg.sdk.Constants;
 import com.sensorberg.sdk.Logger;
-import com.sensorberg.sdk.settings.TimeConstants;
+import com.sensorberg.sdk.settings.SettingsManager;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -36,9 +35,8 @@ import lombok.Setter;
 
 public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, LocationListener, GeofenceListener {
 
-    private static final int FACTOR = 3;
-
     private Context context;
+    private SettingsManager settings;
     private SharedPreferences prefs;
     private Gson gson;
     private GeofenceStorage storage;
@@ -48,8 +46,6 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
 
     private HashSet<String> entered;
 
-    private Handler handler;
-
     private Location previous;
     private Location current;
     private boolean updating = false;
@@ -57,14 +53,14 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
     @Setter
     private boolean registered = false;
 
-    public GeofenceManager(Context context, SharedPreferences prefs, Gson gson, PlayServiceManager play) {
+    public GeofenceManager(Context context, SettingsManager settings, SharedPreferences prefs, Gson gson, PlayServiceManager play) {
         this.context = context;
         this.prefs = prefs;
         this.gson = gson;
         this.play = play;
+        this.settings = settings;
         entered = loadEntered();
-        storage = new GeofenceStorage(context, prefs);
-        handler = new Handler(Looper.getMainLooper());
+        storage = new GeofenceStorage(context, settings, prefs);
         play.addListener(this);
         previous = restorePrevious();
         current = restoreLastKnown();
@@ -75,6 +71,8 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
     }
 
     public void clear() {
+        previous = null;
+        storePrevious(previous);
         entered = new HashSet<>();
         onFencesChanged(new ArrayList<String>());
     }
@@ -111,6 +109,9 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
             enable();
         }
         registered = false;
+        if (storage.getCount() <= GeofenceStorage.HIGH) {
+            requestSingleUpdate();
+        }
         if (trigger(current)) {
             removeGeofences(current);
         }
@@ -169,7 +170,7 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
             Logger.log.geofence("Deny: Already updating");
             return false;
         }
-        if (storage.getCount() < GeofenceStorage.HIGH) {    //TODO keep getCount in memory
+        if (storage.getCount() <= GeofenceStorage.HIGH) {
             //We don't have to consider location below 100 geofences
             if (registered) {
                 Logger.log.geofence("Deny: Below " + GeofenceStorage.HIGH + " and all registered");
@@ -190,14 +191,13 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
             //From now on previous != null
             if (location != null) {
                 float change = previous.distanceTo(location);
-                float needed = storage.getRadius() / FACTOR;
-                if (change < needed) {
+                if (change < storage.getRadius()) {
                     Logger.log.geofence("Deny: Location change too small, " +
-                            "was: " + change + "m, needed: " + needed + "m");
+                            "was: " + change + "m, needed: " + storage.getRadius() + "m");
                     return false;
                 }
                 Logger.log.geofence("Allow: Location change large enough, " +
-                        "was: " + change + "m, needed: " + needed + "m");
+                        "was: " + change + "m, needed: " + storage.getRadius() + "m");
                 return true;
             }
             //Technically not possible here, but oh well...
@@ -307,6 +307,7 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
                 saveEntered(entered);
             }
         }
+        //TODO in V3 - If it's at the edge of registered radius then re-register.
         notifyListeners(geofenceData, entry);
     }
 
@@ -378,17 +379,28 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
     }
 
     private void requestLocationUpdates() {
+        if (storage.getCount() <= GeofenceStorage.HIGH) {
+            return;
+        }
+
+        //Calculate displacement and update time
+        final float displacement = Math.max(
+                storage.getRadius(),
+                settings.getGeofenceMinUpdateDistance());
+        final long time = Math.max(
+                ((long) displacement / settings.getGeofenceMaxDeviceSpeed()) * 1000,
+                settings.getGeofenceMinUpdateTime());
         LocationRequest request = LocationRequest.create();
+        //BALANCED priority gives "block" level accuracy - about 100m, which suits our case
+        //Next priority LOW_POWER is "city" level accuracy - about 10km, which might be not enough
         request.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        //We want update once per 2 hours
-        request.setInterval(2 * TimeConstants.ONE_HOUR);
-        //But not more often than 15 mins
-        request.setFastestInterval(TimeConstants.ONE_HOUR / 4);
-        //And not less often than 2 hours
-        request.setMaxWaitTime(2 * TimeConstants.ONE_HOUR);
-        //setSmallestDisplacement has precedence over all this timing.
-        //This means we won't get any update if location change is smaller than below.
-        request.setSmallestDisplacement(storage.getRadius() / FACTOR);
+        //Set normal, min, max update timing
+        request.setInterval(time);
+        request.setFastestInterval(time / 2);
+        request.setMaxWaitTime(2 * time);
+        //Smallest displacement overrides all three timing settings above
+        request.setSmallestDisplacement(displacement);
+
         try {
             PendingResult<Status> result;
             result = LocationServices.FusedLocationApi.requestLocationUpdates(
@@ -401,6 +413,8 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
                     if (!status.isSuccess()) {
                         Logger.log.geofenceError("Requesting location updates failed " +
                                 status.getStatusCode(), null);
+                    } else {
+                        Logger.log.geofence("Registered location updates with time: "+time+" displacement: "+displacement);
                     }
                 }
             });

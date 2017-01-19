@@ -138,6 +138,14 @@ public class SensorbergServiceMessage {
                 return "MSG_CONVERSION";
             case MSG_ATTRIBUTES:
                 return "MSG_ATTRIBUTES";
+            case MSG_GEOFENCE_EVENT:
+                return "MSG_GEOFENCE_EVENT";
+            case MSG_GEOFENCE_NOT_AVAILABLE:
+                return "MSG_GEOFENCE_NOT_AVAILABLE";
+            case MSG_LOCATION_UPDATED:
+                return "MSG_LOCATION_UPDATED";
+            case MSG_LOCATION_ENABLED:
+                return "MSG_LOCATION_ENABLED";
             default:
                 return "unknown message" + what;
         }
