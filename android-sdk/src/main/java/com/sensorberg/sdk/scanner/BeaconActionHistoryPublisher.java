@@ -16,11 +16,13 @@ import com.sensorberg.sdk.model.persistence.BeaconAction;
 import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolverListener;
+import com.sensorberg.sdk.settings.TimeConstants;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +38,7 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     private static final int MSG_DELETE_ALL_DATA = 6;
     private static final int MSG_SAVE_SUPPRESSION_STORE = 7;
     static final int MAX_UPLOAD_SIZE = 2000;
+    static final long MAX_SUPPRESSION_AGE = 7 * TimeConstants.ONE_DAY;
 
     private Clock clock;
 
@@ -265,6 +268,14 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
                 Type hashMapType = new TypeToken<HashMap<String, Long>>() {
                 }.getType();
                 suppressionTimeStore = gson.fromJson(supressionTimeStoreString, hashMapType);
+                Iterator<Map.Entry<String, Long>> iterator = suppressionTimeStore.entrySet().iterator();
+                long old = clock.now() - MAX_SUPPRESSION_AGE;
+                while (iterator.hasNext()) {
+                    Map.Entry<String, Long> entry = iterator.next();
+                    if (entry.getValue() <= old) {
+                        iterator.remove();
+                    }
+                }
             }
         }
     }
