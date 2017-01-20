@@ -36,7 +36,7 @@ import retrofit2.http.Url;
 
 public class RetrofitApiServiceImpl {
 
-    public static final String OKHTTP_HEADER = "ok:header";
+    public static final String OKHTTP_HEADER = "okhttp-header";
 
     private static final int CONNECTION_TIMEOUT = 30; //seconds
 

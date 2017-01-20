@@ -202,7 +202,7 @@ public class ProvidersModule {
 
     @Provides
     @Singleton
-    public GeofenceManager provideGeofenceManager(Context context, SharedPreferences preferences, Gson gson, PlayServiceManager play) {
-        return new GeofenceManager(context, preferences, gson, play);
+    public GeofenceManager provideGeofenceManager(Context context, @Named("realSettingsManager") SettingsManager settings, SharedPreferences preferences, Gson gson, PlayServiceManager play) {
+        return new GeofenceManager(context, settings, preferences, gson, play);
     }
 }
