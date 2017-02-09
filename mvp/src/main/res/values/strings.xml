@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">MVP</string>
+    <string name="text">This app is only a minium SDK implementation
+        \n\nCheck SensorbergReceiver.java for receiving notifications in background.
+        \n\nCheck MainActivity.java for receiving notifications in foreground.
+        \n\nCheck manifest for correct configuration of the receiver
+        \n\nCheck App.java for correct SDK initialisation</string>
+</resources>

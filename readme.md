@@ -9,6 +9,10 @@ For Integration instructions please visit our developer hub Android SDK page and
 
 You are viewing the sources of the 2.x Version of the SDK, the documenation on developer.sensorberg.com will be updated in the coming days, feel free to explore the [bundled app](https://github.com/sensorberg-dev/android-sdk/tree/master/dev-app) inside the SDK. The integration has changed slightly from the 1.x version.
 
+
+#MVP
+There's a minimum implementation on mvp module. That can be a starting point to implement our SDK on your project.
+
 #Build,Test,Deploy
 
 ##Dependencies:
