@@ -284,10 +284,6 @@ public class GeofenceStorage {
         return db.rawQuery(sql, args);
     }
 
-    public int getCount() {
-        return count;
-    }
-
     private int getCountQuery() throws SQLException {
         Cursor cursor = null;
         try {
