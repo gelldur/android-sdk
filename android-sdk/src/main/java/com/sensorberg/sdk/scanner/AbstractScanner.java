@@ -26,6 +26,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
+import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -118,7 +119,7 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
                         //might be negative!!!
                         long timeSinceWeSawTheBeacon = now - lastBreakLength - beaconEntry.getLastBeaconTime();
                         if (timeSinceWeSawTheBeacon > settingsManager.getExitTimeoutMillis()) {
-                            ScanEvent scanEvent = new ScanEvent(beaconId, now, false, locationHelper.getGeohash());
+                            ScanEvent scanEvent = new ScanEvent(beaconId, now, false, locationHelper.getGeohash(), beaconEntry.getPairingId());
                             runLoop.sendMessage(ScannerEvent.EVENT_DETECTED, scanEvent);
                             Logger.log.beaconResolveState(scanEvent,
                                     " exited (time since we saw the beacon: " + (int) (timeSinceWeSawTheBeacon / 1000) + " seconds)");
@@ -173,12 +174,12 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
 
                 if (entry == null) {
                     String address = device != null ? device.getAddress() : null;
-                    ScanEvent scanEvent = new ScanEvent(beaconId, now, true, address, rssi, calRssi, locationHelper.getGeohash());
+                    ScanEvent scanEvent = new ScanEvent(beaconId, now, true, address, rssi, calRssi, locationHelper.getGeohash(), UUID.randomUUID().toString());
                     runLoop.sendMessage(ScannerEvent.EVENT_DETECTED, scanEvent);
-                    entry = new EventEntry(now, ScanEventType.ENTRY.getMask());
+                    entry = new EventEntry(now, ScanEventType.ENTRY.getMask(), scanEvent.getPairingId());
                     Logger.log.beaconResolveState(scanEvent, "entered");
                 } else {
-                    entry = new EventEntry(now, entry.getEventMask());
+                    entry = new EventEntry(now, entry.getEventMask(), entry.getPairingId());
                     Logger.log.beaconSeenAgain(beaconId);
                     if (this.rssiListener != RssiListener.NONE) {
                         runLoop.sendMessage(ScannerEvent.RSSI_UPDATED, new Pair<>(beaconId, rssi));

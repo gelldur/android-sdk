@@ -2,7 +2,6 @@ package com.sensorberg.sdk.model.persistence;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-
 import com.sensorberg.sdk.scanner.ScanEvent;
 import com.sensorberg.sdk.scanner.ScanEventType;
 import com.sensorberg.utils.Objects;
@@ -38,6 +37,12 @@ public class BeaconScan {
     @SerializedName("location")
     private String geohash;
 
+    @Expose
+    @Getter
+    @Setter
+    @SerializedName("pairingId")
+    private String pairingId;
+
     public BeaconScan() {
     }
 
@@ -53,6 +58,7 @@ public class BeaconScan {
         value.setPid(scanEvent.getBeaconId().getPid());
         value.setCreatedAt(scanEvent.getEventTime());
         value.setGeohash(scanEvent.getGeohash());
+        value.setPairingId(scanEvent.getPairingId());
         return value;
     }
 
@@ -76,6 +82,9 @@ public class BeaconScan {
         if (!Objects.equals(geohash, that.geohash)) {
             return false;
         }
+        if (!Objects.equals(pairingId, that.pairingId)) {
+            return false;
+        }
         return !(pid != null ? !pid.equals(that.pid) : that.pid != null);
 
     }
@@ -86,6 +95,7 @@ public class BeaconScan {
         result = 31 * result + (pid != null ? pid.hashCode() : 0);
         result = 31 * result + (int) (createdAt ^ (createdAt >>> 32));
         result = 31 * result + (geohash != null ? geohash.hashCode() : 0);
+        result = 31 * result + (pairingId != null ? pairingId.hashCode() : 0);
         return result;
     }
 }
