@@ -104,10 +104,10 @@ public class LocationHelper {
         @Override
         public int compare(Location t1, Location t2) {
             if (t1.getTime() > t2.getTime()) {
-                return 1;
+                return -1;
             }
             if (t2.getTime() > t1.getTime()) {
-                return -1;
+                return 1;
             }
             return 0;
         }
