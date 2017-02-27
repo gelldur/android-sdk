@@ -3,11 +3,13 @@ package com.sensorberg.sdk.scanner;
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Message;
 import android.util.Pair;
 
 import com.sensorberg.SensorbergSdk;
+import com.sensorberg.sdk.Constants;
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
 import com.sensorberg.sdk.internal.interfaces.Clock;
@@ -74,6 +76,11 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
 
     private long lastScanStart;
 
+    private volatile long lastSeenBtAdvert;
+
+    @Inject
+    SharedPreferences preferences;
+
     @Inject
     LocationHelper locationHelper;
 
@@ -95,6 +102,8 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
         scanTime = settingsManager.getBackgroundScanTime();
 
         SensorbergSdk.getComponent().inject(this);
+
+        lastSeenBtAdvert = preferences.getLong(Constants.SharedPreferencesKeys.Scanner.LAST_SEEN_BT_FRAME_TIME, Long.MAX_VALUE);
     }
 
     /**
@@ -151,6 +160,8 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
     }
 
     private void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+        long now = clock.now();
+        lastSeenBtAdvert = now;
 
         if (settingsManager.getScannerMinRssi() != DefaultSettings.DEFAULT_SCANNER_MIN_RSSI &&
                 rssi < settingsManager.getScannerMinRssi()) {
@@ -168,7 +179,6 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
 
             BeaconId beaconId = beacon.first;
             synchronized (enteredBeaconsMonitor) {
-                long now = clock.now();
                 EventEntry entry = enteredBeacons.get(beaconId);
 
                 if (entry == null) {
@@ -212,6 +222,12 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
                 Logger.log.scannerStateChange("sleeping for" + waitTime + "millis");
                 scheduleExecution(ScannerEvent.UN_PAUSE_SCAN, waitTime);
                 runLoop.cancelFixedRateExecution();
+                preferences.edit().putLong(Constants.SharedPreferencesKeys.Scanner.LAST_SEEN_BT_FRAME_TIME, lastSeenBtAdvert).apply();
+                if (clock.now() - lastSeenBtAdvert > settingsManager.getSuspiciousBtInactivityTime()) {
+                    runLoop.sendMessage(ScannerEvent.BT_STACK_FAIL, lastSeenBtAdvert);
+                } else {
+                    runLoop.sendMessage(ScannerEvent.BT_STACK_OK, lastSeenBtAdvert);
+                }
                 break;
             }
             case ScannerEvent.UN_PAUSE_SCAN: {
@@ -258,6 +274,14 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
                 this.rssiListener.onRssiUpdated(value.first, value.second);
                 break;
 
+            }
+            case ScannerEvent.BT_STACK_FAIL: {
+                this.rssiListener.onNothing((Long) queueEvent.getData());
+                break;
+            }
+            case ScannerEvent.BT_STACK_OK: {
+                this.rssiListener.onSomething((Long) queueEvent.getData());
+                break;
             }
             default: {
                 throw new IllegalArgumentException("unhandled case " + queueEvent.getData());
@@ -359,10 +383,22 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
             public void onRssiUpdated(BeaconId beaconId, Integer rssiValue) {
 
             }
+
+            @Override
+            public void onNothing(long lastSeenBtFrameTime) {
+
+            }
+
+            @Override
+            public void onSomething(long lastSeenBtFrameTime) {
+
+            }
         };
 
         @SuppressWarnings("UnusedParameters")
         void onRssiUpdated(BeaconId beaconId, Integer rssiValue);
+        void onNothing(long lastSeenBtFrameTime);
+        void onSomething(long lastSeenBtFrameTime);
     }
 
     private static double getDistanceFromRSSI(double rssi, int calRssi) {

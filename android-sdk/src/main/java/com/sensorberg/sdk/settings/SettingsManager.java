@@ -158,6 +158,10 @@ public class SettingsManager {
         return getSettings().getHistoryUploadInterval();
     }
 
+    public long getSuspiciousBtInactivityTime() {
+        return getSettings().getSuspiciousBtInactivityTime();
+    }
+
     /**
      * Beacon report level.
      * REPORT_ALL = 0;

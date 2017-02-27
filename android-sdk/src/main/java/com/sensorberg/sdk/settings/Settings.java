@@ -96,6 +96,12 @@ public class Settings {
 
     @Getter
     @Expose
+    @SerializedName("scanner.suspiciousBtInactivityTime")
+    @Setter
+    private long suspiciousBtInactivityTime = DefaultSettings.DEFAULT_SUSPICIOUS_BT_INACTIVITY_TIME;
+
+    @Getter
+    @Expose
     @SerializedName("scanner.cleanBeaconMapRestartTimeout")
     private long cleanBeaconMapRestartTimeout = DefaultSettings.DEFAULT_CLEAN_BEACONMAP_ON_RESTART_TIMEOUT;
 

@@ -10,6 +10,8 @@ public class DefaultSettings {
 
     public static final long DEFAULT_HISTORY_UPLOAD_INTERVAL = 30 * TimeConstants.ONE_MINUTE;
 
+    public static final long DEFAULT_SUSPICIOUS_BT_INACTIVITY_TIME = TimeConstants.ONE_HOUR;
+
     public static final long DEFAULT_SETTINGS_UPDATE_INTERVAL = TimeConstants.ONE_DAY;
 
     public static final long DEFAULT_EXIT_TIMEOUT_MILLIS = 9 * TimeConstants.ONE_SECOND;
