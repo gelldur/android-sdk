@@ -1,0 +1,157 @@
+---
+format_version: 1.3.0
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+trigger_map:
+- push_branch: master
+  workflow: publish
+- push_branch: develop
+  workflow: publish
+- push_branch: feature/new-platform
+  workflow: publish
+- push_branch: geofencing
+  workflow: publish
+workflows:
+  primary:
+    steps:
+    - activate-ssh-key@3.1.1:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@3.4.1: {}
+    - gradle-runner@1.5.4:
+        inputs:
+        - gradle_task: "$GRADLE_TASK"
+        - apk_file_include_filter: "*.aar"
+    - deploy-to-bitrise-io@1.2.8:
+        title: Deploy Test Results
+        run_if: ".IsBuildFailed"
+        inputs:
+        - deploy_path: "${BITRISE_SOURCE_DIR}/android-sdk/build/reports"
+        - is_compress: 'true'
+        - is_enable_public_page: 'false'
+    - deploy-to-bitrise-io@1.2.8:
+        is_always_run: false
+        inputs:
+        - is_enable_public_page: 'false'
+    before_run:
+    after_run:
+    envs:
+    - opts:
+        is_expand: true
+      GRADLE_TASK: assembleRelease
+  test:
+    steps:
+    - create-android-emulator@1.0.0:
+        inputs:
+        - name: device
+        - platform: android-21
+        - custom_hardware_profile_content: |-
+            avd.ini.encoding=UTF-8
+            abi.type=armeabi-v7a
+            hw.cpu.arch=arm
+            hw.cpu.model=cortex-a8
+            hw.lcd.density=240
+            hw.ramSize=1024
+            image.sysdir.1=system-images/android-21/default/armeabi-v7a/
+            skin.name=WVGA800
+            skin.path=platforms/android-21/skins/WVGA800
+            tag.display=Defaultdoing anything else. With
+            tag.id=default
+            vm.heapSize=512
+    - start-android-emulator@1.1.1:
+        inputs:
+        - wait_for_boot: 'false'
+    - activate-ssh-key@3.1.1:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@3.4.1: {}
+    - gradle-runner@1.5.4:
+        inputs:
+        - gradle_task: "$GRADLE_TASK"
+        - apk_file_include_filter: "*.aar"
+    - wait-for-android-emulator@0.9.0: {}
+    - gradle-runner@1.5.4:
+        inputs:
+        - gradle_task: cAT
+        - apk_file_include_filter: ''
+        - apk_file_exclude_filter: "*.*"
+        - mapping_file_include_filter: ''
+        - mapping_file_exclude_filter: "*.*"
+    - deploy-to-bitrise-io@1.2.8:
+        title: Deploy Test Results
+        run_if: ".IsBuildFailed"
+        inputs:
+        - deploy_path: "${BITRISE_SOURCE_DIR}/android-sdk/build/reports"
+        - is_compress: 'true'
+        - is_enable_public_page: 'false'
+    - deploy-to-bitrise-io@1.2.8:
+        is_always_run: false
+        inputs:
+        - is_enable_public_page: 'false'
+    - slack@2.3.0:
+        inputs:
+        - webhook_url: "$SLACK_WEBHOOK"
+        - channel: "#android-dev"
+        - message: |-
+            Great job kid, now get back to work!
+            $BITRISE_PULL_REQUEST
+        - message_on_error: |-
+            Oh no... look what a mess I've done!
+            $BITRISE_BUILD_URL
+            https://github.com/sensorberg-dev/android-sdk/pull/${BITRISE_PULL_REQUEST}
+        - emoji: ":unicorn_face:"
+        - emoji_on_error: ":trollface:"
+        - icon_url: ''
+        - icon_url_on_error: ''
+    before_run:
+    after_run:
+    envs:
+    - opts:
+        is_expand: true
+      GRADLE_TASK: assembleRelease
+  publish:
+    steps:
+    - activate-ssh-key@3.1.1:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@3.4.1: {}
+    - gradle-runner@1.5.4:
+        inputs:
+        - gradle_task: "$GRADLE_TASK"
+        - apk_file_include_filter: "*.aar"
+    - deploy-to-bitrise-io@1.2.8:
+        title: Deploy Test Results
+        run_if: ".IsBuildFailed"
+        inputs:
+        - deploy_path: "${BITRISE_SOURCE_DIR}/android-sdk/build/reports"
+        - is_compress: 'true'
+        - is_enable_public_page: 'false'
+    - deploy-to-bitrise-io@1.2.8:
+        is_always_run: false
+        inputs:
+        - is_enable_public_page: 'false'
+    - slack@2.3.0:
+        inputs:
+        - webhook_url: "$SLACK_WEBHOOK"
+        - channel: "#android-dev"
+        - message: |-
+            New snapshot delivered!
+            repo: `maven { url 'http://oss.jfrog.org/artifactory/oss-snapshot-local/' }`
+            dep: `compile 'com.sensorberg.sdk:android-sdk:${BITRISE_GIT_BRANCH}-SNAPSHOT'`
+        - message_on_error: |-
+            WTF? Didn't anyone test this?
+            https://github.com/sensorberg-dev/android-sdk/tree/feature/${BITRISE_GIT_BRANCH}
+        - emoji: ":tada:"
+        - emoji_on_error: ":hankey:"
+        - icon_url: ''
+        - icon_url_on_error: ''
+    before_run:
+    after_run:
+    envs:
+    - opts:
+        is_expand: true
+      GRADLE_TASK: assembleRelease artifactoryPublish
+app:
+  envs:
+  - opts:
+      is_expand: false
+    GRADLE_BUILD_FILE_PATH: android-sdk/build.gradle
+  - opts:
+      is_expand: false
+    GRADLEW_PATH: "./gradlew"
