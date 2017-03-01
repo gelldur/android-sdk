@@ -1,9 +1,6 @@
 package com.sensorberg.sdk.scanner;
 
-import android.annotation.TargetApi;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.os.Build;
 import android.os.Message;
 import android.util.Pair;
 
@@ -50,7 +47,7 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
 
     private final BluetoothPlatform bluetoothPlatform;
 
-    private final ScanCallback scanCallback = new ScanCallback();
+    private final CommonCallback scanCallback = new CommonCallback();
 
     private final Object listenersMonitor = new Object();
 
@@ -75,10 +72,16 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
 
     private long lastScanStart;
 
+    private int errorCode = -1;     //-1 meaning no error
+
+    private boolean errorInLastCycle = false;
+
     @Inject
     LocationHelper locationHelper;
 
     @Getter @Setter private RssiListener rssiListener = RssiListener.NONE;
+
+    @Getter @Setter private ErrorListener errorListener = ErrorListener.NONE;
 
     AbstractScanner(SettingsManager stgMgr, boolean shouldRestoreBeaconStates, Clock clk, FileManager fileManager,
             ServiceScheduler scheduler, HandlerManager handlerManager, BluetoothPlatform btPlatform) {
@@ -190,6 +193,18 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
         }
     }
 
+    public void onScanFailed(int errorCode) {
+        runLoop.sendMessage(ScannerEvent.SCAN_FAILED, errorCode);
+    }
+
+    public void onScanWorking() {
+        if (errorListener != ErrorListener.NONE && !errorInLastCycle && errorCode != -1) {
+            //This cycle finished without error, but there was error before - scanning is ok now.
+            errorCode = -1;
+            errorListener.onScanWorking();
+        }
+    }
+
     @Override
     public void handleMessage(Message message) {
         ScannerEvent queueEvent = new ScannerEvent(message.what, message.obj);
@@ -210,6 +225,7 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
             }
             case ScannerEvent.PAUSE_SCAN: {
                 bluetoothPlatform.stopLeScan();
+                onScanWorking();
                 Logger.log.scannerStateChange("sleeping for" + waitTime + "millis");
                 scheduleExecution(ScannerEvent.UN_PAUSE_SCAN, waitTime);
                 runLoop.cancelFixedRateExecution();
@@ -222,6 +238,7 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
                 if (scanning) {
                     Logger.log.debug("ScannerStatusUnpause" + Boolean.toString(scanning));
                     Logger.log.scannerStateChange("scanning for" + scanTime + "millis");
+                    errorInLastCycle = false;
                     bluetoothPlatform.startLeScan(scanCallback);
                     scheduleExecution(ScannerEvent.PAUSE_SCAN, scanTime);
 
@@ -259,6 +276,15 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
                 this.rssiListener.onRssiUpdated(value.first, value.second);
                 break;
 
+            }
+            case ScannerEvent.SCAN_FAILED: {
+                errorInLastCycle = true;
+                int errorCode = (int) queueEvent.getData();
+                if (errorListener != ErrorListener.NONE && this.errorCode == -1) {
+                    this.errorCode = errorCode;
+                    errorListener.onScanFailed(errorCode);
+                }
+                break;
             }
             default: {
                 throw new IllegalArgumentException("unhandled case " + queueEvent.getData());
@@ -305,11 +331,14 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
         runLoop.sendMessage(ScannerEvent.SCAN_STOP_REQUESTED);
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    private class ScanCallback implements BluetoothAdapter.LeScanCallback {
+    public class CommonCallback {
 
         public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
             AbstractScanner.this.onLeScan(device, rssi, scanRecord);
+        }
+
+        public void onScanFailed(int errorCode) {
+            AbstractScanner.this.onScanFailed(errorCode);
         }
     }
 
@@ -364,6 +393,23 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
 
         @SuppressWarnings("UnusedParameters")
         void onRssiUpdated(BeaconId beaconId, Integer rssiValue);
+    }
+
+    public interface ErrorListener {
+        ErrorListener NONE = new ErrorListener() {
+            @Override
+            public void onScanFailed(int errorCode) {
+
+            }
+
+            @Override
+            public void onScanWorking() {
+
+            }
+        };
+
+        void onScanFailed(int errorCode);
+        void onScanWorking();
     }
 
     private static double getDistanceFromRSSI(double rssi, int calRssi) {
