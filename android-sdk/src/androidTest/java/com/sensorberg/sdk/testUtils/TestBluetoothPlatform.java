@@ -1,11 +1,11 @@
 package com.sensorberg.sdk.testUtils;
 
+import android.annotation.TargetApi;
+import android.os.Build;
+
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
 import com.sensorberg.sdk.model.BeaconId;
-
-import android.annotation.TargetApi;
-import android.bluetooth.BluetoothAdapter;
-import android.os.Build;
+import com.sensorberg.sdk.scanner.AbstractScanner;
 
 import util.Utils;
 
@@ -76,7 +76,7 @@ public class TestBluetoothPlatform implements BluetoothPlatform {
     public static final byte[] BYTES_FOR_SENSORBERG_BEACON_1 = hexStringToByteArray( ADVERTISEMENT_DATA_FLAGS + IBEACON_HEADER + BEACON_ID_1 + CALIBRATED_TX_VALUE );
     public static final byte[] BYTES_FOR_ALIEN_BEACON_1 = hexStringToByteArray( ADVERTISEMENT_DATA_FLAGS + IBEACON_HEADER + ALIEN_ID_1 + CALIBRATED_TX_VALUE );
 
-    private BluetoothAdapter.LeScanCallback scanCallback;
+    private AbstractScanner.CommonCallback scanCallback;
 
     @Override
     public boolean isBluetoothLowEnergyDeviceTurnedOn() {
@@ -89,7 +89,7 @@ public class TestBluetoothPlatform implements BluetoothPlatform {
     }
 
     @Override
-    public void startLeScan(BluetoothAdapter.LeScanCallback scanCallback) {
+    public void startLeScan(AbstractScanner.CommonCallback scanCallback) {
         this.scanCallback = scanCallback;
     }
 
