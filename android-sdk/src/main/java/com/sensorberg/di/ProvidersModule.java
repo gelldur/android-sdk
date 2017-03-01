@@ -7,10 +7,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.LocationManager;
 import android.support.annotation.Nullable;
+import android.os.Build;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.sensorberg.sdk.internal.AndroidBluetoothPlatform;
+import com.sensorberg.sdk.internal.AndroidBluetoothPlatform18;
+import com.sensorberg.sdk.internal.AndroidBluetoothPlatform21;
 import com.sensorberg.sdk.internal.AndroidClock;
 import com.sensorberg.sdk.internal.AndroidFileManager;
 import com.sensorberg.sdk.internal.AndroidHandlerManager;
@@ -154,7 +156,11 @@ public class ProvidersModule {
     @Named("androidBluetoothPlatform")
     @Singleton
     public BluetoothPlatform provideAndroidBluetoothPlatform(Context context) {
-        return new AndroidBluetoothPlatform(context);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return new AndroidBluetoothPlatform21(context);
+        } else {
+            return new AndroidBluetoothPlatform18(context);
+        }
     }
 
     @Provides

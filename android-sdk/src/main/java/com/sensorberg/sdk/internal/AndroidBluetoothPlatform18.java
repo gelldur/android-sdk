@@ -3,6 +3,7 @@ package com.sensorberg.sdk.internal;
 import com.sensorberg.bluetooth.CrashCallBackWrapper;
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.internal.interfaces.BluetoothPlatform;
+import com.sensorberg.sdk.scanner.AbstractScanner;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
@@ -10,7 +11,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 
-public class AndroidBluetoothPlatform implements BluetoothPlatform {
+public class AndroidBluetoothPlatform18 implements BluetoothPlatform {
 
     private final CrashCallBackWrapper crashCallBackWrapper;
 
@@ -22,13 +23,10 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
 
     private PermissionChecker permissionChecker;
 
-    public AndroidBluetoothPlatform(Context ctx) {
+    public AndroidBluetoothPlatform18(Context ctx) {
         context = ctx;
-
         permissionChecker = new PermissionChecker(ctx);
-
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
         if (Build.VERSION.SDK_INT >= 18) {
             crashCallBackWrapper = new CrashCallBackWrapper(ctx);
         } else {
@@ -62,7 +60,7 @@ public class AndroidBluetoothPlatform implements BluetoothPlatform {
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
-    public void startLeScan(BluetoothAdapter.LeScanCallback scanCallback) {
+    public void startLeScan(AbstractScanner.CommonCallback scanCallback) {
         if (isBluetoothLowEnergySupported() && crashCallBackWrapper != null) {
             if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_ON
                     && permissionChecker.hasScanPermissionCheckAndroid6()) {

@@ -22,6 +22,8 @@ public class ScannerEvent {
 
     public static final int RSSI_UPDATED = 6;
 
+    public static final int SCAN_FAILED = 7;
+
     ScannerEvent(int type, Object data) {
         this.type = type;
         this.data = data;
