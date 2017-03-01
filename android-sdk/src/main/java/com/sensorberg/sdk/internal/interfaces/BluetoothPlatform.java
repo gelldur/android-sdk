@@ -1,8 +1,9 @@
 package com.sensorberg.sdk.internal.interfaces;
 
 import android.annotation.TargetApi;
-import android.bluetooth.BluetoothAdapter;
 import android.os.Build;
+
+import com.sensorberg.sdk.scanner.AbstractScanner;
 
 public interface BluetoothPlatform {
 
@@ -21,7 +22,7 @@ public interface BluetoothPlatform {
     boolean isBluetoothLowEnergySupported();
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    void startLeScan(BluetoothAdapter.LeScanCallback scanCallback);
+    void startLeScan(AbstractScanner.CommonCallback scanCallback);
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     void stopLeScan();
