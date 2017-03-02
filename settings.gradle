@@ -1,3 +1,2 @@
 include ':android-sdk'
 include ':dev-app'
-include ':mvp'
