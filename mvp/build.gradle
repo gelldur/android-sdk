@@ -25,7 +25,7 @@ android {
 dependencies {
 
     // add the latest version of Sensorberg SDK
-    compile 'com.sensorberg.sdk:android-sdk:2.2.0-RAILS'
+    compile 'com.sensorberg.sdk:android-sdk:2.3.0-RAILS'
 
     // other dependencies
     compile 'com.android.support:design:25.1.1'

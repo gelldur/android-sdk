@@ -24,7 +24,9 @@ public class MainActivity extends AppCompatActivity implements SensorbergSdkEven
     protected void onStart() {
         super.onStart();
         ((App) getApplication()).getSensorbergSdk().registerEventListener(this);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 42);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 42);
+        }
     }
 
     @Override
