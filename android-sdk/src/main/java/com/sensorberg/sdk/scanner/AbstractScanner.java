@@ -26,6 +26,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimerTask;
+import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -36,9 +37,9 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
 
     private static final long NEVER_STOPPED = 0L;
 
-    protected long waitTime = DefaultSettings.DEFAULT_BACKGROUND_WAIT_TIME;
+    long waitTime;
 
-    protected long scanTime = DefaultSettings.DEFAULT_BACKGROUND_SCAN_TIME;
+    long scanTime;
 
     private final SettingsManager settingsManager;
 
@@ -91,9 +92,11 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
         File beaconFile = shouldRestoreBeaconStates ? fileManager.getFile("enteredBeaconsCache") : null;
         enteredBeacons = new BeaconMap(fileManager, beaconFile);
 
+        waitTime = settingsManager.getBackgroundWaitTime();
+        scanTime = settingsManager.getBackgroundScanTime();
+
         SensorbergSdk.getComponent().inject(this);
     }
-
 
     /**
      * Adds a {@link ScannerListener} to the {@link List} of {@link ScannerListener}s.
@@ -116,7 +119,7 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
                         //might be negative!!!
                         long timeSinceWeSawTheBeacon = now - lastBreakLength - beaconEntry.getLastBeaconTime();
                         if (timeSinceWeSawTheBeacon > settingsManager.getExitTimeoutMillis()) {
-                            ScanEvent scanEvent = new ScanEvent(beaconId, now, false, locationHelper.getGeohash());
+                            ScanEvent scanEvent = new ScanEvent(beaconId, now, false, locationHelper.getGeohash(), beaconEntry.getPairingId());
                             runLoop.sendMessage(ScannerEvent.EVENT_DETECTED, scanEvent);
                             Logger.log.beaconResolveState(scanEvent,
                                     " exited (time since we saw the beacon: " + (int) (timeSinceWeSawTheBeacon / 1000) + " seconds)");
@@ -149,22 +152,34 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
     }
 
     private void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+
+        if (settingsManager.getScannerMinRssi() != DefaultSettings.DEFAULT_SCANNER_MIN_RSSI &&
+                rssi < settingsManager.getScannerMinRssi()) {
+            return;
+        }
+
         Pair<BeaconId, Integer> beacon = ScanHelper.getBeaconID(scanRecord);
         if (beacon != null) {
+
+            int calRssi = beacon.second;
+            if (settingsManager.getScannerMaxDistance() != DefaultSettings.DEFAULT_SCANNER_MAX_DISTANCE &&
+                    getDistanceFromRSSI(rssi, calRssi) > settingsManager.getScannerMaxDistance()) {
+                return;
+            }
+
             BeaconId beaconId = beacon.first;
             synchronized (enteredBeaconsMonitor) {
                 long now = clock.now();
                 EventEntry entry = enteredBeacons.get(beaconId);
 
                 if (entry == null) {
-                    int calRssi = beacon.second;
                     String address = device != null ? device.getAddress() : null;
-                    ScanEvent scanEvent = new ScanEvent(beaconId, now, true, address, rssi, calRssi, locationHelper.getGeohash());
+                    ScanEvent scanEvent = new ScanEvent(beaconId, now, true, address, rssi, calRssi, locationHelper.getGeohash(), UUID.randomUUID().toString());
                     runLoop.sendMessage(ScannerEvent.EVENT_DETECTED, scanEvent);
-                    entry = new EventEntry(now, ScanEventType.ENTRY.getMask());
+                    entry = new EventEntry(now, ScanEventType.ENTRY.getMask(), scanEvent.getPairingId());
                     Logger.log.beaconResolveState(scanEvent, "entered");
                 } else {
-                    entry = new EventEntry(now, entry.getEventMask());
+                    entry = new EventEntry(now, entry.getEventMask(), entry.getPairingId());
                     Logger.log.beaconSeenAgain(beaconId);
                     if (this.rssiListener != RssiListener.NONE) {
                         runLoop.sendMessage(ScannerEvent.RSSI_UPDATED, new Pair<>(beaconId, rssi));
@@ -349,5 +364,16 @@ public abstract class AbstractScanner implements RunLoop.MessageHandlerCallback,
 
         @SuppressWarnings("UnusedParameters")
         void onRssiUpdated(BeaconId beaconId, Integer rssiValue);
+    }
+
+    private static double getDistanceFromRSSI(double rssi, int calRssi) {
+        double dist;
+        double near = rssi / calRssi;
+        if (near < 1.0f) {
+            dist = Math.pow(near, 10);
+        } else {
+            dist =  ((0.89976f) * Math.pow(near, 7.7095f) + 0.111f);
+        }
+        return dist;
     }
 }

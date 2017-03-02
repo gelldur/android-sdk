@@ -32,6 +32,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
+import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -41,7 +42,6 @@ import java.util.List;
 import java.util.TreeMap;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import okhttp3.MediaType;
 import okhttp3.ResponseBody;
@@ -62,6 +62,9 @@ public class TransportShould {
     Gson gson;
 
     @Inject
+    SharedPreferences prefs;
+
+    @Inject
     TestClock clock;
 
     private Transport tested;
@@ -75,7 +78,7 @@ public class TransportShould {
         clock.setNowInMillis(new DateTime(2015, 7, 10, 1, 1, 1).getMillis());
 
         mockRetrofitApiService = mock(RetrofitApiServiceImpl.class);
-        tested = new RetrofitApiTransport(mockRetrofitApiService, clock);
+        tested = new RetrofitApiTransport(mockRetrofitApiService, clock, prefs, gson);
         tested.setApiToken(TestConstants.API_TOKEN);
     }
 

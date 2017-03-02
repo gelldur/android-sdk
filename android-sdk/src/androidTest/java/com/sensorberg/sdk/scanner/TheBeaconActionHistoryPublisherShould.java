@@ -1,13 +1,13 @@
 package com.sensorberg.sdk.scanner;
 
-import com.google.gson.Gson;
+import android.content.SharedPreferences;
+import android.support.test.runner.AndroidJUnit4;
 
+import com.google.gson.Gson;
 import com.sensorberg.sdk.SensorbergTestApplication;
-import com.sensorberg.sdk.action.ActionType;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.interfaces.TransportHistoryCallback;
-import com.sensorberg.sdk.internal.transport.model.HistoryBody;
 import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.settings.SettingsManager;
 import com.sensorberg.sdk.testUtils.TestHandlerManager;
@@ -17,11 +17,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
-import android.content.SharedPreferences;
-import android.support.test.runner.AndroidJUnit4;
-
-import java.util.List;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -30,7 +25,6 @@ import util.TestConstants;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static util.Verfier.hasSize;
 
@@ -59,7 +53,7 @@ public class TheBeaconActionHistoryPublisherShould {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
 
         testHandlerManager.getCustomClock().setNowInMillis(System.currentTimeMillis());
-            tested = new BeaconActionHistoryPublisher(transport, testHandlerManager.getCustomClock(), testHandlerManager, sharedPreferences, gson);
+        tested = new BeaconActionHistoryPublisher(transport, testHandlerManager.getCustomClock(), testHandlerManager, sharedPreferences, gson);
         tested.deleteAllData();
         tested = Mockito.spy(tested);
     }
@@ -83,8 +77,7 @@ public class TheBeaconActionHistoryPublisherShould {
         verify(transport).publishHistory(hasSize(0), hasSize(1), hasSize(0), any(TransportHistoryCallback.class));
         Mockito.reset(transport);
 
-        //persist it, nullify and make new instance
-        tested.saveAllData();
+        //  nullify and make new instance
 
         tested = null;
         tested = new BeaconActionHistoryPublisher(transport, testHandlerManager.getCustomClock(), testHandlerManager, sharedPreferences, gson);
@@ -106,8 +99,7 @@ public class TheBeaconActionHistoryPublisherShould {
         verify(transport).publishHistory(hasSize(1), hasSize(0), hasSize(0), any(TransportHistoryCallback.class));
         Mockito.reset(transport);
 
-        //persist it, nullify and make new instance
-        tested.saveAllData();
+        // nullify and make new instance
 
         tested = null;
         tested = new BeaconActionHistoryPublisher(transport, testHandlerManager.getCustomClock(), testHandlerManager, sharedPreferences, gson);
@@ -129,8 +121,7 @@ public class TheBeaconActionHistoryPublisherShould {
         verify(transport).publishHistory(hasSize(0), hasSize(0), hasSize(1), any(TransportHistoryCallback.class));
         Mockito.reset(transport);
 
-        //persist it, nullify and make new instance
-        tested.saveAllData();
+        // nullify and make new instance
 
         tested = null;
         tested = new BeaconActionHistoryPublisher(transport, testHandlerManager.getCustomClock(), testHandlerManager, sharedPreferences, gson);
@@ -141,5 +132,19 @@ public class TheBeaconActionHistoryPublisherShould {
         //check that this instance read from local persistence layer
         tested.publishHistory();
         verify(transport).publishHistory(hasSize(0), hasSize(0), hasSize(1), any(TransportHistoryCallback.class));
+    }
+
+    @Test
+    public void should_have_maximum_items_to_publish() throws Exception {
+
+        int limit = BeaconActionHistoryPublisher.MAX_UPLOAD_SIZE;
+        int eventSize = 10 + limit;
+
+        for (int i = 0; i < eventSize; i++) {
+            tested.onScanEventDetected(TestConstants.BEACON_SCAN_ENTRY_EVENT(100 + i));
+        }
+        tested.publishHistory();
+        verify(transport).publishHistory(hasSize(limit), hasSize(0), hasSize(0), any(TransportHistoryCallback.class));
+
     }
 }

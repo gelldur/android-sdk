@@ -1,5 +1,7 @@
 package com.sensorberg.sdk.scanner;
 
+import android.support.test.runner.AndroidJUnit4;
+
 import com.sensorberg.sdk.SensorbergTestApplication;
 import com.sensorberg.sdk.di.TestComponent;
 import com.sensorberg.sdk.model.BeaconId;
@@ -10,8 +12,6 @@ import org.fest.assertions.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import android.support.test.runner.AndroidJUnit4;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,9 +30,12 @@ public class TheBeaconMapShould {
 
     BeaconMap tested;
 
+    private String pairingId;
+
     @Before
     public void setUp() throws Exception {
         ((TestComponent) SensorbergTestApplication.getComponent()).inject(this);
+        pairingId = UUID.randomUUID().toString();
     }
 
     @Test
@@ -42,7 +45,7 @@ public class TheBeaconMapShould {
 
         long firstSize = file.length();
 
-        tested.put(getNewBeaconId(), new EventEntry(System.currentTimeMillis(), ScanEventType.ENTRY.getMask()));
+        tested.put(getNewBeaconId(), new EventEntry(System.currentTimeMillis(), ScanEventType.ENTRY.getMask(), pairingId));
 
 
         Assertions.assertThat(firstSize).isNotEqualTo(file.length());
@@ -67,7 +70,7 @@ public class TheBeaconMapShould {
         File file = getTempFile();
         BeaconMap first = new BeaconMap(testFileManager, file);
 
-        first.put(getNewBeaconId(), new EventEntry(System.currentTimeMillis(), ScanEventType.ENTRY.getMask()));
+        first.put(getNewBeaconId(), new EventEntry(System.currentTimeMillis(), ScanEventType.ENTRY.getMask(), pairingId));
 
         tested = new BeaconMap(testFileManager, file);
 
@@ -84,7 +87,7 @@ public class TheBeaconMapShould {
         File file = getTempFile();
         BeaconMap first = new BeaconMap(testFileManager, file);
 
-        first.put(getNewBeaconId(), new EventEntry(noClock.now(), ScanEventType.ENTRY.getMask()));
+        first.put(getNewBeaconId(), new EventEntry(noClock.now(), ScanEventType.ENTRY.getMask(), pairingId));
 
         long originalSize = file.length();
 
@@ -104,7 +107,7 @@ public class TheBeaconMapShould {
     @Test
     public void remove_entries_that_match_the_filter() throws IOException {
         tested = new BeaconMap(testFileManager, getTempFile());
-        tested.put(getNewBeaconId(), new EventEntry(System.currentTimeMillis(), ScanEventType.ENTRY.getMask()));
+        tested.put(getNewBeaconId(), new EventEntry(System.currentTimeMillis(), ScanEventType.ENTRY.getMask(), pairingId));
         Assertions.assertThat(tested.size()).isEqualTo(1);
 
         tested.filter(new BeaconMap.Filter() {
@@ -131,7 +134,7 @@ public class TheBeaconMapShould {
     public void should_be_readable_right_after_writing() throws Exception {
         File tempFile = getTempFile();
         tested = new BeaconMap(testFileManager, tempFile);
-        tested.put(getNewBeaconId(), new EventEntry(noClock.now(), ScanEventType.ENTRY.getMask()));
+        tested.put(getNewBeaconId(), new EventEntry(noClock.now(), ScanEventType.ENTRY.getMask(), pairingId));
 
         BeaconMap otherFile = new BeaconMap(testFileManager, tempFile);
         Assertions.assertThat(otherFile).isNotNull();

@@ -1,6 +1,7 @@
 package com.sensorberg.sdk.internal.transport;
 
 import com.google.gson.Gson;
+import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.internal.interfaces.PlatformIdentifier;
 import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiServiceV0;
 import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiServiceV1;
@@ -8,7 +9,6 @@ import com.sensorberg.sdk.internal.transport.interfaces.RetrofitApiServiceV2;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
 import com.sensorberg.sdk.internal.transport.model.HistoryBody;
 import com.sensorberg.sdk.internal.transport.model.SettingsResponse;
-import com.sensorberg.sdk.model.server.BaseResolveResponse;
 import com.sensorberg.sdk.model.server.ResolveResponse;
 import com.sensorberg.utils.Objects;
 
@@ -70,7 +70,7 @@ public class RetrofitApiServiceImpl {
             mApiServiceV2 = null;
         } else if (version == 1) {
             mApiServiceV0 = null;
-            mApiServiceV1 = restAdapter.create(RetrofitApiServiceV1.class);;
+            mApiServiceV1 = restAdapter.create(RetrofitApiServiceV1.class);
             mApiServiceV2 = null;
         } else if (version == 2) {
             mApiServiceV0 = null;
@@ -114,7 +114,9 @@ public class RetrofitApiServiceImpl {
         okClientBuilder.addInterceptor(headerAuthorizationInterceptor);
 
         httpLoggingInterceptor = new HttpLoggingInterceptor();
-        httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
+        httpLoggingInterceptor.setLevel(Logger.isVerboseLoggingEnabled() ?
+                HttpLoggingInterceptor.Level.BODY :
+                HttpLoggingInterceptor.Level.NONE);
         okClientBuilder.addInterceptor(httpLoggingInterceptor);
 
         okClientBuilder.retryOnConnectionFailure(true);
@@ -142,7 +144,7 @@ public class RetrofitApiServiceImpl {
         }
     }
 
-    public Call<BaseResolveResponse> updateBeaconLayout(SortedMap<String, String> attributes) {
+    public Call<ResolveResponse> updateBeaconLayout(SortedMap<String, String> attributes) {
         if (attributes == null) {
             attributes = new TreeMap<>();
         }
@@ -194,7 +196,7 @@ public class RetrofitApiServiceImpl {
 
     public boolean setApiToken(String newToken) {
         boolean tokensDiffer = mApiToken != null && !Objects.equals(newToken, mApiToken);
-        if (tokensDiffer && mClient != null){
+        if (tokensDiffer && mClient != null) {
             try {
                 mClient.cache().evictAll();
             } catch (IOException e) {

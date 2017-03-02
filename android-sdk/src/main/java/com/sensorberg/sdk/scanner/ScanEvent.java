@@ -6,6 +6,8 @@ import android.os.Parcelable;
 import com.sensorberg.sdk.model.BeaconId;
 import com.sensorberg.utils.Objects;
 
+import java.util.UUID;
+
 import lombok.Getter;
 import lombok.ToString;
 
@@ -70,6 +72,14 @@ public class ScanEvent implements Parcelable {
      */
     @Getter private final long eventTime;
 
+    /**
+     * -- GETTER --
+     * Returns the event time in milliseconds of the {@link ScanEvent}.
+     *
+     * @return the event time in milliseconds of the {@link ScanEvent}
+     */
+    @Getter private final String pairingId;
+
     private final boolean entry;
 
     /**
@@ -80,11 +90,12 @@ public class ScanEvent implements Parcelable {
      */
     @Getter private final String geohash;
 
-    protected ScanEvent(BeaconId beaconId, long eventTime, boolean entry, String geohash) {
+    protected ScanEvent(BeaconId beaconId, long eventTime, boolean entry, String geohash, String pairingId) {
         this.beaconId = beaconId;
         this.eventTime = eventTime;
         this.entry = entry;
         this.geohash = geohash;
+        this.pairingId = pairingId;
     }
 
     private ScanEvent(Parcel source) {
@@ -95,10 +106,11 @@ public class ScanEvent implements Parcelable {
         this.initialRssi = source.readInt();
         this.calRssi = source.readInt();
         this.geohash = source.readString();
+        this.pairingId = source.readString();
     }
 
-    public ScanEvent(BeaconId beaconId, long now, boolean entry, String address, int rssi, int calRssi, String geohash) {
-        this(beaconId, now, entry, geohash);
+    public ScanEvent(BeaconId beaconId, long now, boolean entry, String address, int rssi, int calRssi, String geohash, String pairingId) {
+        this(beaconId, now, entry, geohash, pairingId);
         this.hardwareAdress = address;
         this.initialRssi = rssi;
         this.calRssi = calRssi;
@@ -120,6 +132,7 @@ public class ScanEvent implements Parcelable {
         destination.writeInt(initialRssi);
         destination.writeInt(calRssi);
         destination.writeString(geohash);
+        destination.writeString(pairingId);
     }
 
     @Override
@@ -134,7 +147,7 @@ public class ScanEvent implements Parcelable {
             return (false);
         }
         ScanEvent other = (ScanEvent) object;
-        return Objects.equals(beaconId, other.beaconId) && entry == other.entry && Objects.equals(geohash, other.geohash);
+        return Objects.equals(beaconId, other.beaconId) && entry == other.entry && Objects.equals(geohash, other.geohash) && Objects.equals(pairingId, other.pairingId);
     }
 
     @Override
@@ -144,6 +157,7 @@ public class ScanEvent implements Parcelable {
         result = prime * result + ((beaconId == null) ? 0 : beaconId.hashCode());
         result = prime * result + (entry ? 1 : 0);
         result = prime * result + (geohash == null ? 0 : geohash.hashCode());
+        result = prime * result + (pairingId == null ? 0 : pairingId.hashCode());
         return (result);
     }
 
@@ -166,6 +180,8 @@ public class ScanEvent implements Parcelable {
         private boolean entry;
 
         private String geohash;
+
+        private String pairingId;
 
         public Builder() {
         }
@@ -190,8 +206,13 @@ public class ScanEvent implements Parcelable {
             return this;
         }
 
+        public Builder withPairingId(String pairingId) {
+            this.pairingId = pairingId;
+            return this;
+        }
+
         public ScanEvent build() {
-            return new ScanEvent(beaconId, eventTime, entry, geohash);
+            return new ScanEvent(beaconId, eventTime, entry, geohash, pairingId);
         }
     }
 

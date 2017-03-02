@@ -1,5 +1,12 @@
 package com.sensorberg.sdk;
 
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SyncStatusObserver;
+import android.os.Parcelable;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.sensorberg.SensorbergSdk;
@@ -13,8 +20,8 @@ import com.sensorberg.sdk.internal.interfaces.HandlerManager;
 import com.sensorberg.sdk.internal.interfaces.MessageDelayWindowLengthListener;
 import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
-import com.sensorberg.sdk.model.BeaconId;
 import com.sensorberg.sdk.location.LocationHelper;
+import com.sensorberg.sdk.model.BeaconId;
 import com.sensorberg.sdk.model.persistence.ActionConversion;
 import com.sensorberg.sdk.presenter.LocalBroadcastManager;
 import com.sensorberg.sdk.presenter.ManifestParser;
@@ -29,18 +36,10 @@ import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 import com.sensorberg.sdk.scanner.ScanEvent;
 import com.sensorberg.sdk.scanner.Scanner;
 import com.sensorberg.sdk.scanner.ScannerListener;
-import com.sensorberg.sdk.settings.DefaultSettings;
 import com.sensorberg.sdk.settings.Settings;
 import com.sensorberg.sdk.settings.SettingsManager;
 import com.sensorberg.sdk.settings.SettingsUpdateCallback;
 import com.sensorberg.utils.ListUtils;
-
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SyncStatusObserver;
-import android.os.Parcelable;
 
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -110,6 +109,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
         SensorbergSdk.getComponent().inject(this);
 
         this.transport = transport;
+        transport.setProximityUUIDUpdateHandler(this);
         settingsManager.setSettingsUpdateCallback(settingsUpdateCallbackListener);
         settingsManager.setMessageDelayWindowLengthListener((MessageDelayWindowLengthListener) scheduler);
         clock = clk;
@@ -198,7 +198,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
 
     private void saveAttributes(Map<String, String> attributes) {
         String attrs = gson.toJson(attributes);
-        Logger.log.logAttributes("Saved "+attributes.size()+" attributes");
+        Logger.log.logAttributes("Saved " + attributes.size() + " attributes");
         preferences.edit().putString(Constants.SharedPreferencesKeys.Data.TARGETING_ATTRIBUTES, attrs).apply();
     }
 
@@ -206,12 +206,13 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
         String attrsJson = preferences.getString(Constants.SharedPreferencesKeys.Data.TARGETING_ATTRIBUTES, "");
         SortedMap<String, String> map;
         if (!attrsJson.isEmpty()) {
-            Type mapType = new TypeToken<TreeMap<String, String>>() {}.getType();
+            Type mapType = new TypeToken<TreeMap<String, String>>() {
+            }.getType();
             map = Collections.synchronizedSortedMap((TreeMap<String, String>) gson.fromJson(attrsJson, mapType));
         } else {
             map = Collections.synchronizedSortedMap(new TreeMap<String, String>());
         }
-        Logger.log.logAttributes("Read "+map.size()+" attributes");
+        Logger.log.logAttributes("Read " + map.size() + " attributes");
         return map;
     }
 
@@ -238,7 +239,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
             beaconEvent.setPresentationTime(clock.now());
             beaconActionHistoryPublisher.onActionPresented(beaconEvent);
 
-            if (beaconEvent.getAction().getType() == ActionType.SILENT){
+            if (beaconEvent.getAction().getType() == ActionType.SILENT) {
                 Logger.log.beaconResolveState(beaconEvent, "Silent campaign handled, no callback to host application");
                 return;
             }
@@ -302,11 +303,21 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     }
 
     public void setApiToken(String apiToken) {
-        transport.setApiToken(apiToken);
-        beaconActionHistoryPublisher.publishHistory();
         if (resolver.configuration.setApiToken(apiToken)) {
+
+            Logger.log.applicationStateChanged("New token received. Restarting everything");
+
+            // clear
+            scanner.stop();
             unscheduleAllPendingActions();
             beaconActionHistoryPublisher.deleteAllObjects();
+
+            // re-start
+            transport.setApiToken(apiToken);
+            updateSettings();
+            updateBeaconLayout();
+            scanner.clearCache();
+            scanner.start();
         }
     }
 

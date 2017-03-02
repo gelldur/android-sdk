@@ -16,11 +16,13 @@ import com.sensorberg.sdk.model.persistence.BeaconAction;
 import com.sensorberg.sdk.model.persistence.BeaconScan;
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolverListener;
+import com.sensorberg.sdk.settings.TimeConstants;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -30,11 +32,13 @@ import lombok.Setter;
 
 public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.MessageHandlerCallback {
 
-    public static final String SUPRESSION_TIME_STORE_SHARED_PREFS_TAG = "com.sensorberg.sdk.SupressionTimeStore";
+    private static final String SUPRESSION_TIME_STORE_SHARED_PREFS_TAG = "com.sensorberg.sdk.SupressionTimeStore";
 
     private static final int MSG_PUBLISH_HISTORY = 1;
     private static final int MSG_DELETE_ALL_DATA = 6;
     private static final int MSG_SAVE_SUPPRESSION_STORE = 7;
+    static final int MAX_UPLOAD_SIZE = 2000;
+    static final long MAX_SUPPRESSION_AGE = 7 * TimeConstants.ONE_DAY;
 
     private Clock clock;
 
@@ -49,11 +53,13 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
 
     private final Gson gson;
 
-    List<BeaconScan> beaconScans = Collections.synchronizedList(new LinkedList<BeaconScan>());
+    private final Object lock = new Object();
 
-    List<BeaconAction> beaconActions = Collections.synchronizedList(new LinkedList<BeaconAction>());
+    private List<BeaconScan> beaconScans = new LinkedList<>();
 
-    Map<String, ActionConversion> actionConversions = Collections.synchronizedMap(new HashMap<String, ActionConversion>());
+    private List<BeaconAction> beaconActions = new LinkedList<>();
+
+    private Map<String, ActionConversion> actionConversions = new HashMap<>();
 
     private HashMap<String, Long> suppressionTimeStore = new HashMap<>();
 
@@ -70,7 +76,10 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
 
     @Override
     public void onScanEventDetected(ScanEvent scanEvent) {
-        beaconScans.add(BeaconScan.from(scanEvent));
+        synchronized (lock) {
+            beaconScans.add(BeaconScan.from(scanEvent));
+        }
+        saveAllData();
     }
 
     @Override
@@ -89,10 +98,16 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     }
 
     private void publishHistorySynchronously() {
-        final List<BeaconScan> notSentScans = new LinkedList<>(beaconScans);
-        final List<BeaconAction> notSentActions = new LinkedList<>(beaconActions);
-        final List<String> notSentConversionsKeys = new LinkedList<>(actionConversions.keySet());
-        final List<ActionConversion> notSentConversionsValues = new LinkedList<>(actionConversions.values());
+        final List<BeaconScan> notSentScans;
+        final List<BeaconAction> notSentActions;
+        final List<String> notSentConversionsKeys;
+        final List<ActionConversion> notSentConversionsValues;
+        synchronized (lock) {
+            notSentScans = getList(beaconScans);
+            notSentActions = getList(beaconActions);
+            notSentConversionsKeys = getList(actionConversions.keySet());
+            notSentConversionsValues = getList(actionConversions.values());
+        }
 
         if (notSentScans.isEmpty() && notSentActions.isEmpty() && notSentConversionsKeys.isEmpty()) {
             Logger.log.logBeaconHistoryPublisherState("nothing to report");
@@ -101,19 +116,21 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
             Logger.log.logBeaconHistoryPublisherState("reporting "
                     + notSentScans.size() + " scans and "
                     + notSentActions.size() + " actions and " +
-                    + notSentConversionsKeys.size() + " conversions");
+                    +notSentConversionsKeys.size() + " conversions");
         }
 
-        transport.publishHistory(notSentScans, notSentActions, notSentConversionsValues, new TransportHistoryCallback() {
+        TransportHistoryCallback transportHistoryCallback = new TransportHistoryCallback() {
             @Override
             public void onSuccess(List<BeaconScan> scanObjectList, List<BeaconAction> actionList, List<ActionConversion> conversions) {
-                beaconActions.removeAll(notSentActions);
-                beaconScans.removeAll(notSentScans);
-                actionConversions.keySet().removeAll(notSentConversionsKeys);
+                synchronized (lock) {
+                    beaconActions.removeAll(notSentActions);
+                    beaconScans.removeAll(notSentScans);
+                    actionConversions.keySet().removeAll(notSentConversionsKeys);
+                }
                 Logger.log.logBeaconHistoryPublisherState("published "
                         + notSentActions.size() + " campaignStats and "
                         + notSentScans.size() + " beaconStats and " +
-                        + notSentConversionsKeys.size() + " actionConversions successfully.");
+                        +notSentConversionsKeys.size() + " actionConversions successfully.");
                 saveAllData();
             }
 
@@ -126,7 +143,21 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
             public void onInstantActions(List<BeaconEvent> instantActions) {
                 resolverListener.onResolutionsFinished(instantActions);
             }
-        });
+        };
+
+        transport.publishHistory(notSentScans, notSentActions, notSentConversionsValues, transportHistoryCallback);
+    }
+
+    private static <T> List<T> getList(Collection<T> collection) {
+        if (collection.size() > MAX_UPLOAD_SIZE) {
+            if (collection instanceof List) {
+                return new LinkedList<>(((List<T>) collection).subList(0, MAX_UPLOAD_SIZE));
+            } else {
+                return new LinkedList<>(new LinkedList<>(collection).subList(0, MAX_UPLOAD_SIZE));
+            }
+        } else {
+            return new LinkedList<>(collection);
+        }
     }
 
     public void publishHistory() {
@@ -134,21 +165,27 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     }
 
     public void onActionPresented(BeaconEvent beaconEvent) {
-        beaconActions.add(BeaconAction.from(beaconEvent));
-        if (beaconEvent.isReportImmediately()){
+        synchronized (lock) {
+            beaconActions.add(BeaconAction.from(beaconEvent));
+        }
+        saveAllData();
+        if (beaconEvent.isReportImmediately()) {
             publishHistory();
         }
     }
 
     public void onConversionUpdate(ActionConversion incoming) {
-        ActionConversion existing = actionConversions.get(incoming.getAction());
-        if (existing != null && incoming.getType() <= existing.getType()) {
-            Logger.log.verbose("Conversion "+existing.getAction()+" type change rejected. " +
-                    "Type can be changed only to higher. " +
-                    "Existing type: "+existing.getType()+" Incoming type: "+incoming.getType());
-            return;
+        synchronized (lock) {
+            ActionConversion existing = actionConversions.get(incoming.getAction());
+            if (existing != null && incoming.getType() <= existing.getType()) {
+                Logger.log.verbose("Conversion " + existing.getAction() + " type change rejected. " +
+                        "Type can be changed only to higher. " +
+                        "Existing type: " + existing.getType() + " Incoming type: " + incoming.getType());
+                return;
+            }
+            actionConversions.put(incoming.getAction(), incoming);
         }
-        actionConversions.put(incoming.getAction(), incoming);
+        saveAllData();
     }
 
     public void deleteAllObjects() {
@@ -162,10 +199,16 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
      * @return - A list of notSentBeaconScans.
      */
     public boolean actionShouldBeSuppressed(final long lastAllowedPresentationTime, final UUID actionUUID) {
-        Long lastPresentation = suppressionTimeStore.get(actionUUID.toString());
-        boolean value = lastPresentation == null ? false : lastPresentation >= lastAllowedPresentationTime;
+        Long lastPresentation;
+        synchronized (lock) {
+            lastPresentation = suppressionTimeStore.get(actionUUID.toString());
+        }
+        boolean value = lastPresentation != null && lastPresentation >= lastAllowedPresentationTime;
         if (!value) {
-            suppressionTimeStore.put(actionUUID.toString(), clock.now());
+            synchronized (lock) {
+                suppressionTimeStore.put(actionUUID.toString(), clock.now());
+            }
+            saveAllData();
             runloop.add(runloop.obtainMessage(MSG_SAVE_SUPPRESSION_STORE));
         }
         return value;
@@ -179,50 +222,76 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
      * @return - Select class object.
      */
     public boolean actionWasShownBefore(final UUID actionUUID) {
-        boolean value = suppressionTimeStore.containsKey(actionUUID.toString());
-        if (!value){
-            suppressionTimeStore.put(actionUUID.toString(), clock.now());
+        boolean value;
+        synchronized (lock) {
+            value = suppressionTimeStore.containsKey(actionUUID.toString());
+        }
+        if (!value) {
+            synchronized (lock) {
+                suppressionTimeStore.put(actionUUID.toString(), clock.now());
+            }
+            saveAllData();
             runloop.add(runloop.obtainMessage(MSG_SAVE_SUPPRESSION_STORE));
         }
         return value;
     }
 
     private void loadAllData() {
-        String actionJson = sharedPreferences.getString(BeaconAction.SHARED_PREFS_TAG, "");
-        if (!actionJson.isEmpty()) {
-            Type listType = new TypeToken<List<BeaconAction>>() {}.getType();
-            beaconActions = Collections.synchronizedList((List<BeaconAction>) gson.fromJson(actionJson, listType));
-        }
+        synchronized (lock) {
+            String actionJson = sharedPreferences.getString(BeaconAction.SHARED_PREFS_TAG, "");
+            if (!actionJson.isEmpty()) {
+                Type listType = new TypeToken<List<BeaconAction>>() {
+                }.getType();
+                beaconActions = gson.fromJson(actionJson, listType);
+            }
 
-        String scanJson = sharedPreferences.getString(BeaconScan.SHARED_PREFS_TAG, "");
-        if (!scanJson.isEmpty()) {
-            Type listType = new TypeToken<List<BeaconScan>>() {}.getType();
-            beaconScans = Collections.synchronizedList((List<BeaconScan>) gson.fromJson(scanJson, listType));
-        }
+            String scanJson = sharedPreferences.getString(BeaconScan.SHARED_PREFS_TAG, "");
+            if (!scanJson.isEmpty()) {
+                Type listType = new TypeToken<List<BeaconScan>>() {
+                }.getType();
+                beaconScans = gson.fromJson(scanJson, listType);
+            }
 
-        String conversionJson = sharedPreferences.getString(ActionConversion.SHARED_PREFS_TAG, "");
-        if (!conversionJson.isEmpty()) {
-            Type mapType = new TypeToken<HashMap<String, ActionConversion>>() {}.getType();
-            actionConversions = Collections.synchronizedMap((Map<String, ActionConversion>) gson.fromJson(conversionJson, mapType));
-        }
-        Logger.log.logBeaconHistoryPublisherState("loaded "
-                + beaconActions.size() + " campaignStats and "
-                + beaconScans.size()  +" beaconStats "
-                + actionConversions.size() + " actionConversions from shared preferences");
+            String conversionJson = sharedPreferences.getString(ActionConversion.SHARED_PREFS_TAG, "");
+            if (!conversionJson.isEmpty()) {
+                Type mapType = new TypeToken<HashMap<String, ActionConversion>>() {
+                }.getType();
+                actionConversions = gson.fromJson(conversionJson, mapType);
+            }
+            Logger.log.logBeaconHistoryPublisherState("loaded "
+                    + beaconActions.size() + " campaignStats and "
+                    + beaconScans.size() + " beaconStats "
+                    + actionConversions.size() + " actionConversions from shared preferences");
 
-        String supressionTimeStoreString = sharedPreferences.getString(SUPRESSION_TIME_STORE_SHARED_PREFS_TAG,"");
-        if (!supressionTimeStoreString.isEmpty()){
-            Type hashMapType = new TypeToken<HashMap<String, Long>>(){}.getType();
-            suppressionTimeStore = gson.fromJson(supressionTimeStoreString, hashMapType);
+            String supressionTimeStoreString = sharedPreferences.getString(SUPRESSION_TIME_STORE_SHARED_PREFS_TAG, "");
+            if (!supressionTimeStoreString.isEmpty()) {
+                Type hashMapType = new TypeToken<HashMap<String, Long>>() {
+                }.getType();
+                suppressionTimeStore = gson.fromJson(supressionTimeStoreString, hashMapType);
+                Iterator<Map.Entry<String, Long>> iterator = suppressionTimeStore.entrySet().iterator();
+                long old = clock.now() - MAX_SUPPRESSION_AGE;
+                while (iterator.hasNext()) {
+                    Map.Entry<String, Long> entry = iterator.next();
+                    if (entry.getValue() <= old) {
+                        iterator.remove();
+                    }
+                }
+            }
         }
     }
 
     public void saveAllData() {
-        String actionsJson = gson.toJson(beaconActions);
-        String scansJson = gson.toJson(beaconScans);
-        String conversionJson = gson.toJson(actionConversions);
-        String supressionTimeStoreJson = gson.toJson(suppressionTimeStore);
-        if(Logger.isVerboseLoggingEnabled()){
+        String actionsJson;
+        String scansJson;
+        String conversionJson;
+        String supressionTimeStoreJson;
+        synchronized (lock) {
+            actionsJson = gson.toJson(beaconActions);
+            scansJson = gson.toJson(beaconScans);
+            conversionJson = gson.toJson(actionConversions);
+            supressionTimeStoreJson = gson.toJson(suppressionTimeStore);
+        }
+        if (Logger.isVerboseLoggingEnabled()) {
             try {
                 Logger.log.logBeaconHistoryPublisherState("size of the stats" +
                         " campaignStats:" + actionsJson.getBytes("UTF-8").length +
@@ -241,15 +310,18 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
                 .apply();
         Logger.log.logBeaconHistoryPublisherState(
                 "saved " + beaconActions.size() + " campaignStats and "
-                        + beaconScans.size()  +" beaconStats and "
+                        + beaconScans.size() + " beaconStats and "
                         + actionConversions.size() + " actionConversions and "
                         + suppressionTimeStore.size() + " supression related items to shared preferences");
     }
 
-    public void saveSuppressionTimeStore(){
-        String supressionTimeStoreJson = gson.toJson(suppressionTimeStore);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor
+    public void saveSuppressionTimeStore() {
+        String supressionTimeStoreJson;
+        synchronized (lock) {
+            supressionTimeStoreJson = gson.toJson(suppressionTimeStore);
+        }
+        sharedPreferences
+                .edit()
                 .putString(SUPRESSION_TIME_STORE_SHARED_PREFS_TAG, supressionTimeStoreJson)
                 .apply();
     }
@@ -263,12 +335,14 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
     public void deleteAllData() {
         Logger.log.logBeaconHistoryPublisherState("will purge the saved data of "
                 + beaconActions.size() + " campaignStats and "
-                + beaconScans.size()  + " beaconStats and "
+                + beaconScans.size() + " beaconStats and "
                 + actionConversions.size() + "actionConversions");
-        beaconActions = Collections.synchronizedList(new LinkedList<BeaconAction>());
-        beaconScans = Collections.synchronizedList(new LinkedList<BeaconScan>());
-        actionConversions = Collections.synchronizedMap(new HashMap<String, ActionConversion>());
-        suppressionTimeStore = new HashMap<>();
+        synchronized (lock) {
+            beaconActions = new LinkedList<>();
+            beaconScans = new LinkedList<>();
+            actionConversions = new HashMap<>();
+            suppressionTimeStore = new HashMap<>();
+        }
 
         deleteSavedFromSharedPreferences(SUPRESSION_TIME_STORE_SHARED_PREFS_TAG);
         deleteSavedFromSharedPreferences(BeaconScan.SHARED_PREFS_TAG);

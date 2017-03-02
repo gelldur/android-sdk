@@ -18,6 +18,10 @@ public final class SharedPreferencesKeys {
 
         public static final String SHOULD_RESTORE_BEACON_STATES = "com.sensorberg.preferences.settings.restoreBeaconStates";
 
+        public static final String MIN_RSSI = "com.sensorberg.preferences.settings.scannerMinRssi";
+
+        public static final String MAX_DISTANCE = "com.sensorberg.preferences.settings.scannerMaxDistance";
+
         private Scanner() {
             throw new IllegalAccessError("Utility class");
         }
@@ -71,6 +75,8 @@ public final class SharedPreferencesKeys {
         public static final String ADVERTISING_IDENTIFIER = "com.sensorberg.preferences.network.advertisingIdentifier";
 
         public static final String BEACON_REPORT_LEVEL = "com.sensorberg.preferences.network.beaconReportLevel";
+
+        public static final String KEY_RESOLVE_RESPONSE = "com.sensorberg.preferences.transport.resolved";
 
         private Network() {
             throw new IllegalAccessError("Utility class");
