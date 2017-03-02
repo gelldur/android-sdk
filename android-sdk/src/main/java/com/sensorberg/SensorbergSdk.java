@@ -1,5 +1,6 @@
 package com.sensorberg;
 
+import android.app.ActivityManager;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
@@ -33,6 +34,8 @@ import javax.inject.Named;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import static android.content.Context.ACTIVITY_SERVICE;
 
 /**
  * {@code SensorbergSdk} This is the entry point to the Sensorberg SDK. You should use this class to manage the SDK.
@@ -116,6 +119,12 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
      *                 should be presented via UI.
      */
     public void registerEventListener(SensorbergSdkEventListener listener) {
+
+        if (isSensorbergProcess(context)) {
+            // the host app should only register for even listening on their own process
+            return;
+        }
+
         if (listener != null) {
             listeners.add(listener);
         }
@@ -284,5 +293,18 @@ public class SensorbergSdk implements Platform.ForegroundStateListener {
         } else {
             throw new IllegalArgumentException("Attributes can contain only alphanumerical characters and underscore");
         }
+    }
+
+    private static boolean isSensorbergProcess(Context context) {
+        String processName = "";
+        int pID = android.os.Process.myPid();
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
+        for (ActivityManager.RunningAppProcessInfo processInfo : activityManager.getRunningAppProcesses()) {
+            if (processInfo.pid == pID) {
+                processName = processInfo.processName;
+                break;
+            }
+        }
+        return processName.endsWith(":sensorberg");
     }
 }
