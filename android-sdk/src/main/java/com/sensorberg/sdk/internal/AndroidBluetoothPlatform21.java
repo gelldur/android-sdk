@@ -32,6 +32,7 @@ public class AndroidBluetoothPlatform21 implements BluetoothPlatform {
     private ScanCallback callback21 = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
+            if (callback == null) return;
             if (result.getScanRecord() != null) {
                 callback.onLeScan(result.getDevice(), result.getRssi(), result.getScanRecord().getBytes());
             } else {
@@ -41,6 +42,7 @@ public class AndroidBluetoothPlatform21 implements BluetoothPlatform {
 
         @Override
         public void onScanFailed(int errorCode) {
+            if(callback == null) return;
             callback.onScanFailed(errorCode);
         }
     };
