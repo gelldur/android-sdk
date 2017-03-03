@@ -43,6 +43,7 @@ public class AndroidBluetoothPlatform21 implements BluetoothPlatform {
         @Override
         public void onScanFailed(int errorCode) {
             if(callback == null) return;
+            if (errorCode == SCAN_FAILED_ALREADY_STARTED) return;
             callback.onScanFailed(errorCode);
         }
     };
