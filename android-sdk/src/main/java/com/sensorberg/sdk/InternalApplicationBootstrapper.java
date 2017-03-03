@@ -202,7 +202,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     @Override
     public void onGeofenceEvent(GeofenceData geofenceData, boolean entry) {
         BeaconId beaconId = new BeaconId("0000000000000000000000000000000000000000", geofenceData);
-        ScanEvent scanEvent = new ScanEvent(beaconId, clock.now(), entry, "00:00:00:00:00:00", -127, 0, locationHelper.getGeohash());
+        ScanEvent scanEvent = new ScanEvent(beaconId, clock.now(), entry, "00:00:00:00:00:00", -127, 0, locationHelper.getGeohash(), "00000000-0000-0000-0000-000000000000");
         onScanEventDetected(scanEvent);
     }
 
