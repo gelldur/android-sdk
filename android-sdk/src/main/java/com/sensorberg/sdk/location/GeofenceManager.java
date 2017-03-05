@@ -223,7 +223,7 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
                             }
                         }
                     });
-        } catch (SecurityException ex) {
+        } catch (SecurityException | IllegalStateException ex) {
             onGeofencesFailed(ex, 0);
         }
     }
@@ -253,7 +253,7 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
                             }
                         });
             }
-        } catch (SecurityException ex) {
+        } catch (SecurityException | IllegalStateException ex) {
             onGeofencesFailed(ex, 0);
         }
     }
@@ -277,7 +277,7 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
         disable();
     }
 
-    private void onGeofencesFailed(SecurityException ex, int status) {
+    private void onGeofencesFailed(Exception ex, int status) {
         updating = false;
         if (ex != null) {
             Logger.log.geofenceError("Failed to add geofences, error code: " + status, ex);
@@ -426,19 +426,25 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
     }
 
     private void removeLocationUpdates() {
-        PendingResult<Status> result;
-        result = LocationServices.FusedLocationApi.removeLocationUpdates(
-                play.getClient(),
-                GeofenceReceiver.getLocationPendingIntent(context));
-        result.setResultCallback(new ResultCallback<Status>() {
-            @Override
-            public void onResult(@NonNull Status status) {
-                if (!status.isSuccess()) {
-                    Logger.log.geofenceError("Removing location updates failed " +
-                            status.getStatusCode(), null);
+        try {
+            PendingResult<Status> result;
+            result = LocationServices.FusedLocationApi.removeLocationUpdates(
+                    play.getClient(),
+                    GeofenceReceiver.getLocationPendingIntent(context));
+            result.setResultCallback(new ResultCallback<Status>() {
+                @Override
+                public void onResult(@NonNull Status status) {
+                    if (!status.isSuccess()) {
+                        Logger.log.geofenceError("Removing location updates failed " +
+                                status.getStatusCode(), null);
+                    }
                 }
-            }
-        });
+            });
+        } catch (SecurityException ex) {
+            Logger.log.geofence("Insufficient permission for location updates");
+        } catch (IllegalStateException ex) {
+            Logger.log.geofence("Play service client is not connected");
+        }
     }
 
     public void onLocationPermissionGranted() {
