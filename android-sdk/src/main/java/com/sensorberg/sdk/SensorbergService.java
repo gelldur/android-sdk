@@ -425,7 +425,7 @@ public class SensorbergService extends Service {
             return;
         }
         boolean entry = intent.getBooleanExtra(SensorbergServiceMessage.EXTRA_GEOFENCE_ENTRY, true);
-        bootstrapper.geofenceManager.onGeofenceEvent(data, entry);
+        bootstrapper.geofenceManager.onGeofenceEvent(data, entry, "<unused>");
     }
 
     protected void onGeofenceNotAvailable(Intent intent) {

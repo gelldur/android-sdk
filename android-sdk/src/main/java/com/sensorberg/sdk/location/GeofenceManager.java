@@ -27,9 +27,10 @@ import com.sensorberg.sdk.settings.SettingsManager;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import lombok.Setter;
 
@@ -44,7 +45,7 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
 
     private List<GeofenceListener> listeners = new ArrayList<>();
 
-    private HashSet<String> entered;
+    private HashMap<String, String> entered;    //Fence, pairingID
 
     private Location previous;
     private Location current;
@@ -73,7 +74,7 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
     public void clear() {
         previous = null;
         storePrevious(previous);
-        entered = new HashSet<>();
+        entered = new HashMap<>();
         onFencesChanged(new ArrayList<String>());
     }
 
@@ -287,18 +288,20 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
     }
 
     @Override
-    public void onGeofenceEvent(GeofenceData geofenceData, boolean entry) {
+    public void onGeofenceEvent(GeofenceData geofenceData, boolean entry, String pairingIdNotUsedHere) {
+        String pairingId = entered.get(geofenceData.getFence());
         if (entry) {
-            if (entered.contains(geofenceData.getFence())) {
+            if (pairingId != null) {
                 Logger.log.geofence(
                         "Duplicate entry, skipping geofence: " + geofenceData.getFence());
                 return;
             } else {
-                entered.add(geofenceData.getFence());
+                pairingId = UUID.randomUUID().toString();
+                entered.put(geofenceData.getFence(), pairingId);
                 saveEntered(entered);
             }
         } else {
-            if (!entered.contains(geofenceData.getFence())) {
+            if (pairingId == null) {
                 Logger.log.geofence(
                         "Duplicate exit, skipping geofence: " + geofenceData.getFence());
                 return;
@@ -308,7 +311,7 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
             }
         }
         //TODO in V3 - If it's at the edge of registered radius then re-register.
-        notifyListeners(geofenceData, entry);
+        notifyListeners(geofenceData, entry, pairingId);
     }
 
     private List<GeofencingRequest> getGeofencingRequests(Location location) {
@@ -318,13 +321,13 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
             HashMap<String, Geofence> triggerExit = new HashMap<>();
             //Move geofences we're inside to saved set of geofences,
             //which will be triggered when registered outside of geofence
-            Iterator<String> iterator = entered.iterator();
+            Iterator<Map.Entry<String, String>> iterator = entered.entrySet().iterator();
             while (iterator.hasNext()) {
-                String inside = iterator.next();
-                Geofence temp = triggerEnter.get(inside);
+                Map.Entry<String, String> inside = iterator.next();
+                Geofence temp = triggerEnter.get(inside.getKey());
                 if (temp != null) {
-                    triggerEnter.remove(inside);
-                    triggerExit.put(inside, temp);
+                    triggerEnter.remove(inside.getKey());
+                    triggerExit.put(inside.getKey(), temp);
                 } else {
                     //Cleanup entered geofence if it's not anymore in range
                     iterator.remove();
@@ -332,7 +335,7 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
                     // - Device moving far enough from this geofence with location disabled,
                     // so it's not listed in 100 nearest
                     // - Removing this geofence from layout
-                    Logger.log.geofenceError("Exit event for " + inside +
+                    Logger.log.geofenceError("Exit event for " + inside.getKey() +
                             " not triggered, probably not relevant anymore", null);
                 }
             }
@@ -478,25 +481,24 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
         }
     }
 
-    private void notifyListeners(GeofenceData geofenceData, boolean entry) {
+    private void notifyListeners(GeofenceData geofenceData, boolean entry, String pairingId) {
         for (GeofenceListener listener : listeners) {
-            listener.onGeofenceEvent(geofenceData, entry);
+            listener.onGeofenceEvent(geofenceData, entry, pairingId);
         }
     }
 
-    public void saveEntered(HashSet<String> entered) {
+    public void saveEntered(HashMap<String, String> entered) {
         String key = Constants.SharedPreferencesKeys.Location.ENTERED_GEOFENCES_SET;
         prefs.edit().putString(key, gson.toJson(entered)).apply();
     }
 
-    public HashSet<String> loadEntered() {
+    public HashMap<String, String> loadEntered() {
         String key = Constants.SharedPreferencesKeys.Location.ENTERED_GEOFENCES_SET;
         String json = prefs.getString(key, null);
         if (json == null || json.isEmpty()) {
-            return new HashSet<>();
+            return new HashMap<>();
         }
-        Type type = new TypeToken<HashSet<String>>() {
-        }.getType();
+        Type type = new TypeToken<HashMap<String, String>>() {}.getType();
         return gson.fromJson(json, type);
     }
 
