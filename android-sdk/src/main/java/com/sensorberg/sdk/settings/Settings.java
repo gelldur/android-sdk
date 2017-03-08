@@ -60,6 +60,26 @@ public class Settings {
 
     @Getter
     @Expose
+    @SerializedName("geofence.minUpdateTime")
+    private long geofenceMinUpdateTime = DefaultSettings.GEOFENCE_MIN_UPDATE_TIME;
+
+    @Getter
+    @Expose
+    @SerializedName("geofence.minUpdateDistance")
+    private int geofenceMinUpdateDistance = DefaultSettings.GEOFENCE_MIN_UPDATE_DISTANCE;
+
+    @Getter
+    @Expose
+    @SerializedName("geofence.maxDeviceSpeed")
+    private int geofenceMaxDeviceSpeed = DefaultSettings.GEOFENCE_MAX_DEVICE_SPEED;
+
+    @Getter
+    @Expose
+    @SerializedName("geofence.notificationResponsiveness")
+    private int geofenceNotificationResponsiveness = DefaultSettings.GEOFENCE_NOTIFICATION_RESPONSIVENESS;
+
+    @Getter
+    @Expose
     @SerializedName("network.millisBetweenRetries")
     private long millisBetweenRetries = DefaultSettings.DEFAULT_MILLIS_BEETWEEN_RETRIES;
 
@@ -136,6 +156,14 @@ public class Settings {
                     .getLong(SharedPreferencesKeys.Location.GEOHASH_MAX_AGE, DefaultSettings.DEFAULT_GEOHASH_MAX_AGE);
             geohashMinAccuracyRadius = preferences
                     .getInt(SharedPreferencesKeys.Location.GEOHASH_MIN_ACCURACY_RADIUS, DefaultSettings.DEFAULT_GEOHASH_MIN_ACCURACY_RADIUS);
+            geofenceMinUpdateTime = preferences
+                    .getLong(SharedPreferencesKeys.Location.GEOFENCE_MIN_UPDATE_TIME, DefaultSettings.GEOFENCE_MIN_UPDATE_TIME);
+            geofenceMinUpdateDistance = preferences
+                    .getInt(SharedPreferencesKeys.Location.GEOFENCE_MIN_UPDATE_DISTANCE, DefaultSettings.GEOFENCE_MIN_UPDATE_DISTANCE);
+            geofenceMaxDeviceSpeed = preferences
+                    .getInt(SharedPreferencesKeys.Location.GEOFENCE_MAX_DEVICE_SPEED, DefaultSettings.GEOFENCE_MAX_DEVICE_SPEED);
+            geofenceNotificationResponsiveness = preferences
+                    .getInt(SharedPreferencesKeys.Location.GEOFENCE_NOTIFICATION_RESPONSIVENESS, DefaultSettings.GEOFENCE_NOTIFICATION_RESPONSIVENESS);
             cleanBeaconMapRestartTimeout = preferences.getLong(SharedPreferencesKeys.Scanner.CLEAN_BEACON_MAP_RESTART_TIMEOUT,
                     DefaultSettings.DEFAULT_CLEAN_BEACONMAP_ON_RESTART_TIMEOUT);
             revision = preferences.getLong(SharedPreferencesKeys.Settings.REVISION, Long.MIN_VALUE);
@@ -170,6 +198,10 @@ public class Settings {
         backgroundWaitTime = newSettings.getBackgroundWaitTime();
         geohashMaxAge = newSettings.getGeohashMaxAge();
         geohashMinAccuracyRadius = newSettings.getGeohashMinAccuracyRadius();
+        geofenceMinUpdateTime = newSettings.getGeofenceMinUpdateTime();
+        geofenceMinUpdateDistance = newSettings.getGeofenceMinUpdateDistance();
+        geofenceMaxDeviceSpeed = newSettings.getGeofenceMaxDeviceSpeed();
+        geofenceNotificationResponsiveness = newSettings.getGeofenceNotificationResponsiveness();
 
         cleanBeaconMapRestartTimeout = newSettings.getCleanBeaconMapRestartTimeout();
 
@@ -220,6 +252,10 @@ public class Settings {
             editor.putLong(SharedPreferencesKeys.Scanner.BACKGROUND_WAIT_TIME, backgroundWaitTime);
             editor.putLong(SharedPreferencesKeys.Location.GEOHASH_MAX_AGE, geohashMaxAge);
             editor.putInt(SharedPreferencesKeys.Location.GEOHASH_MIN_ACCURACY_RADIUS, geohashMinAccuracyRadius);
+            editor.putLong(SharedPreferencesKeys.Location.GEOFENCE_MIN_UPDATE_TIME, geofenceMinUpdateTime);
+            editor.putInt(SharedPreferencesKeys.Location.GEOFENCE_MIN_UPDATE_DISTANCE, geofenceMinUpdateDistance);
+            editor.putInt(SharedPreferencesKeys.Location.GEOFENCE_MAX_DEVICE_SPEED, geofenceMaxDeviceSpeed);
+            editor.putInt(SharedPreferencesKeys.Location.GEOFENCE_NOTIFICATION_RESPONSIVENESS, geofenceNotificationResponsiveness);
             editor.putBoolean(SharedPreferencesKeys.Scanner.SHOULD_RESTORE_BEACON_STATES, shouldRestoreBeaconStates);
 
             editor.putLong(SharedPreferencesKeys.Settings.MESSAGE_DELAY_WINDOW_LENGTH, messageDelayWindowLength);

@@ -118,6 +118,22 @@ public class SettingsManager {
         return getSettings().getGeohashMinAccuracyRadius();
     }
 
+    public long getGeofenceMinUpdateTime() {
+        return getSettings().getGeofenceMinUpdateTime();
+    }
+
+    public int getGeofenceMinUpdateDistance() {
+        return getSettings().getGeofenceMinUpdateDistance();
+    }
+
+    public int getGeofenceMaxDeviceSpeed() {
+        return (getSettings().getGeofenceMaxDeviceSpeed() * 1000 / 3600); //to m/s
+    }
+
+    public int getGeofenceNotificationResponsiveness() {
+        return getSettings().getGeofenceNotificationResponsiveness();
+    }
+
     public boolean isShouldRestoreBeaconStates() {
         return getSettings().isShouldRestoreBeaconStates();
     }

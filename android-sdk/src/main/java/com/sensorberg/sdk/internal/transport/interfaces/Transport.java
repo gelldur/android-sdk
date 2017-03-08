@@ -23,12 +23,12 @@ public interface Transport {
     interface ProximityUUIDUpdateHandler{
         ProximityUUIDUpdateHandler NONE = new ProximityUUIDUpdateHandler() {
             @Override
-            public void proximityUUIDListUpdated(List<String> proximityUUIDs) {
+            public void proximityUUIDListUpdated(List<String> proximityUUIDs, boolean changed) {
 
             }
         };
 
-        void proximityUUIDListUpdated(List<String> proximityUUIDs);
+        void proximityUUIDListUpdated(List<String> proximityUUIDs, boolean changed);
     }
 
     void setProximityUUIDUpdateHandler(ProximityUUIDUpdateHandler proximityUUIDUpdateHandler);

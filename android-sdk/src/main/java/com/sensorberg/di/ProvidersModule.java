@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.LocationManager;
+import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -28,11 +29,14 @@ import com.sensorberg.sdk.internal.interfaces.ServiceScheduler;
 import com.sensorberg.sdk.internal.transport.RetrofitApiServiceImpl;
 import com.sensorberg.sdk.internal.transport.RetrofitApiTransport;
 import com.sensorberg.sdk.internal.transport.interfaces.Transport;
+import com.sensorberg.sdk.location.GeofenceManager;
 import com.sensorberg.sdk.location.LocationHelper;
+import com.sensorberg.sdk.location.PlayServiceManager;
 import com.sensorberg.sdk.model.ISO8601TypeAdapter;
 import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 import com.sensorberg.sdk.settings.DefaultSettings;
 import com.sensorberg.sdk.settings.SettingsManager;
+import com.sensorberg.utils.PlayServicesUtils;
 
 import java.util.Date;
 
@@ -81,6 +85,17 @@ public class ProvidersModule {
     @Singleton
     public LocationHelper provideLocationHelper(LocationManager locationManager, @Named("realSettingsManager") SettingsManager settingsManager) {
         return new LocationHelper(locationManager, settingsManager);
+    }
+
+    @Provides
+    @Singleton
+    @Nullable
+    public PlayServiceManager providePlayServiceManager(Context context, LocationHelper location, PermissionChecker checker) {
+        if (PlayServicesUtils.isGooglePlayServicesAvailable(context)) {
+            return new PlayServiceManager(context, location, checker);
+        } else {
+            return null;
+        }
     }
 
     @Provides
@@ -190,5 +205,16 @@ public class ProvidersModule {
     @Singleton
     public Platform provideAndroidPlatform(Context context) {
         return new AndroidPlatform(context);
+    }
+
+    @Provides
+    @Singleton
+    @Nullable
+    public GeofenceManager provideGeofenceManager(Context context, @Named("realSettingsManager") SettingsManager settings, SharedPreferences preferences, Gson gson, @Nullable PlayServiceManager play) {
+        if (play != null) {
+            return new GeofenceManager(context, settings, preferences, gson, play);
+        } else {
+            return null;
+        }
     }
 }
