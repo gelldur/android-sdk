@@ -209,7 +209,7 @@ public class TheInternalBootstrapperIntegration {
 
         spiedTransportWithMockService.setProximityUUIDUpdateHandler(new Transport.ProximityUUIDUpdateHandler() {
             @Override
-            public void proximityUUIDListUpdated(List<String> proximityUUIDs) {
+            public void proximityUUIDListUpdated(List<String> proximityUUIDs, boolean changed) {
                 Assertions.assertThat(proximityUUIDs.size()).isEqualTo(5);
             }
         });

@@ -61,7 +61,11 @@ public class BeaconAction {
         value.setGeohash(beaconEvent.getGeohash());
 
         if (beaconEvent.getBeaconId() != null) {
-            value.setPid(beaconEvent.getBeaconId().getPid());
+            if (beaconEvent.getBeaconId().getGeofenceData() == null) {
+                value.setPid(beaconEvent.getBeaconId().getPid());
+            } else {
+                value.setPid(beaconEvent.getBeaconId().getGeofenceData().getFence());
+            }
         }
 
         return value;
