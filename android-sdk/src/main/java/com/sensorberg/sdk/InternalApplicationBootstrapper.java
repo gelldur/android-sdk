@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.SyncStatusObserver;
 import android.location.Location;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -107,20 +108,27 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     protected SharedPreferences preferences;
 
     @Inject
+    @Nullable
     protected GeofenceManager geofenceManager;
 
     @Inject
     protected Gson gson;
+
+    protected final boolean geofenceAvailable;
 
     public InternalApplicationBootstrapper(Transport transport, ServiceScheduler scheduler, HandlerManager handlerManager,
                                            Clock clk, BluetoothPlatform btPlatform, ResolverConfiguration resolverConfiguration) {
         super(scheduler);
         SensorbergSdk.getComponent().inject(this);
 
+        geofenceAvailable = (geofenceManager != null);
+
         this.transport = transport;
         transport.setProximityUUIDUpdateHandler(this);
 
-        geofenceManager.addListener(this);
+        if (geofenceAvailable) {
+            geofenceManager.addListener(this);
+        }
 
         settingsManager.setSettingsUpdateCallback(settingsUpdateCallbackListener);
         settingsManager.setMessageDelayWindowLengthListener((MessageDelayWindowLengthListener) scheduler);
@@ -313,7 +321,9 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
     }
 
     public void startGeofences() {
-        geofenceManager.ping();
+        if (geofenceAvailable) {
+            geofenceManager.ping();
+        }
     }
 
     public void saveAllDataBeforeDestroy() {
@@ -342,7 +352,9 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
             scanner.stop();
             unscheduleAllPendingActions();
             beaconActionHistoryPublisher.deleteAllObjects();
-            geofenceManager.clear();
+            if (geofenceAvailable) {
+                geofenceManager.clear();
+            }
 
             // re-start
             transport.setApiToken(apiToken);
@@ -390,21 +402,24 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
         synchronized (proximityUUIDsMonitor) {
             this.proximityUUIDs.clear();
             List<String> fences = null;
-            if (changed) {
+
+            boolean doFences = geofenceAvailable && (changed || geofenceManager.shouldForceUpdate());
+            if (doFences) {
                 fences = new ArrayList<>();
             }
             for (String proximityUUID : proximityUUIDs) {
                 if (proximityUUID.length() == 32) {
                     this.proximityUUIDs.add(proximityUUID.toLowerCase());
                 } else if (proximityUUID.length() == 14) {
-                    if (changed) {
+                    if (doFences) {
                         fences.add(proximityUUID.toLowerCase());
                     }
                 } else {
-                    Logger.log.logError("Invalid proximityUUID: "+proximityUUID);
+                    Logger.log.logError("Invalid proximityUUID: " + proximityUUID);
                 }
             }
-            if (changed) {
+
+            if (doFences) {
                 try {
                     geofenceManager.onFencesChanged(fences);
                 } catch (IllegalArgumentException ex) {

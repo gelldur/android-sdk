@@ -34,7 +34,7 @@ import java.util.UUID;
 
 import lombok.Setter;
 
-public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, LocationListener, GeofenceListener {
+public class GeofenceManager implements GeofenceListener {
 
     private Context context;
     private SettingsManager settings;
@@ -54,15 +54,24 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
     @Setter
     private boolean registered = false;
 
+    private final boolean playServicesNotAvailable;
+
     public GeofenceManager(Context context, SettingsManager settings, SharedPreferences prefs, Gson gson, PlayServiceManager play) {
         this.context = context;
         this.prefs = prefs;
         this.gson = gson;
         this.play = play;
         this.settings = settings;
+
+        playServicesNotAvailable = (play == null);
+
+        if (playServicesNotAvailable) {
+            return;
+        }
+
         entered = loadEntered();
         storage = new GeofenceStorage(context, settings, prefs);
-        play.addListener(this);
+        play.addListener(connectionCallbacks);
         previous = restorePrevious();
         current = restoreLastKnown();
         if (storage.getCount() > 0) {
@@ -72,6 +81,11 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
     }
 
     public void clear() {
+
+        if (playServicesNotAvailable) {
+            return;
+        }
+
         previous = null;
         storePrevious(previous);
         entered = new HashMap<>();
@@ -79,6 +93,11 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
     }
 
     private void enable() {
+
+        if (playServicesNotAvailable) {
+            return;
+        }
+
         if (!enabled) {
             enabled = true;
             Logger.log.geofence("Enable GEOFENCING: Geofences appeared");
@@ -88,6 +107,11 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
     }
 
     private void disable() {
+
+        if (playServicesNotAvailable) {
+            return;
+        }
+
         if (enabled && storage.getCount() == 0) {
             enabled = false;
             Logger.log.geofence("Disable GEOFENCING: No geofences in layout");
@@ -102,6 +126,14 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
      * @param fences List of fence strings (8 char geohash plus 6 char radius).
      */
     public void onFencesChanged(List<String> fences) {
+
+        if (playServicesNotAvailable) {
+            return;
+        }
+
+        prefs.edit().putLong(Constants.SharedPreferencesKeys.Location.LAST_DB_UPDATED,
+                System.currentTimeMillis()).apply();
+
         Logger.log.geofence("Update: layout change");
         storage.updateFences(fences);
         if (fences.size() == 0 && storage.getCount() == 0) {
@@ -118,7 +150,17 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
         }
     }
 
+    public boolean shouldForceUpdate() {
+        long lastUpdate = prefs.getLong(Constants.SharedPreferencesKeys.Location.LAST_DB_UPDATED, 0);
+        return System.currentTimeMillis() - lastUpdate > settings.getLayoutUpdateInterval();
+    }
+
     public void ping() {
+
+        if (playServicesNotAvailable) {
+            return;
+        }
+
         Logger.log.geofence("Update: ping at " + current);
         if (trigger(current)) {
             removeGeofences(current);
@@ -127,28 +169,18 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
 
     @Override
     public void onLocationChanged(Location incoming) {
-        if (incoming != null) {
-            current = incoming;
-            storeLastKnown(current);
-            Logger.log.geofence("Update: location change at " + incoming);
-            if (trigger(incoming)) {
-                removeGeofences(incoming);
-            }
-        }
+        locationListener.onLocationChanged(incoming);
     }
 
     public void onGeofenceNotAvailable() {
+
+        if (playServicesNotAvailable) {
+            return;
+        }
+
         if (enabled) {
             Logger.log.geofence("Event: Location state changed");
             registered = false;
-            requestSingleUpdate();
-        }
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        if (enabled) {
-            Logger.log.geofence("Event: Play services connection");
             requestSingleUpdate();
         }
     }
@@ -289,6 +321,11 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
 
     @Override
     public void onGeofenceEvent(GeofenceData geofenceData, boolean entry, String pairingIdNotUsedHere) {
+
+        if (playServicesNotAvailable) {
+            return;
+        }
+
         String pairingId = entered.get(geofenceData.getFence());
         if (entry) {
             if (pairingId != null) {
@@ -365,7 +402,7 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
         try {
             PendingResult<Status> result;
             result = LocationServices.FusedLocationApi.requestLocationUpdates(
-                    play.getClient(), request, this, Looper.myLooper());
+                    play.getClient(), request, locationListener, Looper.myLooper());
             result.setResultCallback(new ResultCallback<Status>() {
                 @Override
                 public void onResult(@NonNull Status status) {
@@ -417,7 +454,7 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
                         Logger.log.geofenceError("Requesting location updates failed " +
                                 status.getStatusCode(), null);
                     } else {
-                        Logger.log.geofence("Registered location updates with time: "+time+" displacement: "+displacement);
+                        Logger.log.geofence("Registered location updates with time: " + time + " displacement: " + displacement);
                     }
                 }
             });
@@ -451,17 +488,22 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
     }
 
     public void onLocationPermissionGranted() {
+
+        //if (playServicesNotAvailable) {
+        //    return;
+        //}
+
         //Right now there's no callback for that - on permission change app is killed and restarted.
         //This is left in here in case the method for callback appears in Android.
         //updateRegistredGeofences();
     }
 
-    @Override
-    public void onConnectionSuspended(int i) {
-        //Nothing. Google Play Services should reconnect automatically.
-    }
-
     public void addListener(GeofenceListener listener) {
+
+        if (playServicesNotAvailable) {
+            return;
+        }
+
         for (GeofenceListener previous : listeners) {
             if (previous == listener) {
                 return;
@@ -471,6 +513,11 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
     }
 
     public void removeListener(GeofenceListener listener) {
+
+        if (playServicesNotAvailable) {
+            return;
+        }
+
         Iterator<GeofenceListener> iterator = listeners.iterator();
         while (iterator.hasNext()) {
             GeofenceListener existing = iterator.next();
@@ -487,18 +534,19 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
         }
     }
 
-    public void saveEntered(HashMap<String, String> entered) {
+    private void saveEntered(HashMap<String, String> entered) {
         String key = Constants.SharedPreferencesKeys.Location.ENTERED_GEOFENCES_SET;
         prefs.edit().putString(key, gson.toJson(entered)).apply();
     }
 
-    public HashMap<String, String> loadEntered() {
+    private HashMap<String, String> loadEntered() {
         String key = Constants.SharedPreferencesKeys.Location.ENTERED_GEOFENCES_SET;
         String json = prefs.getString(key, null);
         if (json == null || json.isEmpty()) {
             return new HashMap<>();
         }
-        Type type = new TypeToken<HashMap<String, String>>() {}.getType();
+        Type type = new TypeToken<HashMap<String, String>>() {
+        }.getType();
         return gson.fromJson(json, type);
     }
 
@@ -521,5 +569,43 @@ public class GeofenceManager implements GoogleApiClient.ConnectionCallbacks, Loc
         return LocationStorage.load(gson, prefs,
                 Constants.SharedPreferencesKeys.Location.PREVIOUS_LOCATION);
     }
+
+    private final GoogleApiClient.ConnectionCallbacks connectionCallbacks = new GoogleApiClient.ConnectionCallbacks() {
+        @Override
+        public void onConnected(@Nullable Bundle bundle) {
+            if (playServicesNotAvailable) {
+                return;
+            }
+
+            if (enabled) {
+                Logger.log.geofence("Event: Play services connection");
+                requestSingleUpdate();
+            }
+        }
+
+        @Override
+        public void onConnectionSuspended(int i) {
+            //Nothing. Google Play Services should reconnect automatically.
+        }
+    };
+
+    private final LocationListener locationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location incoming) {
+
+            if (playServicesNotAvailable) {
+                return;
+            }
+
+            if (incoming != null) {
+                current = incoming;
+                storeLastKnown(current);
+                Logger.log.geofence("Update: location change at " + incoming);
+                if (trigger(incoming)) {
+                    removeGeofences(incoming);
+                }
+            }
+        }
+    };
 }
 

@@ -39,7 +39,7 @@ import static com.sensorberg.utils.ListUtils.map;
 
 public class RetrofitApiTransport implements Transport {
 
-    public static String RESOLVER_BASE_URL = "https://demo.sensorberg-cdn.com";
+    public static String RESOLVER_BASE_URL = "https://portal.sensorberg-cdn.com";
 
     public static int BACKEND_VERSION = 2;
 

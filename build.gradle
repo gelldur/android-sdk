@@ -26,8 +26,8 @@ allprojects {
         jcenter()
         maven { url "https://jitpack.io" }
     }
-    project.ext.SDK_VERSION = "2.3.0"
-    project.ext.RC_VERSION = "-GEOFENCING"
+    project.ext.SDK_VERSION = "2.3.1"
+    project.ext.RC_VERSION = "-RAILS"
     project.ext.buildToolsVersion = "23.0.3"
     project.ext.compileSdkVersion = 23
     project.ext.targetSdkVersion = 23

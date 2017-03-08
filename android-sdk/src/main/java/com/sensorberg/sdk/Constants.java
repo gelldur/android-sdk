@@ -43,6 +43,7 @@ public class Constants {
             public static final String LAST_KNOWN_LOCATION = "com.sensorberg.preferences.lastKnownLocation";
             public static final String PREVIOUS_LOCATION = "com.sensorberg.preferences.previousLocation";
             public static final String ENTERED_GEOFENCES_SET = "com.sensorberg.preferences.enteredGeofencesMap";
+            public static final String LAST_DB_UPDATED = "com.sensorberg.preferences.lastDbUpdated";
         }
     }
 

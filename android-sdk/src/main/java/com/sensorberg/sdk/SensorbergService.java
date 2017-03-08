@@ -376,7 +376,9 @@ public class SensorbergService extends Service {
                 break;
             }
             case SensorbergServiceMessage.MSG_LOCATION_ENABLED: {
-                bootstrapper.geofenceManager.ping();
+                if (bootstrapper.geofenceAvailable) {
+                    bootstrapper.geofenceManager.ping();
+                }
                 break;
             }
             case SensorbergServiceMessage.MSG_GEOFENCE_EVENT: {
@@ -400,6 +402,7 @@ public class SensorbergService extends Service {
     }
 
     protected void onLocationChanged(Intent intent) {
+        if (!bootstrapper.geofenceAvailable) return;
         if (intent.hasExtra(SensorbergServiceMessage.EXTRA_LOCATION_AVAILABILITY)) {
             boolean available = intent.getBooleanExtra(
                     SensorbergServiceMessage.EXTRA_LOCATION_AVAILABILITY, false);
@@ -415,6 +418,7 @@ public class SensorbergService extends Service {
     }
 
     protected void onGeofenceEvent(Intent intent) {
+        if (!bootstrapper.geofenceAvailable) return;
         GeofenceData data = intent.getParcelableExtra(SensorbergServiceMessage.EXTRA_GEOFENCE_DATA);
         if (data == null) {
             Logger.log.geofenceError("Intent missing GeofenceData", null);
@@ -429,6 +433,7 @@ public class SensorbergService extends Service {
     }
 
     protected void onGeofenceNotAvailable(Intent intent) {
+        if (!bootstrapper.geofenceAvailable) return;
         bootstrapper.geofenceManager.onGeofenceNotAvailable();
     }
 

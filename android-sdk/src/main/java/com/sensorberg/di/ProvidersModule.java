@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.LocationManager;
+import android.support.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -35,6 +36,7 @@ import com.sensorberg.sdk.model.ISO8601TypeAdapter;
 import com.sensorberg.sdk.scanner.BeaconActionHistoryPublisher;
 import com.sensorberg.sdk.settings.DefaultSettings;
 import com.sensorberg.sdk.settings.SettingsManager;
+import com.sensorberg.utils.PlayServicesUtils;
 
 import java.util.Date;
 
@@ -87,8 +89,13 @@ public class ProvidersModule {
 
     @Provides
     @Singleton
+    @Nullable
     public PlayServiceManager providePlayServiceManager(Context context, LocationHelper location, PermissionChecker checker) {
-        return new PlayServiceManager(context, location, checker);
+        if (PlayServicesUtils.isGooglePlayServicesAvailable(context)) {
+            return new PlayServiceManager(context, location, checker);
+        } else {
+            return null;
+        }
     }
 
     @Provides
@@ -202,7 +209,12 @@ public class ProvidersModule {
 
     @Provides
     @Singleton
-    public GeofenceManager provideGeofenceManager(Context context, @Named("realSettingsManager") SettingsManager settings, SharedPreferences preferences, Gson gson, PlayServiceManager play) {
-        return new GeofenceManager(context, settings, preferences, gson, play);
+    @Nullable
+    public GeofenceManager provideGeofenceManager(Context context, @Named("realSettingsManager") SettingsManager settings, SharedPreferences preferences, Gson gson, @Nullable PlayServiceManager play) {
+        if (play != null) {
+            return new GeofenceManager(context, settings, preferences, gson, play);
+        } else {
+            return null;
+        }
     }
 }
