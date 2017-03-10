@@ -43,6 +43,7 @@ public class SensorbergReceiver extends ActionReceiver {
                                 context,
                                 PendingIntent.FLAG_UPDATE_CURRENT))
                 .setSmallIcon(R.drawable.ic_beacon)
+                .setAutoCancel(true)
                 .build();
     }
 
