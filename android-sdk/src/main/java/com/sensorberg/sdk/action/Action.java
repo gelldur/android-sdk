@@ -2,6 +2,7 @@ package com.sensorberg.sdk.action;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -70,9 +71,9 @@ public abstract class Action implements Parcelable {
      *
      * @return this action instance uuid
      */
-    @Getter private final String instanceUuid;
+    @Getter @NonNull private final String instanceUuid;
 
-    protected Action(ActionType type, long delayTime, UUID uuid, String payload, String instanceUuid) {
+    protected Action(ActionType type, long delayTime, UUID uuid, String payload, @NonNull String instanceUuid) {
         this.type = type;
         this.delayTime = delayTime;
         this.uuid = uuid;
