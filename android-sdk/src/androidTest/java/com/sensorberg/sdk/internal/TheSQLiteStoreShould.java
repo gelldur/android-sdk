@@ -19,7 +19,7 @@ import java.util.UUID;
 @RunWith(AndroidJUnit4.class)
 public class TheSQLiteStoreShould {
 
-    private static final Action URI_ACTION = new UriMessageAction(UUID.randomUUID(), "title", "content", "http://something.com", null, 3000);
+    private static final Action URI_ACTION = new UriMessageAction(UUID.randomUUID(), "title", "content", "http://something.com", null, 3000, UUID.randomUUID().toString());
     public static final String BEACON_EVENT_KEY = "beaconEvent";
     public static final int TIMESTAMP_OF_EVENT = 4000;
     private static final int IRRELEVANT = 1;

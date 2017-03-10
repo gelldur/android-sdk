@@ -85,7 +85,7 @@ public abstract class ActionReceiver extends BroadcastReceiver {
             if (notification != null) {
                 NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                 manager.notify(sdkAction.hashCode(), notification);
-                SensorbergSdk.notifyActionShowAttempt(sdkAction.getUuid(), context);
+                SensorbergSdk.notifyActionShowAttempt(sdkAction.getInstanceUuid(), context);
             }
         } else if (intentAction.equals(ACTION_CONVERSION_SUCCESS) || intentAction.equals(ACTION_CONVERSION_DELETE)) {
             Action action = intent.getParcelableExtra(EXTRA_ACTION);
@@ -173,7 +173,7 @@ public abstract class ActionReceiver extends BroadcastReceiver {
      * You will get result of tapping in {@link #onNotificationSuccess(Action, BeaconId, Uri, Bundle, Context) onNotificationSuccess}.
      * Use result of {@link #getNotificationContentPendingIntent(Action, BeaconId, Uri, Bundle, Context, int) getNotificationContentPendingIntent} as {@link Notification#contentIntent}.
      * Without above the SDK won't get to know about successfull conversion, unless you'll let it know
-     * by {@link SensorbergSdk#notifyActionSuccess(UUID, Context) SensorbergSdk.notifyActionSuccess}.
+     * by {@link SensorbergSdk#notifyActionSuccess(String, Context) SensorbergSdk.notifyActionSuccess}.
      * @param action {@link Action} as received from SDK.
      * @param beaconId {@link BeaconId} as received from SDK.
      * @param context This ActionReceiver's context.
@@ -193,7 +193,7 @@ public abstract class ActionReceiver extends BroadcastReceiver {
      * @param context This ActionReceiver's context.
      */
     public void onNotificationSuccess(Action action, BeaconId beaconId, Uri uri, Bundle bundle, Context context) {
-        SensorbergSdk.notifyActionSuccess(action.getUuid(), context);
+        SensorbergSdk.notifyActionSuccess(action.getInstanceUuid(), context);
     }
 
     /**
@@ -209,7 +209,7 @@ public abstract class ActionReceiver extends BroadcastReceiver {
      */
     private void onNotificationDeleted(Action action, BeaconId beaconId, Uri uri, Bundle bundle, Context context) {
         //TODO This is just a stub in case we want to change conversion type based on user dismissing the notification in the future.
-        SensorbergSdk.notifyActionRejected(action.getUuid(), context);
+        SensorbergSdk.notifyActionRejected(action.getInstanceUuid(), context);
     }
 
     /**

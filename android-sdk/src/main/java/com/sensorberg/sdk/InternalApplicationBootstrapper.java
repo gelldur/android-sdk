@@ -280,7 +280,7 @@ public class InternalApplicationBootstrapper extends MinimalBootstrapper impleme
             }
 
             //Before sending Action to avoid race conditions.
-            ActionConversion conversion = new ActionConversion(beaconEvent.getAction().getUuid(), ActionConversion.TYPE_SUPPRESSED);
+            ActionConversion conversion = new ActionConversion(beaconEvent.getAction().getInstanceUuid(), ActionConversion.TYPE_SUPPRESSED);
             onConversionUpdate(conversion);
             if (presentationDelegate == null) {
                 Intent broadcastIntent = new Intent(ManifestParser.actionString);
