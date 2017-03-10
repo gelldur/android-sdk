@@ -1,19 +1,16 @@
 package com.sensorberg.sdk.action;
 
+import android.net.Uri;
+import android.webkit.URLUtil;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
 import com.sensorberg.sdk.Logger;
 import com.sensorberg.sdk.model.ISO8601TypeAdapter;
 
 import org.json.JSONException;
-
-import android.net.Uri;
-import android.webkit.URLUtil;
 
 import java.util.Date;
 import java.util.UUID;
@@ -40,8 +37,9 @@ public class ActionFactory {
 
 
     public static Action getAction(int actionType, JsonObject message, UUID actionUUID, long delay) throws JSONException {
+        String instanceUuid = UUID.randomUUID().toString();
         if (actionType == ServerType.SILENT){
-            return new SilentAction(actionUUID);
+            return new SilentAction(actionUUID, instanceUuid);
         }
         if (message == null) {
             return null;
@@ -73,7 +71,8 @@ public class ActionFactory {
                         body,
                         url,
                         payload,
-                        delay
+                        delay,
+                        instanceUuid
                 );
                 break;
             }
@@ -84,7 +83,8 @@ public class ActionFactory {
                         body,
                         Uri.parse(url),
                         payload,
-                        delay
+                        delay,
+                        instanceUuid
                 );
                 break;
             }
@@ -95,7 +95,8 @@ public class ActionFactory {
                         body,
                         payload,
                         Uri.parse(url),
-                        delay
+                        delay,
+                        instanceUuid
                 );
                 break;
             }

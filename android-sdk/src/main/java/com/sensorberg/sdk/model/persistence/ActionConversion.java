@@ -24,13 +24,13 @@ public class ActionConversion implements Parcelable {
     public static final int TYPE_SUPPRESSED = -1;
 
     /**
-     * App has confirmed via {@link com.sensorberg.SensorbergSdk#notifyActionShowAttempt(UUID, Context) SensorbergSdk.notifyActionShowAttempt}
+     * App has confirmed via {@link com.sensorberg.SensorbergSdk#notifyActionShowAttempt(String, Context) SensorbergSdk.notifyActionShowAttempt}
      * that the action was shown to  the user by notification or otherwise.
      */
     public static final int TYPE_IGNORED = 0;
 
     /**
-     * App has confirmed via {@link com.sensorberg.SensorbergSdk#notifyActionSuccess(UUID, Context)}  SensorbergSdk.notifyActionSuccess}
+     * App has confirmed via {@link com.sensorberg.SensorbergSdk#notifyActionSuccess(String, Context)}  SensorbergSdk.notifyActionSuccess}
      * that the user acknowledged the action (e.g. user opened notification).
      */
     public static final int TYPE_SUCCESS = 1;
@@ -38,7 +38,7 @@ public class ActionConversion implements Parcelable {
     @Expose
     @Getter
     @SerializedName("action")
-    private final String action;
+    private final String actionInstanceUuid;
 
     @Expose
     @Getter
@@ -56,14 +56,14 @@ public class ActionConversion implements Parcelable {
     @SerializedName("location")
     private String geohash;
 
-    public ActionConversion(UUID uuid, int type) {
-        this.action = uuid.toString();
+    public ActionConversion(String actionInstanceUuid, int type) {
+        this.actionInstanceUuid = actionInstanceUuid;
         this.type = type;
         this.date = System.currentTimeMillis();
     }
 
     protected ActionConversion(Parcel in) {
-        action = in.readString();
+        actionInstanceUuid = in.readString();
         date = in.readLong();
         type = in.readInt();
         geohash = in.readString();
@@ -88,7 +88,7 @@ public class ActionConversion implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeString(action);
+        parcel.writeString(actionInstanceUuid);
         parcel.writeLong(date);
         parcel.writeInt(type);
         parcel.writeString(geohash);

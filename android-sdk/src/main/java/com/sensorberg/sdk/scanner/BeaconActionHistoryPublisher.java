@@ -176,14 +176,14 @@ public class BeaconActionHistoryPublisher implements ScannerListener, RunLoop.Me
 
     public void onConversionUpdate(ActionConversion incoming) {
         synchronized (lock) {
-            ActionConversion existing = actionConversions.get(incoming.getAction());
+            ActionConversion existing = actionConversions.get(incoming.getActionInstanceUuid());
             if (existing != null && incoming.getType() <= existing.getType()) {
-                Logger.log.verbose("Conversion " + existing.getAction() + " type change rejected. " +
+                Logger.log.verbose("Conversion " + existing.getActionInstanceUuid() + " type change rejected. " +
                         "Type can be changed only to higher. " +
                         "Existing type: " + existing.getType() + " Incoming type: " + incoming.getType());
                 return;
             }
-            actionConversions.put(incoming.getAction(), incoming);
+            actionConversions.put(incoming.getActionInstanceUuid(), incoming);
         }
         saveAllData();
     }

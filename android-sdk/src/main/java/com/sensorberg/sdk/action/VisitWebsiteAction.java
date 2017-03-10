@@ -35,8 +35,8 @@ public class VisitWebsiteAction extends Action implements android.os.Parcelable 
      */
     @Getter private final Uri uri;
 
-    public VisitWebsiteAction(UUID actionUUID, String subject, String body, Uri uri, String payload, long delayTime) {
-        super(ActionType.MESSAGE_WEBSITE, delayTime, actionUUID, payload);
+    public VisitWebsiteAction(UUID actionUUID, String subject, String body, Uri uri, String payload, long delayTime, String instanceUuid) {
+        super(ActionType.MESSAGE_WEBSITE, delayTime, actionUUID, payload, instanceUuid);
         this.subject = subject;
         this.body = body;
         this.uri = uri;
