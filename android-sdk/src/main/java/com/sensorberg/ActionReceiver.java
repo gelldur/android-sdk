@@ -84,7 +84,7 @@ public abstract class ActionReceiver extends BroadcastReceiver {
             Notification notification = onGetNotification(sdkAction, beaconId, uri, context);
             if (notification != null) {
                 NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                manager.notify(sdkAction.hashCode(), notification);
+                manager.notify(sdkAction.getInstanceUuid().hashCode(), notification);
                 SensorbergSdk.notifyActionShowAttempt(sdkAction.getInstanceUuid(), context);
             }
         } else if (intentAction.equals(ACTION_CONVERSION_SUCCESS) || intentAction.equals(ACTION_CONVERSION_DELETE)) {
@@ -255,6 +255,6 @@ public abstract class ActionReceiver extends BroadcastReceiver {
         intent.putExtra(EXTRA_BEACON, (Parcelable) beaconId);
         intent.putExtra(EXTRA_URI, uri);
         intent.putExtra(EXTRA_BUNDLE, bundle);
-        return PendingIntent.getBroadcast(context, 0, intent, flags);
+        return PendingIntent.getBroadcast(context, action.getInstanceUuid().hashCode(), intent, flags);
     }
 }
