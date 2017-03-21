@@ -30,6 +30,16 @@ public class Settings {
 
     @Getter
     @Expose
+    @SerializedName("scanner.exitForegroundGraceMillis")
+    private long exitForegroundGraceMillis = DefaultSettings.DEFAULT_EXIT_FOREGROUND_GRACE_MILLIS;
+
+    @Getter
+    @Expose
+    @SerializedName("scanner.exitBackgroundGraceMillis")
+    private long exitBackgroundGraceMillis = DefaultSettings.DEFAULT_EXIT_BACKGROUND_GRACE_MILLIS;
+
+    @Getter
+    @Expose
     @SerializedName("scanner.foreGroundScanTime")
     private long foreGroundScanTime = DefaultSettings.DEFAULT_FOREGROUND_SCAN_TIME;
 

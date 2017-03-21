@@ -29,6 +29,7 @@ public class Utils {
     public static final long ONE_SECOND = 1000;
     public static final long TEN_SECONDS = 10 * ONE_SECOND;
     public static final long THIRTY_SECONDS = 30 * ONE_SECOND;
+    public static final long FORTY_SECONDS = 40 * ONE_SECOND;
     public static final long ONE_MINUTE = 60 * ONE_SECOND;
     public static final long FIVE_MINUTES = 5 * ONE_MINUTE;
     public static final long TEN_MINUTES = 10 * ONE_MINUTE;
@@ -36,7 +37,8 @@ public class Utils {
     public static final long ONE_HOUR = 60 * ONE_MINUTE;
     public static final long VERY_LONG_TIME = Long.MAX_VALUE / 2L;
 
-    public static final long EXIT_TIME = 9 * ONE_SECOND;
+    public static final long GRACE_TIME = 5 * ONE_SECOND;
+    public static final long EXIT_TIME = 30 * ONE_SECOND;
     public static final long EXIT_TIME_HAS_PASSED = EXIT_TIME + 1;
     public static final long EXIT_TIME_NOT_YET = EXIT_TIME -1;
 
