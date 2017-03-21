@@ -9,7 +9,7 @@ public class EventEntry implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Getter
-    private long lastBeaconTime;
+    private final long lastBeaconTime;
 
     @Getter
     private final int eventMask;

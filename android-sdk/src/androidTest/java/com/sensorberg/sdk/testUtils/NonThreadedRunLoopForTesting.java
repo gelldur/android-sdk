@@ -46,7 +46,7 @@ public class NonThreadedRunLoopForTesting implements RunLoop {
     }
 
     @Override
-    public void scheduleAtFixedRate(TimerTask timerTask, int when, long interval) {
+    public void scheduleAtFixedRate(TimerTask timerTask, long when, long interval) {
         this.timerTask = timerTask;
     }
 

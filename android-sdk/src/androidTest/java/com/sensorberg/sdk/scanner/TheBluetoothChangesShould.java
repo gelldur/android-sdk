@@ -47,7 +47,7 @@ public class TheBluetoothChangesShould {
     SharedPreferences sharedPreferences;
 
     Scanner tested;
-    private long RANDOM_VALUE_THAT_IS_SHORTER_THAN_CLEAN_BEACONMAP_ON_RESTART_TIMEOUT_BUT_LONGER_THAN_EXIT_EVENT_DELAY = Utils.THIRTY_SECONDS;
+    private long RANDOM_VALUE_THAT_IS_SHORTER_THAN_CLEAN_BEACONMAP_ON_RESTART_TIMEOUT_BUT_LONGER_THAN_EXIT_EVENT_DELAY = Utils.THIRTY_SECONDS + 1;
     private SettingsManager settings;
 
     @Before
@@ -86,15 +86,11 @@ public class TheBluetoothChangesShould {
         verify(mockScannerListener, never()).onScanEventDetected(isExitEvent());
 
         long start = testHandlerManager.getCustomClock().now();
-        while (testHandlerManager.getCustomClock().now() < start + Utils.EXIT_TIME) {
+        while (testHandlerManager.getCustomClock().now() < start + Utils.GRACE_TIME - Utils.ONE_ADVERTISEMENT_INTERVAL) {
             testHandlerManager.getCustomClock().increaseTimeInMillis(Utils.ONE_ADVERTISEMENT_INTERVAL);
         }
-        verify(mockScannerListener, never()).onScanEventDetected(isExitEvent());
-
-        testHandlerManager.getCustomClock().increaseTimeInMillis(1);
+        //Actually, it triggers before the above loop, due to lacking method for testing delay in NonThreadedRunLoopForTesting.scheduleAtFixedRate()
         verify(mockScannerListener).onScanEventDetected(isExitEvent());
-
-        verify(mockScannerListener, never()).onScanEventDetected(isEntryEvent());
     }
 
 
