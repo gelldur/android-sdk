@@ -16,8 +16,8 @@ public class SilentAction extends Action {
         }
     };
 
-    protected SilentAction(UUID uuid) {
-        super(ActionType.SILENT, 0, uuid, null);
+    protected SilentAction(UUID uuid, String instanceUuid) {
+        super(ActionType.SILENT, 0, uuid, null, instanceUuid);
     }
 
     protected SilentAction(Parcel source) {

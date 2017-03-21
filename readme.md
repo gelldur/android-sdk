@@ -69,7 +69,7 @@ If you want to test the procedure, change the **dryRun** variable in the **bintr
 
 	The MIT License (MIT)
 	
-	Copyright (c) 2016 Sensorberg GmbH
+	Copyright (c) 2017 Sensorberg GmbH
 	
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal

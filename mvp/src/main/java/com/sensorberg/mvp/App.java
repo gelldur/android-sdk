@@ -13,10 +13,6 @@ public class App extends Application {
     // TODO: replace this with your API KEY
     private static final String SENSORBERG_KEY = "4520f52ea9808ab39d2a02cb21ab63054cd876d7673677cf0773b6b66296479a";
 
-    static { // temporary work-around to use for portal.sensorberg.com
-        com.sensorberg.sdk.internal.transport.RetrofitApiTransport.RESOLVER_BASE_URL = "https://portal.sensorberg-cdn.com";
-    }
-
     private SensorbergSdk sensorbergSdk;
     private BackgroundDetector sensorbergDetector;
 

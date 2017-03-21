@@ -56,7 +56,7 @@ public class ParcelTests {
 
     @Test
     public void test_action_parcelable() {
-        UriMessageAction action = new UriMessageAction(UUID.randomUUID(), "title", "content", "foo.bar", null, 0);
+        UriMessageAction action = new UriMessageAction(UUID.randomUUID(), "title", "content", "foo.bar", null, 0, UUID.randomUUID().toString());
 
         try {
             Parcel parcel = Parcel.obtain();
@@ -112,7 +112,7 @@ public class ParcelTests {
 
     @Test
     public void testBeaconEvent() {
-        Action action = new UriMessageAction(UUID.randomUUID(), "title", "content", "foo.bar", null, 0);
+        Action action = new UriMessageAction(UUID.randomUUID(), "title", "content", "foo.bar", null, 0, UUID.randomUUID().toString());
         BeaconEvent event = new BeaconEvent.Builder()
                 .withAction(action)
                 .build();
@@ -135,7 +135,7 @@ public class ParcelTests {
 
     @Test
     public void testBeaconEvent_withBundle() {
-        Action action = new UriMessageAction(UUID.randomUUID(), "title", "content", "foo.bar", null, 0);
+        Action action = new UriMessageAction(UUID.randomUUID(), "title", "content", "foo.bar", null, 0, UUID.randomUUID().toString());
         BeaconEvent event = new BeaconEvent.Builder()
                 .withAction(action)
                 .build();

@@ -62,8 +62,8 @@ public class UriMessageAction extends Action {
      * @param payload   payload from the server
      * @param delayTime delay in millis
      */
-    public UriMessageAction(UUID actionUUID, String title, String content, String uri, String payload, long delayTime) {
-        super(ActionType.MESSAGE_URI, delayTime, actionUUID, payload);
+    public UriMessageAction(UUID actionUUID, String title, String content, String uri, String payload, long delayTime, String instanceUuid) {
+        super(ActionType.MESSAGE_URI, delayTime, actionUUID, payload, instanceUuid);
         this.title = title;
         this.content = content;
         this.uri = uri;

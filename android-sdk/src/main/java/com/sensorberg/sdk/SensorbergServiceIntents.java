@@ -73,9 +73,9 @@ public class SensorbergServiceIntents {
         return serviceIntent;
     }
 
-    public static Intent getConversionIntent(Context ctx, UUID uuid, int type) {
+    public static Intent getConversionIntent(Context ctx, String actionInstanceUuid, int type) {
         Intent intent = getServiceIntentWithMessage(ctx, SensorbergServiceMessage.MSG_CONVERSION);
-        ActionConversion conversion = new ActionConversion(uuid, type);
+        ActionConversion conversion = new ActionConversion(actionInstanceUuid, type);
         intent.putExtra(SensorbergServiceMessage.EXTRA_CONVERSION, conversion);
         return intent;
     }

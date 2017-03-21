@@ -24,6 +24,7 @@ import android.support.test.runner.AndroidJUnit4;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -74,13 +75,13 @@ public class TheInternalApplicationBootstrapperShould {
         tested.beaconActionHistoryPublisher = beaconActionHistoryPublisher;
 
         beaconEventSupressionTime = new BeaconEvent.Builder()
-                .withAction(new InAppAction(UUID, "irrelevant", "irrelevant", null, null, 0))
+                .withAction(new InAppAction(UUID, "irrelevant", "irrelevant", null, null, 0, java.util.UUID.randomUUID().toString()))
                 .withSuppressionTime(SUPPRESSION_TIME)
                 .withPresentationTime(0)
                 .build();
 
         beaconEventSentOnlyOnce = new BeaconEvent.Builder()
-                .withAction(new InAppAction(UUID, "irrelevant", "irrelevant", null, null, 0))
+                .withAction(new InAppAction(UUID, "irrelevant", "irrelevant", null, null, 0, java.util.UUID.randomUUID().toString()))
                 .withSendOnlyOnce(true)
                 .withPresentationTime(0)
                 .build();

@@ -2,7 +2,6 @@ package com.sensorberg.sdk.model.persistence;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-
 import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.utils.Objects;
 
@@ -43,6 +42,12 @@ public class BeaconAction {
     @SerializedName("location")
     private String geohash;
 
+    @Expose
+    @Getter
+    @Setter
+    @SerializedName("uuid")
+    private String actionInstanceUuid;
+
 
     public BeaconAction() {
     }
@@ -59,6 +64,7 @@ public class BeaconAction {
         value.setTimeOfPresentation(beaconEvent.getPresentationTime());
         value.setTrigger(beaconEvent.getTrigger());
         value.setGeohash(beaconEvent.getGeohash());
+        value.setActionInstanceUuid(beaconEvent.getAction().getInstanceUuid());
 
         if (beaconEvent.getBeaconId() != null) {
             if (beaconEvent.getBeaconId().getGeofenceData() == null) {
@@ -91,6 +97,9 @@ public class BeaconAction {
         if (!actionId.equals(that.actionId)) {
             return false;
         }
+        if (!actionInstanceUuid.equals(that.actionInstanceUuid)) {
+            return false;
+        }
         if (!Objects.equals(geohash, that.geohash)) {
             return false;
         }
@@ -102,6 +111,7 @@ public class BeaconAction {
     public int hashCode() {
         int result = actionId.hashCode();
         result = 31 * result + (int) (timeOfPresentation ^ (timeOfPresentation >>> 32));
+        result = 31 * result + actionInstanceUuid.hashCode();
         result = 31 * result + trigger;
         result = 31 * result + (pid != null ? pid.hashCode() : 0);
         result = 31 * result + (geohash != null ? geohash.hashCode() : 0);

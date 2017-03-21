@@ -1,8 +1,8 @@
 package util;
 
+import android.net.Uri;
+
 import com.sensorberg.sdk.SensorbergServiceConfiguration;
-import com.sensorberg.sdk.SensorbergServiceIntents;
-import com.sensorberg.sdk.SensorbergServiceMessage;
 import com.sensorberg.sdk.action.InAppAction;
 import com.sensorberg.sdk.action.UriMessageAction;
 import com.sensorberg.sdk.action.VisitWebsiteAction;
@@ -12,11 +12,6 @@ import com.sensorberg.sdk.resolver.BeaconEvent;
 import com.sensorberg.sdk.resolver.ResolverConfiguration;
 import com.sensorberg.sdk.scanner.ScanEvent;
 
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-
-import java.net.URL;
 import java.util.UUID;
 
 public class TestConstants {
@@ -69,7 +64,7 @@ public class TestConstants {
     //beacon events
 
     public static BeaconEvent BEACON_EVENT_IN_FUTURE = new BeaconEvent.Builder()
-            .withAction(new VisitWebsiteAction(UUID.randomUUID(), "foo", "bar", null, null, 0))
+            .withAction(new VisitWebsiteAction(UUID.randomUUID(), "foo", "bar", null, null, 0, UUID.randomUUID().toString()))
             .withPresentationTime(1337)
             .build();
 
@@ -109,7 +104,7 @@ public class TestConstants {
     }
 
     public static ActionConversion ACTION_CONVERSION(int type) {
-        return new ActionConversion(UUID.randomUUID(), type);
+        return new ActionConversion(UUID.randomUUID().toString(), type);
     }
 
     //actions
@@ -122,21 +117,21 @@ public class TestConstants {
 
 
     public static InAppAction getInAppAction() {
-        return new InAppAction(UUID.randomUUID(), TestConstants.ACTION_MESSAGE, ACTION_TITLE, ACTION_URL, null, 0);
+        return new InAppAction(UUID.randomUUID(), TestConstants.ACTION_MESSAGE, ACTION_TITLE, ACTION_URL, null, 0, UUID.randomUUID().toString());
     }
 
     public static UriMessageAction getUriMessageAction() {
-        return new UriMessageAction(UUID.randomUUID(), ACTION_MESSAGE, ACTION_TITLE, ACTION_URL, null, 0);
+        return new UriMessageAction(UUID.randomUUID(), ACTION_MESSAGE, ACTION_TITLE, ACTION_URL, null, 0, UUID.randomUUID().toString());
     }
 
     public static VisitWebsiteAction getVisitWebsiteAction() {
-        return new VisitWebsiteAction(UUID.randomUUID(), ACTION_MESSAGE, ACTION_TITLE, Uri.parse(ACTION_URL), null, 0);
+        return new VisitWebsiteAction(UUID.randomUUID(), ACTION_MESSAGE, ACTION_TITLE, Uri.parse(ACTION_URL), null, 0, UUID.randomUUID().toString());
     }
 
     public static BeaconEvent getBeaconEvent() {
         return new BeaconEvent.Builder()
                 .withBeaconId(ANY_BEACON_ID)
-                .withAction(new InAppAction(TestConstants.BEACON_PROXIMITY_ID, "irrelevant", "irrelevant", null, null, 0))
+                .withAction(new InAppAction(TestConstants.BEACON_PROXIMITY_ID, "irrelevant", "irrelevant", null, null, 0, UUID.randomUUID().toString()))
                 .withSendOnlyOnce(true)
                 .withPresentationTime(0)
                 .build();

@@ -2,6 +2,7 @@ package com.sensorberg.sdk.action;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -64,11 +65,20 @@ public abstract class Action implements Parcelable {
 
     @Getter private final String payload;
 
-    protected Action(ActionType type, long delayTime, UUID uuid, String payload) {
+    /**
+     *  -- GETTER --
+     * the local instance uuid of this action. it is used to match BeaconAction and ActionConversion.
+     *
+     * @return this action instance uuid
+     */
+    @Getter @NonNull private final String instanceUuid;
+
+    protected Action(ActionType type, long delayTime, UUID uuid, String payload, @NonNull String instanceUuid) {
         this.type = type;
         this.delayTime = delayTime;
         this.uuid = uuid;
         this.payload = payload;
+        this.instanceUuid = instanceUuid;
     }
 
     protected Action(Parcel source) {
@@ -76,6 +86,7 @@ public abstract class Action implements Parcelable {
         this.delayTime = source.readLong();
         this.uuid = UUID.fromString(source.readString());
         this.payload = source.readString();
+        this.instanceUuid = source.readString();
     }
 
     public int describeContents() {
@@ -87,6 +98,7 @@ public abstract class Action implements Parcelable {
         destination.writeLong(delayTime);
         destination.writeString(uuid.toString());
         destination.writeString(payload);
+        destination.writeString(instanceUuid);
     }
 
 
@@ -126,7 +138,15 @@ public abstract class Action implements Parcelable {
         }
 
         Action action = (Action) o;
-        return !(uuid != null ? !uuid.equals(action.uuid) : action.uuid != null);
+
+        boolean uuidEquals =
+                (uuid == null && action.uuid == null) ||
+                        (uuid != null && action.uuid != null && uuid.equals(action.uuid));
+        boolean instanceUuidEquals =
+                (instanceUuid == null && action.instanceUuid == null) ||
+                        (instanceUuid != null && action.instanceUuid != null && instanceUuid.equals(action.instanceUuid));
+
+        return uuidEquals && instanceUuidEquals;
     }
 
     @Override

@@ -35,8 +35,8 @@ public class InAppAction extends Action implements android.os.Parcelable {
      */
     @Getter private final Uri uri;
 
-    public InAppAction(UUID uuid, String subject, String body, String payload, Uri uri, long delayTime) {
-        super(ActionType.MESSAGE_IN_APP, delayTime, uuid, payload);
+    public InAppAction(UUID uuid, String subject, String body, String payload, Uri uri, long delayTime, String instanceUuid) {
+        super(ActionType.MESSAGE_IN_APP, delayTime, uuid, payload, instanceUuid);
         this.subject = subject;
         this.body = body;
         this.uri = uri;

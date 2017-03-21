@@ -43,7 +43,7 @@ public class TheBeaconActionShould {
     @Before
     public void setUp() throws Exception {
         BeaconEvent beaconEvent = new BeaconEvent.Builder()
-                .withAction(new InAppAction(uuid, null, null, null, null, 0))
+                .withAction(new InAppAction(uuid, null, null, null, null, 0, UUID.randomUUID().toString()))
                 .withPresentationTime(1337)
                 .withTrigger(ScanEventType.ENTRY.getMask())
                 .build();
