@@ -154,6 +154,10 @@ public class Settings {
         if (preferences != null) {
             exitTimeoutMillis = preferences
                     .getLong(SharedPreferencesKeys.Scanner.TIMEOUT_MILLIES, DefaultSettings.DEFAULT_EXIT_TIMEOUT_MILLIS);
+            exitForegroundGraceMillis = preferences
+                    .getLong(SharedPreferencesKeys.Scanner.TIMEOUT_GRACE_FOREGROUND_MILLIES, DefaultSettings.DEFAULT_EXIT_FOREGROUND_GRACE_MILLIS);
+            exitBackgroundGraceMillis = preferences
+                    .getLong(SharedPreferencesKeys.Scanner.TIMEOUT_GRACE_BACKGROUND_MILLIES, DefaultSettings.DEFAULT_EXIT_BACKGROUND_GRACE_MILLIS);
             foreGroundScanTime = preferences
                     .getLong(SharedPreferencesKeys.Scanner.FORE_GROUND_SCAN_TIME, DefaultSettings.DEFAULT_FOREGROUND_SCAN_TIME);
             foreGroundWaitTime = preferences
@@ -202,6 +206,8 @@ public class Settings {
 
     public Settings(long rev, Settings newSettings, SettingsUpdateCallback settingsUpdateCallback) {
         exitTimeoutMillis = newSettings.getExitTimeoutMillis();
+        exitForegroundGraceMillis = newSettings.getExitForegroundGraceMillis();
+        exitBackgroundGraceMillis = newSettings.getExitBackgroundGraceMillis();
         foreGroundScanTime = newSettings.getForeGroundScanTime();
         foreGroundWaitTime = newSettings.getForeGroundWaitTime();
         backgroundScanTime = newSettings.getBackgroundScanTime();
@@ -256,6 +262,8 @@ public class Settings {
             }
 
             editor.putLong(SharedPreferencesKeys.Scanner.TIMEOUT_MILLIES, exitTimeoutMillis);
+            editor.putLong(SharedPreferencesKeys.Scanner.TIMEOUT_GRACE_FOREGROUND_MILLIES, exitForegroundGraceMillis);
+            editor.putLong(SharedPreferencesKeys.Scanner.TIMEOUT_GRACE_BACKGROUND_MILLIES, exitBackgroundGraceMillis);
             editor.putLong(SharedPreferencesKeys.Scanner.FORE_GROUND_SCAN_TIME, foreGroundScanTime);
             editor.putLong(SharedPreferencesKeys.Scanner.FORE_GROUND_WAIT_TIME, foreGroundWaitTime);
             editor.putLong(SharedPreferencesKeys.Scanner.BACKGROUND_SCAN_TIME, backgroundScanTime);
