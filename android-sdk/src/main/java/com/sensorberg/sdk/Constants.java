@@ -12,6 +12,8 @@ public class Constants {
             public static final String BACKGROUND_WAIT_TIME = "com.sensorberg.preferences.scanner.backgroundWaitTime";
             public static final String CLEAN_BEACON_MAP_RESTART_TIMEOUT = "com.sensorberg.preferences.scanner.cleanBeaconMapRestartTimeout";
             public static final String SHOULD_RESTORE_BEACON_STATES = "com.sensorberg.preferences.settings.restoreBeaconStates";
+            public static final String SCAN_START_TIMESTAMP = "com.sensorberg.preferences.scanner.scanStartTimestamp";
+            public static final String SCAN_STOP_TIMESTAMP = "com.sensorberg.preferences.scanner.scanStopTimestamp";
         }
 
         public static final class Settings {

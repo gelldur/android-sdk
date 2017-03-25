@@ -58,6 +58,19 @@ public class BeaconMap {
         persist();
     }
 
+    public void addScanPauseTime(long pause) {
+        for(Map.Entry<BeaconId, EventEntry> entry : storage.entrySet()) {
+            storage.put(entry.getKey(),
+                    new EventEntry(
+                            entry.getValue().getLastBeaconTime(),
+                            entry.getValue().getScanPauseTime() + pause,
+                            entry.getValue().getEventMask(),
+                            entry.getValue().getPairingId()
+                    )
+            );
+        }
+    }
+
     public void filter(Filter filter) {
         boolean modified = false;
         Iterator<Map.Entry<BeaconId, EventEntry>> iterator = storage.entrySet().iterator();

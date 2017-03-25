@@ -18,9 +18,9 @@ public class DefaultSettings {
 
     public static final long DEFAULT_BACKGROUND_WAIT_TIME = 2 * TimeConstants.ONE_MINUTE;
 
-    public static final long DEFAULT_BACKGROUND_SCAN_TIME = 20 * TimeConstants.ONE_SECOND;
+    public static final long DEFAULT_BACKGROUND_SCAN_TIME = 15 * TimeConstants.ONE_SECOND;
 
-    public static final long DEFAULT_EXIT_TIMEOUT_MILLIS = 30 * TimeConstants.ONE_SECOND;
+    public static final long DEFAULT_EXIT_TIMEOUT_MILLIS = 40 * TimeConstants.ONE_SECOND;
 
     public static final long DEFAULT_EXIT_FOREGROUND_GRACE_MILLIS = DEFAULT_FOREGROUND_SCAN_TIME / 2;
 
