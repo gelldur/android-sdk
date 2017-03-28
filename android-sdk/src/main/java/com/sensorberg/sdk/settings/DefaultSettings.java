@@ -12,13 +12,19 @@ public class DefaultSettings {
 
     public static final long DEFAULT_SETTINGS_UPDATE_INTERVAL = TimeConstants.ONE_DAY;
 
-    public static final long DEFAULT_EXIT_TIMEOUT_MILLIS = 9 * TimeConstants.ONE_SECOND;
-
     public static final long DEFAULT_FOREGROUND_SCAN_TIME = 10 * TimeConstants.ONE_SECOND;
 
     public static final long DEFAULT_FOREGROUND_WAIT_TIME = DEFAULT_FOREGROUND_SCAN_TIME;
 
     public static final long DEFAULT_BACKGROUND_WAIT_TIME = 2 * TimeConstants.ONE_MINUTE;
+
+    public static final long DEFAULT_BACKGROUND_SCAN_TIME = 15 * TimeConstants.ONE_SECOND;
+
+    public static final long DEFAULT_EXIT_TIMEOUT_MILLIS = 40 * TimeConstants.ONE_SECOND;
+
+    public static final long DEFAULT_EXIT_FOREGROUND_GRACE_MILLIS = DEFAULT_FOREGROUND_SCAN_TIME / 2;
+
+    public static final long DEFAULT_EXIT_BACKGROUND_GRACE_MILLIS = DEFAULT_BACKGROUND_SCAN_TIME / 2;
 
     public static final long DEFAULT_GEOHASH_MAX_AGE = TimeConstants.ONE_MINUTE;
 
@@ -31,8 +37,6 @@ public class DefaultSettings {
     public static final int GEOFENCE_MAX_DEVICE_SPEED = 50; //km/h
 
     public static final int GEOFENCE_NOTIFICATION_RESPONSIVENESS = (int) (5 * TimeConstants.ONE_SECOND);
-
-    public static final long DEFAULT_BACKGROUND_SCAN_TIME = 20 * TimeConstants.ONE_SECOND;
 
     public static final long DEFAULT_CLEAN_BEACONMAP_ON_RESTART_TIMEOUT = TimeConstants.ONE_MINUTE;
 

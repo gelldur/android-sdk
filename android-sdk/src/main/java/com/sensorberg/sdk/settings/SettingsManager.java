@@ -90,6 +90,14 @@ public class SettingsManager {
         return getSettings().getExitTimeoutMillis();
     }
 
+    public long getExitForegroundGraceMillis() {
+        return getSettings().getExitForegroundGraceMillis();
+    }
+
+    public long getExitBackgroundGraceMillis() {
+        return getSettings().getExitBackgroundGraceMillis();
+    }
+
     public long getCleanBeaconMapRestartTimeout() {
         return getSettings().getCleanBeaconMapRestartTimeout();
     }

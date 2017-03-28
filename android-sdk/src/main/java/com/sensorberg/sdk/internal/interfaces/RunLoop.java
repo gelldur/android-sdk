@@ -23,7 +23,7 @@ public interface RunLoop {
 
     void scheduleExecution(Runnable runnable, long wait_time);
 
-    void scheduleAtFixedRate(TimerTask timerTask, int when, long interval);
+    void scheduleAtFixedRate(TimerTask timerTask, long when, long interval);
 
     void cancelFixedRateExecution();
 

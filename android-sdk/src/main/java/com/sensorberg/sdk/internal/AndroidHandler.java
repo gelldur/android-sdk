@@ -61,7 +61,7 @@ public class AndroidHandler implements RunLoop {
     }
 
     @Override
-    public void scheduleAtFixedRate(TimerTask timerTask, int when, long interval) {
+    public void scheduleAtFixedRate(TimerTask timerTask, long when, long interval) {
         if (timer != null) {
             timer.cancel();
             timer = null;

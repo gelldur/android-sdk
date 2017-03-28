@@ -6,6 +6,10 @@ public final class SharedPreferencesKeys {
 
         public static final String TIMEOUT_MILLIES = "com.sensorberg.preferences.scanner.exitTimeoutMillis";
 
+        public static final String TIMEOUT_GRACE_FOREGROUND_MILLIES = "com.sensorberg.preferences.scanner.exitForegroundGraceMillis";
+
+        public static final String TIMEOUT_GRACE_BACKGROUND_MILLIES = "com.sensorberg.preferences.scanner.exitBackgroundGraceMillis";
+
         public static final String FORE_GROUND_SCAN_TIME = "com.sensorberg.preferences.scanner.foreGroundScanTime";
 
         public static final String FORE_GROUND_WAIT_TIME = "com.sensorberg.preferences.scanner.foreGroundWaitTime";
