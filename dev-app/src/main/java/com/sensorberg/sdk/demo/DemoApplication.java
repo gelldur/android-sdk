@@ -27,13 +27,19 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @SuppressWarnings("javadoc")
 public class DemoApplication extends MultiDexApplication {
 
     public static final String TAG = "DemoApplication";
 
-    public static final String API_KEY = "8961ee72ea4834053b376ad54007ea277cba4305db12188b74d104351ca8bf8a";
+    public static final String API_KEY = please insert your api key;
+
+    static {
+        com.sensorberg.sdk.internal.transport.RetrofitApiTransport.RESOLVER_BASE_URL = "https://portal.sensorberg-cdn.com";
+    }
 
     private SensorbergSdk boot;
 
@@ -54,6 +60,9 @@ public class DemoApplication extends MultiDexApplication {
         Log.d(TAG, "onCreate application");
 
         boot = new SensorbergSdk(this, API_KEY);
+        Map<String, String> attributes = new HashMap<>();
+        attributes.put("blz", "12345");
+        SensorbergSdk.setAttributes(attributes);
         boot.setLogging(true);
         boot.registerEventListener(new SensorbergSdkEventListener() {
             @Override
