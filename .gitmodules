@@ -1,0 +1,3 @@
+[submodule "android-sdk/lib/multiprocess-preferences"]
+	path = android-sdk/lib/multiprocess-preferences
+	url = git@github.com:gelldur/multiprocess-preferences.git
