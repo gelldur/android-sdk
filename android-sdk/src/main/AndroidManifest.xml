@@ -76,5 +76,12 @@
             </intent-filter>
         </receiver>
 
+        <provider
+                android:name="com.gdubina.multiprocesspreferences.PreferencesProvider"
+                android:authorities="${applicationId}.PreferenceProvider"
+                android:exported="false"
+                android:multiprocess="false"
+                android:enabled="true"/>
+
     </application>
 </manifest>

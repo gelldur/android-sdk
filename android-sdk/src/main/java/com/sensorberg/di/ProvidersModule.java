@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.location.LocationManager;
 import android.support.annotation.Nullable;
 
+import com.gdubina.multiprocesspreferences.MultiprocessPreferenceManager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sensorberg.sdk.internal.AndroidBluetoothPlatform;
@@ -66,7 +67,7 @@ public class ProvidersModule {
     @Provides
     @Singleton
     public SharedPreferences provideSettingsSharedPrefs(Context context) {
-        return context.getSharedPreferences(SENSORBERG_PREFERENCE_IDENTIFIER, Context.MODE_PRIVATE);
+        return MultiprocessPreferenceManager.getDefaultSharedPreferences(context);
     }
 
     @Provides

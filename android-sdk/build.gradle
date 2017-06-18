@@ -87,6 +87,9 @@ android {
         exclude 'LICENSE'
         exclude 'META-INF/services/javax.annotation.processing.Processor'
     }
+    sourceSets {
+        main.java.srcDirs += 'lib/multiprocess-preferences/library/src/main/java'
+    }
 
     compileOptions {
         encoding "UTF-8"
