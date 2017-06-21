@@ -2,6 +2,7 @@ package com.sensorberg;
 
 import com.sensorberg.sdk.resolver.BeaconEvent;
 
+import com.gdubina.multiprocesspreferences.MultiprocessPreferenceManager;
 import org.fest.assertions.api.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,6 +38,7 @@ public class SensorbergSdkTests {
             @Override
             public void run() {
                 tested = Mockito.spy(new SensorbergSdk(InstrumentationRegistry.getContext(), TestConstants.API_TOKEN_DEFAULT));
+                MultiprocessPreferenceManager.getDefaultSharedPreferences(InstrumentationRegistry.getContext());
             }
         });
         SensorbergSdk.listeners.clear();
